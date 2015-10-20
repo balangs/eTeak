@@ -1,0 +1,42 @@
+-- import [teak.types.basic]
+
+(--
+procedure a is
+	variable v : byte
+begin
+	v := v + 10 as byte;
+	v := not v
+end
+--)
+
+procedure buffer (
+	input a : 8 bits;
+	output b : 8 bits
+) is
+	variable v : 8 bits
+begin
+	loop a -> v; b <- v end
+end
+
+procedure bufferx2 (
+	input a : 8 bits;
+	output b : 8 bits
+) is
+	channel c : 8 bits
+begin
+	buffer (a, c) ||
+	buffer (c, b)
+end
+
+(--
+procedure buffer2 (
+	input a : 8 bits;
+	output b : 8 bits
+) is
+	variable v : 8 bits
+begin
+	loop
+		a -> then b <- a end
+	end
+end
+--)

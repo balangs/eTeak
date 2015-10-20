@@ -1,0 +1,7 @@
+procedure a is
+	variable v, w : 32 bits
+begin
+	v := 0x1234_5678;
+	w := v;
+	v := (w as 32 bits)
+end

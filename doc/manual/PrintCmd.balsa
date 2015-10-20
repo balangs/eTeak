@@ -1,0 +1,3 @@
+function Expr is builtin : bit 
+
+procedure PrintCmd is begin print Expr (), "A String", Expr () end

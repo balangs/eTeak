@@ -1,0 +1,9 @@
+function Expr is builtin : bit 
+function BinOp (i1, i2 : bit) is builtin : bit 
+
+procedure BinExpr (input go : token; output done : bit) is
+loop
+	go -> then
+		show: done <- BinOp (Expr (), Expr ())
+	end
+end

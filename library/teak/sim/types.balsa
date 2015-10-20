@@ -1,0 +1,1 @@
+function TypeName (parameter t : type) is builtin : String

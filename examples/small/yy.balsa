@@ -1,0 +1,6 @@
+procedure a (
+	output b : 8 bits
+) is
+begin
+	b <- 10
+end

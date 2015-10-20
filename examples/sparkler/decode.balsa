@@ -1,0 +1,161 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [types]
+import [debug]
+
+(--
+	Never implement:
+		Floating point
+		Modes
+		Tagged arithmetic
+	Missing/TODO:
+		Lots of Inst3 instructions
+		(Checking of) correct PC handling in branch shadow
+		Branch shadow annulment
+--)
+
+constant decodeDebug = debug -- or true
+
+procedure Decode (
+	input inst : FetchedInst;
+	output decoded : DecodedInst;
+	output pc : FetchedPC
+)
+	-- (* latch="simple=1" *)
+is
+	-- Registers
+	variable ir : FetchedInst
+
+	constant branchDC = ba : Cond
+	constant regDC = 0 : Reg 
+	constant memDC = {read, word, false} : Mem
+
+	shared Nop is begin
+		decoded <- {nop, branchDC, {false, false, false}, {regDC, regDC, regDC},
+			false, regDC, add, immediate, 0, memDC}
+	end
+
+	function i1 (inst : FetchedInst) = (inst.inst as Inst1)
+	function i2 (inst : FetchedInst) = (inst.inst as Inst2)
+	function i2a (inst : FetchedInst) = (inst.inst as Inst2a)
+	function i2b (inst : FetchedInst) = (inst.inst as Inst2b)
+	function i3 (inst : FetchedInst) = (inst.inst as Inst3)
+	function i3a (inst : FetchedInst) = (inst.inst as Inst3a)
+	function i3b (inst : FetchedInst) = (inst.inst as Inst3b)
+begin
+	loop
+		inst -> ir;
+		begin
+			if decodeDebug then
+				print "DECODE PC ", Hex (ir.pc.pc), " ", ir, (-- " ", #ir[30..31], --) " ", Hex ((ir.inst as Word))
+			end ||
+			pc <- ir.pc ||
+			case ir.inst.op of
+			  2 then -- Inst3* ALU ops
+				local -- ALU operation
+					channel writeBack : bit
+					channel immOrReg : ImmOrReg
+				begin
+					case i3 (ir).op3 of
+					  add, addcc, addx, addxcc, sub, subcc, subx, subxcc,
+						and_, andcc, andn, andncc, or_, orcc, orn, orncc, xor_, xorcc, xnor, xnorcc,
+						sll, srl, sra then
+							immOrReg -> then
+								decoded <- {alu, branchDC, {true,not i3a (ir).i,false},
+									{i3 (ir).rs1, i3a (ir).rs2, regDC},
+									true, i3 (ir).rd, i3 (ir).op3,
+									immOrReg, PackWordLow_simm13 (i3b (ir).simm13), memDC}
+							end ||
+							case i3a (ir).i of
+							  1 then immOrReg <- immediate
+							| 0 then immOrReg <- register
+							end
+					(--
+					| save, restore then continue -- FIXME
+					| jmpl then continue -- FIXME
+					--)
+					else
+						if decodeDebug then print "*** Unimplemented instruction1 ", Hex ((ir.inst as Word)) end ||
+						Nop ()
+					end
+				end
+			| 3 then -- Inst3* ld/st
+				local
+					channel memAccess : Mem
+					channel instKind : InstKind
+					channel immOrReg : ImmOrReg
+				begin
+					memAccess, instKind, immOrReg -> then
+						local
+							variable store : bit
+						begin
+							case instKind of
+							  nop then Nop ()
+							else
+								case instKind of
+								  store, stored then store := true
+								else store := false
+								end;
+								decoded <- {instKind, branchDC, {true,not i3a (ir).i,store},
+									{i3 (ir).rs1, i3a (ir).rs2, i3 (ir).rd},
+									not store, i3 (ir).rd, i3 (ir).op3,
+									immOrReg, PackWordLow_simm13 (i3b (ir).simm13), memAccess}
+							end
+						end
+					end ||
+					case i3a (ir).i of
+					  1 then immOrReg <- immediate
+					| 0 then immOrReg <- register
+					end ||
+					case i3 (ir).op3 of -- op = 3
+					  ld then memAccess <- {read, word, false} || instKind <- load
+					| ldub then memAccess <- {read, byte, false} || instKind <- load
+					| lduh then memAccess <- {read, halfword, false} || instKind <- load
+					| ldd then memAccess <- {read, word, false} || instKind <- loadd
+					| st then memAccess <- {write, word, false} || instKind <- store
+					| stb then memAccess <- {write, byte, false} || instKind <- store
+					| sth then memAccess <- {write, halfword, false} || instKind <- store
+					| std then memAccess <- {write, word, false} || instKind <- store
+					| ldsb then memAccess <- {read, byte, true} || instKind <- load
+					| ldsh then memAccess <- {read, halfword, true} || instKind <- load
+					else
+						if decodeDebug then print "*** Unimplemented instruction2 ", Hex ((ir.inst as Word)) end;
+						memAccess <- {read, word, false} || instKind <- nop
+					end
+				end
+			| 0 then -- Inst2* sethi, bicc, fbfcc, cbccc 
+				-- case i2a (ir).op2 of
+				case i2 (ir).op2 of
+				  b then decoded <- {branch, i2b (ir).cond,
+						{false, false, false}, {regDC, regDC, regDC},
+						false, regDC, add, immediate, PackWord_disp22 (i2b (ir).disp22), memDC}
+				| sethi then decoded <- {alu, branchDC,
+						{true, false, false}, {0, regDC, regDC},
+						true, i2a (ir).rd, add, immediate, PackWordHigh_imm22 (i2a (ir).imm22), memDC}
+				else
+					if decodeDebug then
+						print "*** Unimplemented instruction3 ", Hex ((ir.inst as Word)), " ",
+							Hex ((i2a (ir) as 32 bits))
+					end;
+					Nop ()
+				end
+			(--
+			| 1 then -- Inst1 call
+				SkipRegRead () || WEn () || wSel <- 15 || w <- ir.pc ||
+				SetBranchTarget () || doBranch := true
+					b then decoded <- {branch, i2b (ir).cond,
+						{false, false, false}, {regDC, regDC, regDC},
+						false, regDC, add, immediate, PackWord_disp30 (asInst1 (ir).disp30, memDC}
+			--)
+			else
+				if decodeDebug then print "*** Unimplemented instruction ", Hex ((ir.inst as Word)) end;
+				Nop ()
+			end
+		end
+	end
+end
+

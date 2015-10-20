@@ -1,0 +1,370 @@
+`timescale 1ns/1ps
+
+`define balsa_simulate true
+`define balsa_init_time 500
+//`define balsa_switchable true
+`define DDelay 0.1
+`ifdef TECHFILE
+    `include `TECHFILE
+`else
+    `include "technology.amust018.v"
+`endif
+
+`ifdef NLSTFILE
+    `include `NLSTFILE
+`else
+    `include "spaHarvard.v"
+`endif
+
+`ifdef DUT
+`else
+	`define DUT Balsa___spaHarvard__V5T
+`endif
+
+`include "/tmp/teak_tmp/nanoSpaTeak/balsa/memoryDualPort-silent.v"
+`include "/tmp/teak_tmp/nanoSpaTeak/balsa/dummyCoproIrqFiq.v"
+
+// a fetch module to connect two passive ports
+module vFetch(
+  i_0r,  i_0a0d, i_0a1d,
+  o_0r0d, o_0r1d, o_0a
+);
+  parameter W=1;
+
+  output i_0r;
+  input [W-1:0] i_0a0d;
+  input [W-1:0] i_0a1d;
+  output [W-1:0] o_0r0d;
+  output [W-1:0] o_0r1d;
+  input o_0a;
+
+  reg   i_0r;
+  reg   loop;
+
+  assign o_0r0d = i_0a0d ;
+  assign o_0r1d = i_0a1d ;
+
+  initial begin
+    loop = 0;
+    i_0r = 0;
+    #`balsa_init_time
+    loop = 1;
+    i_0r = 1;
+  end
+
+  always @(posedge (o_0a)) begin
+    i_0r = 0;
+  end
+
+  //AB always @(posedge &(~i_0a0d & ~i_0a1d)) i_0r = loop; 
+  always @(posedge (&(~i_0a0d & ~i_0a1d) & ~o_0a)) i_0r = loop; 
+
+endmodule
+
+module test();
+`ifndef NO_ACTIVATE
+  reg  activate_0r;
+  wire activate_0a;
+`endif
+
+  wire done_0r;
+  reg  done_0a;
+
+  wire [37:0] d__Access_0r0d;
+  wire [37:0] d__Access_0r1d;
+  wire d__Access_0a;
+  wire [37:0] i__Access_0r0d;
+  wire [37:0] i__Access_0r1d;
+  wire i__Access_0a;
+  wire d__Mode_0r0d;
+  wire d__Mode_0r1d;
+  wire d__Mode_0a;
+  wire i__Mode_0r0d;
+  wire i__Mode_0r1d;
+  wire i__Mode_0a;
+  // data in memory side
+  wire [31:0] d__Di_0a0d;
+  wire [31:0] d__Di_0a1d;
+  wire d__Di_0r;
+  //data in  in processor side
+  wire [31:0] d__Di_0r0d;
+  wire [31:0] d__Di_0r1d;
+  wire d__Di_0a;
+  // instr in memory side
+  wire [31:0] i__Di_0a0d;
+  wire [31:0] i__Di_0a1d;
+  wire i__Di_0r;
+  // instr in processor side
+  wire [31:0] i__Di_0r0d;
+  wire [31:0] i__Di_0r1d;
+  wire i__Di_0a;
+
+  wire [31:0] d__Do_0r0d;
+  wire [31:0] d__Do_0r1d;
+  wire d__Do_0a;
+  //data abort memory side
+  wire d__Abort_0a0d;
+  wire d__Abort_0a1d;
+  wire d__Abort_0r;
+  //data abort processor side
+  wire d__Abort_0r0d;
+  wire d__Abort_0r1d;
+  wire d__Abort_0a;
+  //inst abort memory side
+  wire i__Abort_0a0d;
+  wire i__Abort_0a1d;
+  wire i__Abort_0r;
+  // inst abort processor side
+  wire i__Abort_0r0d;
+  wire i__Abort_0r1d;
+  wire i__Abort_0a;
+
+  wire [3:0] cpId_0r0d;
+  wire [3:0] cpId_0r1d;
+  wire cpId_0a;
+  wire [32:0] cpInst_0r0d;
+  wire [32:0] cpInst_0r1d;
+  wire cpInst_0a;
+
+  //cpCapable memory side
+  wire cpCapableP_0r;
+  wire [3:0] cpCapableP_0a0d;
+  wire [3:0] cpCapableP_0a1d;
+  //cpCapable processor side
+  wire cpCapableP_0a;
+  wire [3:0] cpCapableP_0r0d;
+  wire [3:0] cpCapableP_0r1d;
+
+  wire [3:0] cpId2_0r0d;
+  wire [3:0] cpId2_0r1d;
+  wire cpId2_0a;
+  wire [5:0] cpExec_0r0d;
+  wire [5:0] cpExec_0r1d;
+  wire cpExec_0a;
+  wire [31:0] cpRegisterSpa2cp_0r0d;
+  wire [31:0] cpRegisterSpa2cp_0r1d;
+  wire cpRegisterSpa2cp_0a;
+
+  //Cp2Spa cp register cp side 
+  wire cpRegisterCp2spa_0r;
+  wire [31:0] cpRegisterCp2spa_0a0d;
+  wire [31:0] cpRegisterCp2spa_0a1d;
+  //Cp2Spa cp register processor side 
+  wire cpRegisterCp2spa_0a;
+  wire [31:0] cpRegisterCp2spa_0r0d;
+  wire [31:0] cpRegisterCp2spa_0r1d;
+
+  // memory side
+  wire cpMemAccessLastP_0r;
+  wire cpMemAccessLastP_0a0d;
+  wire cpMemAccessLastP_0a1d;
+  // proccesor side
+  wire cpMemAccessLastP_0a;
+  wire cpMemAccessLastP_0r0d;
+  wire cpMemAccessLastP_0r1d;
+ 
+  // irq peripheral side
+  wire irq_0r0d;
+  wire irq_0r1d;
+  wire irq_0a;
+
+`ifdef balsa_switchable
+	reg spacer;
+`endif
+
+`ifdef NRESET
+   reg 	    nreset;
+`endif
+
+`ifdef RESET
+   reg 	    reset;
+`endif
+
+  integer outFile;
+
+	memoryDualPort mem (
+       i__Access_0r0d, i__Access_0r1d, i__Access_0a, 
+       i__Mode_0r0d, i__Mode_0r1d, i__Mode_0a,
+	   i__Di_0r, i__Di_0a0d, i__Di_0a1d, 
+       i__Abort_0r, i__Abort_0a0d, i__Abort_0a1d, 
+       d__Access_0r0d, d__Access_0r1d, d__Access_0a,
+	   d__Mode_0r0d, d__Mode_0r1d, d__Mode_0a, 
+       d__Di_0r, d__Di_0a0d, d__Di_0a1d, 
+       d__Do_0r0d, d__Do_0r1d, d__Do_0a, 
+       d__Abort_0r, d__Abort_0a0d, d__Abort_0a1d
+	);
+
+    vFetch #(32) fiDi(
+        i__Di_0r, i__Di_0a0d, i__Di_0a1d, 
+       i__Di_0r0d, i__Di_0r1d, i__Di_0a
+    );
+
+    vFetch #(32) fdDi(
+        d__Di_0r, d__Di_0a0d, d__Di_0a1d, 
+       d__Di_0r0d, d__Di_0r1d, d__Di_0a
+    );
+
+    vFetch #(1) fiAbort(
+       i__Abort_0r, i__Abort_0a0d, i__Abort_0a1d, 
+       i__Abort_0r0d, i__Abort_0r1d, i__Abort_0a
+    );
+
+    vFetch #(1) fdAbort(
+       d__Abort_0r, d__Abort_0a0d, d__Abort_0a1d, 
+       d__Abort_0r0d, d__Abort_0r1d, d__Abort_0a
+    );
+
+    vFetch #(4) fcpCap(
+       cpCapableP_0r, cpCapableP_0a0d, cpCapableP_0a1d,
+       cpCapableP_0r0d, cpCapableP_0r1d,cpCapableP_0a
+    );
+
+    vFetch #(32) fcpRegCp2Spa(
+       cpRegisterCp2spa_0r, cpRegisterCp2spa_0a0d, cpRegisterCp2spa_0a1d,
+       cpRegisterCp2spa_0r0d, cpRegisterCp2spa_0r1d,cpRegisterCp2spa_0a
+    );
+
+    vFetch #(1) fMemALastP(
+       cpMemAccessLastP_0r, cpMemAccessLastP_0a0d, cpMemAccessLastP_0a1d,
+       cpMemAccessLastP_0r0d, cpMemAccessLastP_0r1d,cpMemAccessLastP_0a
+    );
+
+	`DUT spa (
+`ifndef NO_ACTIVATE
+       activate_0r, activate_0a,
+`endif
+/* `ifdef RESET
+       done_0r, done_0a,
+`endif */
+	   d__Access_0r0d, d__Access_0r1d, d__Access_0a, 
+       i__Access_0r0d, i__Access_0r1d, i__Access_0a, 
+       d__Mode_0r0d, d__Mode_0r1d, d__Mode_0a,
+	   i__Mode_0r0d, i__Mode_0r1d, i__Mode_0a, 
+       d__Di_0r0d, d__Di_0r1d, d__Di_0a, 
+       i__Di_0r0d, i__Di_0r1d, i__Di_0a,
+       d__Do_0r0d, d__Do_0r1d, d__Do_0a, 
+       d__Abort_0r0d, d__Abort_0r1d, d__Abort_0a, 
+       i__Abort_0r0d, i__Abort_0r1d, i__Abort_0a, 
+       cpId_0r0d, cpId_0r1d, cpId_0a, 
+       cpInst_0r0d, cpInst_0r1d, cpInst_0a, 
+       cpCapableP_0r0d, cpCapableP_0r1d,cpCapableP_0a, 
+	   cpId2_0r0d, cpId2_0r1d, cpId2_0a, 
+       cpExec_0r0d, cpExec_0r1d, cpExec_0a,
+	   cpRegisterSpa2cp_0r0d, cpRegisterSpa2cp_0r1d, cpRegisterSpa2cp_0a,
+	   cpRegisterCp2spa_0r0d, cpRegisterCp2spa_0r1d,cpRegisterCp2spa_0a, 
+	   cpMemAccessLastP_0r0d, cpMemAccessLastP_0r1d,cpMemAccessLastP_0a, 
+	   irq_0r0d, irq_0r1d, irq_0a, 
+       fiq_0r0d, fiq_0r1d, fiq_0a
+`ifdef balsa_switchable
+	   , spacer
+`endif
+
+`ifdef NRESET
+           , nreset
+`endif
+
+`ifdef RESET
+           , reset
+`endif
+
+	);
+
+       dummyCoproIrqFiq coproIrqFiq (
+       cpId_0r0d, cpId_0r1d, cpId_0a, 
+       cpInst_0r0d, cpInst_0r1d, cpInst_0a, 
+       cpCapableP_0r, cpCapableP_0a0d, cpCapableP_0a1d,
+       cpId2_0r0d, cpId2_0r1d, cpId2_0a, 
+       cpExec_0r0d, cpExec_0r1d, cpExec_0a,
+       cpRegisterSpa2cp_0r0d, cpRegisterSpa2cp_0r1d, cpRegisterSpa2cp_0a,
+       cpRegisterCp2spa_0r, cpRegisterCp2spa_0a0d, cpRegisterCp2spa_0a1d,
+       cpMemAccessLastP_0r, cpMemAccessLastP_0a0d, cpMemAccessLastP_0a1d,
+       irq_0r0d, irq_0r1d, irq_0a, 
+       fiq_0r0d, fiq_0r1d, fiq_0a
+	);
+`ifdef RESET
+`ifndef NO_ACTIVATE
+    initial @(posedge (activate_0a)) begin
+        #`DDelay
+        activate_0r = 0;
+    end
+ 
+    always @(posedge (activate_0r & done_0r)) begin
+        #`DDelay
+        done_0a = 1;
+    end
+
+    always @(negedge (activate_0r & done_0r)) begin
+        #`DDelay
+        done_0a = 0;
+    end
+`endif
+`endif
+
+    initial begin
+
+        `ifdef TUBEFILE
+            outFile = $fopen(`TUBEFILE);
+        `else
+			outFile = $fopen("out.txt");
+        `endif
+
+		if (outFile == 0) begin
+		    //$display ("test-spaHarvard: Cannot open TUBE output file");
+			$finish;
+		end
+
+        `ifdef DUMPFILE
+            $dumpfile ( `DUMPFILE );
+            //$display("Using dumpfile: \"%s\"", `DUMPFILE );
+        `else
+			$dumpfile ("/tmp/test-spaHarvard.vcd");
+            //$display("Using dumpfile: \"%s\"", "/tmp/test-spa.vcd");
+        `endif
+
+		$dumpvars (1,test);
+
+        `ifdef DUMPVARS
+		    $dumpvars (1,spa.I0.I5.I116);
+	    `endif
+
+//		$sdf_annotate ("g3cardSpa.sdf", spa);
+
+`ifdef balsa_switchable
+		spacer   = 1'b0;
+`endif
+
+        done_0a = 0;
+`ifndef NO_ACTIVATE
+        activate_0r = 0;
+`endif
+`ifdef NRESET
+                nreset = 0;
+`endif
+`ifdef RESET
+                reset = 1;
+`endif
+		//$display ("test-spaHarvard: variables initialised.");
+
+
+		#1000
+`ifndef NO_ACTIVATE
+        activate_0r = 1;
+`endif
+`ifdef NRESET
+	        nreset = 1;
+`endif
+`ifdef RESET
+	        reset = 0;
+`endif
+		//$display ("test-spaHarvard: activate <- 1 @ t=%t", $time);
+//		#1 $dumpoff;
+
+		#1000000
+		$display ("FAIL");
+		$finish;
+`ifdef TEAK
+		tkr_monitor_ctrl.report;
+		
+`endif
+	end
+endmodule

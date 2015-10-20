@@ -1,0 +1,197 @@
+GPLCVER_2.11a of 07/05/05 (Linux-elf).
+Copyright (c) 1991-2005 Pragmatic C Software Corp.
+  All Rights reserved.  Licensed under the GNU General Public License (GPL).
+  See the 'COPYING' file for details.  NO WARRANTY provided.
+Today is Mon Aug  9 15:24:44 2010.
+Compiling source file "../tests/test-spaHarvard.v"
+**nanoSpaHarvard_deparameterised.v(83145) WARN** [3108] output port irq_0r (pos. 54) of instance at **../tests/test-spaHarvard.v(513) has highconn driver(s), value of irq_0r in Balsa___spaHarvard__V5T may differ from simulators using port collapsing - use +change_port_type for compatibility
+**nanoSpaHarvard_deparameterised.v(83146) WARN** [3108] output port fiq_0r (pos. 57) of instance at **../tests/test-spaHarvard.v(513) has highconn driver(s), value of fiq_0r in Balsa___spaHarvard__V5T may differ from simulators using port collapsing - use +change_port_type for compatibility
+Highest level modules:
+AND4
+OR4
+NAND4
+NOR4
+XOR2
+XNOR2
+BUF
+BUFF
+LATCH
+MUX2
+NMUX2
+DEMUX2
+NKEEP
+TRIBUF
+TRIINV
+VDD
+GND
+DFF
+test
+
+Using dumpfile: "b.vcd"
+test-spaHarvard: variables initialised.
+memoryDualPort: Initialising memory.
+memoryDualPort: loading RAM from file: "../tests/hello.hex"
+memoryDualPort: Memory initialised.
+test-spaHarvard: activate <- 1 @ t=             1000000
+i_A 0x00000000: r p w 0xe3e04000 (          1)
+i_A 0x00000004: r p w 0xe28f002c (          2)
+i_A 0x00000008: r p w 0xeb000005 (          3)
+i_A 0x0000000c: r p w 0xe28f0031 (          4)
+i_A 0x00000024: r p w 0xe4d01001 (          5)
+d_A 0x00000038: r p b 0xaaaaaa48
+i_A 0x00000028: r p w 0xe5841000 (          6)
+i_A 0x0000002c: r p w 0xe2511000 (          7)
+d_A 0xffffffff: w p w 0x00000048     > H       (t=             1040000)
+i_A 0x00000030: r p w 0x1afffffb (          8)
+i_A 0x00000034: r p w 0xe1a0f00e (          9)
+i_A 0x00000024: r p w 0xe4d01001 (         10)
+i_A 0x00000028: r p w 0xe5841000 (         11)
+d_A 0x00000039: r p b 0xaaaa65aa
+i_A 0x0000002c: r p w 0xe2511000 (         12)
+d_A 0xffffffff: w p w 0x00000065     > e       (t=             1070000)
+i_A 0x00000030: r p w 0x1afffffb (         13)
+i_A 0x00000034: r p w 0xe1a0f00e (         14)
+i_A 0x00000024: r p w 0xe4d01001 (         15)
+i_A 0x00000028: r p w 0xe5841000 (         16)
+d_A 0x0000003a: r p b 0xaa6caaaa
+i_A 0x0000002c: r p w 0xe2511000 (         17)
+d_A 0xffffffff: w p w 0x0000006c     > l       (t=             1100000)
+i_A 0x00000030: r p w 0x1afffffb (         18)
+i_A 0x00000034: r p w 0xe1a0f00e (         19)
+i_A 0x00000024: r p w 0xe4d01001 (         20)
+i_A 0x00000028: r p w 0xe5841000 (         21)
+d_A 0x0000003b: r p b 0x6caaaaaa
+i_A 0x0000002c: r p w 0xe2511000 (         22)
+d_A 0xffffffff: w p w 0x0000006c     > l       (t=             1129000)
+i_A 0x00000030: r p w 0x1afffffb (         23)
+i_A 0x00000034: r p w 0xe1a0f00e (         24)
+i_A 0x00000024: r p w 0xe4d01001 (         25)
+i_A 0x00000028: r p w 0xe5841000 (         26)
+d_A 0x0000003c: r p b 0xaaaaaa6f
+i_A 0x0000002c: r p w 0xe2511000 (         27)
+d_A 0xffffffff: w p w 0x0000006f     > o       (t=             1159000)
+i_A 0x00000030: r p w 0x1afffffb (         28)
+i_A 0x00000034: r p w 0xe1a0f00e (         29)
+i_A 0x00000024: r p w 0xe4d01001 (         30)
+i_A 0x00000028: r p w 0xe5841000 (         31)
+d_A 0x0000003d: r p b 0xaaaa20aa
+i_A 0x0000002c: r p w 0xe2511000 (         32)
+d_A 0xffffffff: w p w 0x00000020     >         (t=             1189000)
+i_A 0x00000030: r p w 0x1afffffb (         33)
+i_A 0x00000034: r p w 0xe1a0f00e (         34)
+i_A 0x00000024: r p w 0xe4d01001 (         35)
+i_A 0x00000028: r p w 0xe5841000 (         36)
+d_A 0x0000003e: r p b 0xaa77aaaa
+i_A 0x0000002c: r p w 0xe2511000 (         37)
+d_A 0xffffffff: w p w 0x00000077     > w       (t=             1219000)
+i_A 0x00000030: r p w 0x1afffffb (         38)
+i_A 0x00000034: r p w 0xe1a0f00e (         39)
+i_A 0x00000024: r p w 0xe4d01001 (         40)
+i_A 0x00000028: r p w 0xe5841000 (         41)
+d_A 0x0000003f: r p b 0x6faaaaaa
+i_A 0x0000002c: r p w 0xe2511000 (         42)
+d_A 0xffffffff: w p w 0x0000006f     > o       (t=             1248000)
+i_A 0x00000030: r p w 0x1afffffb (         43)
+i_A 0x00000034: r p w 0xe1a0f00e (         44)
+i_A 0x00000024: r p w 0xe4d01001 (         45)
+i_A 0x00000028: r p w 0xe5841000 (         46)
+d_A 0x00000040: r p b 0xaaaaaa72
+i_A 0x0000002c: r p w 0xe2511000 (         47)
+d_A 0xffffffff: w p w 0x00000072     > r       (t=             1278000)
+i_A 0x00000030: r p w 0x1afffffb (         48)
+i_A 0x00000034: r p w 0xe1a0f00e (         49)
+i_A 0x00000024: r p w 0xe4d01001 (         50)
+i_A 0x00000028: r p w 0xe5841000 (         51)
+d_A 0x00000041: r p b 0xaaaa6caa
+i_A 0x0000002c: r p w 0xe2511000 (         52)
+d_A 0xffffffff: w p w 0x0000006c     > l       (t=             1308000)
+i_A 0x00000030: r p w 0x1afffffb (         53)
+i_A 0x00000034: r p w 0xe1a0f00e (         54)
+i_A 0x00000024: r p w 0xe4d01001 (         55)
+i_A 0x00000028: r p w 0xe5841000 (         56)
+d_A 0x00000042: r p b 0xaa64aaaa
+i_A 0x0000002c: r p w 0xe2511000 (         57)
+d_A 0xffffffff: w p w 0x00000064     > d       (t=             1338000)
+i_A 0x00000030: r p w 0x1afffffb (         58)
+i_A 0x00000034: r p w 0xe1a0f00e (         59)
+i_A 0x00000024: r p w 0xe4d01001 (         60)
+i_A 0x00000028: r p w 0xe5841000 (         61)
+d_A 0x00000043: r p b 0x0aaaaaaa
+i_A 0x0000002c: r p w 0xe2511000 (         62)
+d_A 0xffffffff: w p w 0x0000000a     > <LF>    (t=             1367000)
+i_A 0x00000030: r p w 0x1afffffb (         63)
+i_A 0x00000034: r p w 0xe1a0f00e (         64)
+i_A 0x00000024: r p w 0xe4d01001 (         65)
+i_A 0x00000028: r p w 0xe5841000 (         66)
+d_A 0x00000044: r p b 0xaaaaaa00
+i_A 0x0000002c: r p w 0xe2511000 (         67)
+d_A 0xffffffff: w p w 0x00000000     > <NULL>  (t=             1397000)
+i_A 0x00000030: r p w 0x1afffffb (         68)
+i_A 0x00000034: r p w 0xe1a0f00e (         69)
+i_A 0x00000038: r p w 0x6c6c6548 (         70)
+i_A 0x0000000c: r p w 0xe28f0031 (         71)
+i_A 0x00000010: r p w 0xeb000003 (         72)
+i_A 0x00000014: r p w 0xe3e04001 (         73)
+i_A 0x00000024: r p w 0xe4d01001 (         74)
+d_A 0x00000045: r p b 0xaaaa42aa
+i_A 0x00000028: r p w 0xe5841000 (         75)
+i_A 0x0000002c: r p w 0xe2511000 (         76)
+d_A 0xffffffff: w p w 0x00000042     > B       (t=             1451000)
+i_A 0x00000030: r p w 0x1afffffb (         77)
+i_A 0x00000034: r p w 0xe1a0f00e (         78)
+i_A 0x00000024: r p w 0xe4d01001 (         79)
+i_A 0x00000028: r p w 0xe5841000 (         80)
+d_A 0x00000046: r p b 0xaa6faaaa
+i_A 0x0000002c: r p w 0xe2511000 (         81)
+d_A 0xffffffff: w p w 0x0000006f     > o       (t=             1480000)
+i_A 0x00000030: r p w 0x1afffffb (         82)
+i_A 0x00000034: r p w 0xe1a0f00e (         83)
+i_A 0x00000024: r p w 0xe4d01001 (         84)
+i_A 0x00000028: r p w 0xe5841000 (         85)
+d_A 0x00000047: r p b 0x69aaaaaa
+i_A 0x0000002c: r p w 0xe2511000 (         86)
+d_A 0xffffffff: w p w 0x00000069     > i       (t=             1510000)
+i_A 0x00000030: r p w 0x1afffffb (         87)
+i_A 0x00000034: r p w 0xe1a0f00e (         88)
+i_A 0x00000024: r p w 0xe4d01001 (         89)
+i_A 0x00000028: r p w 0xe5841000 (         90)
+d_A 0x00000048: r p b 0xaaaaaa6e
+i_A 0x0000002c: r p w 0xe2511000 (         91)
+d_A 0xffffffff: w p w 0x0000006e     > n       (t=             1540000)
+i_A 0x00000030: r p w 0x1afffffb (         92)
+i_A 0x00000034: r p w 0xe1a0f00e (         93)
+i_A 0x00000024: r p w 0xe4d01001 (         94)
+i_A 0x00000028: r p w 0xe5841000 (         95)
+d_A 0x00000049: r p b 0xaaaa67aa
+i_A 0x0000002c: r p w 0xe2511000 (         96)
+d_A 0xffffffff: w p w 0x00000067     > g       (t=             1570000)
+i_A 0x00000030: r p w 0x1afffffb (         97)
+i_A 0x00000034: r p w 0xe1a0f00e (         98)
+i_A 0x00000024: r p w 0xe4d01001 (         99)
+i_A 0x00000028: r p w 0xe5841000 (        100)
+d_A 0x0000004a: r p b 0xaa21aaaa
+i_A 0x0000002c: r p w 0xe2511000 (        101)
+d_A 0xffffffff: w p w 0x00000021     > !       (t=             1599000)
+i_A 0x00000030: r p w 0x1afffffb (        102)
+i_A 0x00000034: r p w 0xe1a0f00e (        103)
+i_A 0x00000024: r p w 0xe4d01001 (        104)
+i_A 0x00000028: r p w 0xe5841000 (        105)
+d_A 0x0000004b: r p b 0x0aaaaaaa
+i_A 0x0000002c: r p w 0xe2511000 (        106)
+d_A 0xffffffff: w p w 0x0000000a     > <LF>    (t=             1629000)
+i_A 0x00000030: r p w 0x1afffffb (        107)
+i_A 0x00000034: r p w 0xe1a0f00e (        108)
+i_A 0x00000024: r p w 0xe4d01001 (        109)
+i_A 0x00000028: r p w 0xe5841000 (        110)
+d_A 0x0000004c: r p b 0xaaaaaa00
+i_A 0x0000002c: r p w 0xe2511000 (        111)
+d_A 0xffffffff: w p w 0x00000000     > <NULL>  (t=             1659000)
+i_A 0x00000030: r p w 0x1afffffb (        112)
+i_A 0x00000034: r p w 0xe1a0f00e (        113)
+i_A 0x00000038: r p w 0x6c6c6548 (        114)
+i_A 0x00000014: r p w 0xe3e04001 (        115)
+i_A 0x00000018: r p w 0xe5840000 (        116)
+i_A 0x0000001c: r p w 0xe5840000 (        117)
+d_A 0xfffffffe: w p w 0x0000004d     > Exit    (t=             1695000)
+Halted at location **memoryDualPort.v(305) time 1694550 ps from call to $finish.
+  There were 0 error(s), 2 warning(s), and 1087 inform(s).

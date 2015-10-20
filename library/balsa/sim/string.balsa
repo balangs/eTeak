@@ -1,0 +1,104 @@
+(--
+	The Balsa Asynchronous Hardware Synthesis System
+	Copyright (C) 1995-2003 Department of Computer Science
+	The University of Manchester, Oxford Road, Manchester, UK, M13 9PL
+	
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+	`string.balsa'
+	String handling
+
+	$Id: string.balsa,v 1.11 2003/09/27 21:01:39 bardslea Exp $
+--)
+
+import [balsa.types.basic]
+
+-- String defined in [balsa.types.builtin] as the compiler depends on it
+-- type String is builtin
+
+-- StringAppend : also defined in [balsa.types.builtin] as balsa-c implements
+--	it with the `+' operator for convenience
+-- function StringAppend (str1, str2 : String) is builtin : String
+
+-- StringLength : returns the length of the given string (0 for an empty or uninitialised string)
+function StringLength (string : String) is builtin : cardinal
+
+-- SubString : returns a sub-string of the given string between character indices `index' and `index + length - 1'
+--	If length = 0 or index >= StringLength (string) then returns an empty string,
+--	If `index + length' > StringLength (string) then returns a sub-string of `string'
+--	between indices `index' and StringLenth (string) - 1
+function SubString (string : String; index : cardinal; length : cardinal) is builtin : String
+
+-- StringEqual : returns 1 if two strings or equal.  The two given strings must be the same length
+--	and contain the same characters (in the same order!) to be equal
+function StringEqual (str1, str2 : String) is builtin : bit
+
+-- FromString : parse a value of the given type (in the default formatting) from the given
+--	`source' string and return the remainder of the string in `remainder'.  Note that the most
+--	common way of calling this function will be with the same string as source and remainder.
+--	To discard the remainder, just pass a constant (or unused) string as remainder.
+--  CHANGED FOR TEAK, FIXME FIXME FIXME
+function FromString (parameter X : type; source : String) is builtin : X
+
+-- RepeatString : make a string with `n' occurences of source string `str'
+function RepeatString (str : String; n : cardinal) is builtin : String
+
+-- FitStringToWidth : pad or clip a given string to create a string which is exactly `width'
+--	characters long.  `justification' chooses whether strings shorter than `width' should be
+--	packed at the start (left) or end (right) of the result string
+type StringJustification is enumeration left, right end
+function FitStringToWidth (str : String; width : cardinal; justification : StringJustification) is builtin : String
+
+-- NumberFromString : parse a number of the given radix (assuming there will be no radix
+--	prefices) from the given string.  Radix is an element of [2,36]
+function NumberFromString (parameter X : type; source : String; radix : 6 bits) is builtin : X
+
+-- NumberToString : make a string representation of the given number in the given radix.
+--	Insert underscores at the specified distance apart (except where underscoreSpacing is 0)
+function NumberToString (parameter X : type; value : X; radix : 6 bits;
+	underscoreSpacing : 8 bits; showLeadingZeroes : bit) is builtin : String
+
+-- TokenFromString : parse a whitespace delimeted string token from the start of `string' and
+--	return that token as the return value and the remains of the string in `remainder'.
+--	Note that this is not the same as FromString (String, ...) as that would require quotes
+--	around the string to be parsed.
+--	DEPRECATED, see StringGetToken
+function TokenFromString (string : String; remainder : String) is builtin : String
+
+-- Chr (short name by tradition!) : convert the given 8b value into a single character string
+function Chr (value : byte) is builtin : String
+
+-- Ord (") : returns the character value of the first character in the given string.  If the
+--	string is empty, returns 0
+function Ord (char : String) is builtin : byte
+
+-- StringToPrintable : copy the given string replacing unprintable characters with <HH> hex representations
+function StringToPrintable (string : String) is builtin : String
+
+-- String{Down,Up}case : change case of string
+function StringDowncase (string : String) is builtin : String
+function StringUpcase (string : String) is builtin : String
+
+-- StringTokenTail : {token, remains of string} return value for string parsers
+type StringTokenTail is record
+	token : String;
+	tail : String
+end
+
+-- StringGetToken : parse a whitespace delimeted string token from the start of `string' and
+--	return a StringTokenTail containing that token and the remains of the input string.
+--	Note that this is not the same as FromString (String, ...) as that would require quotes
+--	around the string to be parsed.
+function StringGetToken (line : String) is builtin : StringTokenTail

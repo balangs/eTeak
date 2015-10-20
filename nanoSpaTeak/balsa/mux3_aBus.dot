@@ -1,0 +1,78 @@
+digraph mux3_aBus {
+  outputorder="edgesfirst";
+  size="7.086614173228347,10.236220472440946";
+  ratio="2.0"
+  subgraph cluster_mux3_aBus {
+    edge [fontsize="8", fontname="Helvetica", labelfontname="Helvetica", labelfontsize="8", arrowhead="normal"];
+    node [fontsize="12", fontname="Helvetica-Bold", shape="box"];
+    title [label="mux3_aBus", fontsize="20"];
+    port0 [portref="0", label="go", style="bold", shape="none"];
+    port1 [portref="1", label="a", style="bold", shape="none"];
+    port2 [portref="2", label="b", style="bold", shape="none"];
+    port3 [portref="3", label="c", style="bold", shape="none"];
+    port4 [portref="4", label="ctrl", style="bold", shape="none"];
+    port5 [portref="5", label="o", style="bold", shape="none"];
+    comp2 [compref="2", label="a|<w0>w0|<r0>r0", shape="record"];
+    comp5 [compref="5", label="b|<w0>w0|<r0>r0", shape="record"];
+    comp8 [compref="8", label="c|<w0>w0|<r0>r0", shape="record"];
+    comp10 [compref="10", label="{{<i>}|{<o0>|<o1>|<o2>|<o3>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp11 [compref="11", label="{{<i0>|<i1>|<i2>|<i3>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp12 [compref="12", label="ctrl|<w0>w0|<r0>r0", shape="record"];
+    comp14 [compref="14", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp15 [compref="15", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp16 [compref="16", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp17 [compref="17", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp18 [compref="18", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp19 [compref="19", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp20 [compref="20", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp21 [compref="21", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp22 [compref="22", label="{{<i0>|<i1>|<i2>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp23 [compref="23", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp24 [compref="24", label="3'd1", nojustify="true", shape="record"];
+    comp25 [compref="25", label="3'd2", nojustify="true", shape="record"];
+    comp26 [compref="26", label="4", nojustify="true", shape="record"];
+    comp27 [compref="27", label="{{<i0>|<i1>|<i2>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp28 [compref="28", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp29 [compref="29", label="{{<i>}|{<o0>|<o1>|<o2>}}", height="0.4", fontsize="2", nojustify="true", shape="record"]
+    comp12:w0:s -> comp12:r0:n [linkref="1", label="1", penwidth="1", weight="1"];
+    comp12:r0:s -> comp10:i:n [linkref="2", label="2", penwidth="2", weight="2"];
+    comp10:o0:s -> comp11:i0:n [linkref="3", label="3", penwidth="1", weight="1"];
+    comp2:w0:s -> comp2:r0:n [linkref="4", label="4", penwidth="1", weight="1"];
+    comp2:r0:s -> comp19:i:n [linkref="6", label="6", penwidth="6", weight="6"];
+    comp29:o0:s -> comp11:i1:n [linkref="7", label="7", penwidth="1", weight="1"];
+    comp15:o:s -> comp2:w0:n [linkref="8", label="8", penwidth="6", weight="6"];
+    comp10:o1:s -> comp15:i1:n [linkref="10", label="10", penwidth="1", weight="1"];
+    comp5:w0:s -> comp5:r0:n [linkref="11", label="11", penwidth="1", weight="1"];
+    comp5:r0:s -> comp20:i:n [linkref="13", label="13", penwidth="6", weight="6"];
+    comp29:o1:s -> comp11:i2:n [linkref="14", label="14", penwidth="1", weight="1"];
+    comp16:o:s -> comp5:w0:n [linkref="15", label="15", penwidth="6", weight="6"];
+    comp10:o2:s -> comp16:i1:n [linkref="17", label="17", penwidth="1", weight="1"];
+    comp8:w0:s -> comp8:r0:n [linkref="18", label="18", penwidth="1", weight="1"];
+    comp8:r0:s -> comp21:i:n [linkref="20", label="20", penwidth="6", weight="6"];
+    comp29:o2:s -> comp11:i3:n [linkref="21", label="21", penwidth="1", weight="1"];
+    comp17:o:s -> comp8:w0:n [linkref="22", label="22", penwidth="6", weight="6"];
+    comp10:o3:s -> comp17:i1:n [linkref="24", label="24", penwidth="1", weight="1"];
+    comp11:o:s -> comp14:i1:n [linkref="25", label="25", penwidth="1", weight="1"];
+    comp18:o:s -> comp12:w0:n [linkref="26", label="26", penwidth="2", weight="2"];
+    comp14:o:s -> comp18:i1:n [linkref="28", label="28", penwidth="1", weight="1"];
+    port0 -> comp14:i0:n [linkref="29", label="29", penwidth="1", weight="1"];
+    port1 -> comp15:i0:n [linkref="30", label="30", penwidth="6", weight="6"];
+    port2 -> comp16:i0:n [linkref="31", label="31", penwidth="6", weight="6"];
+    port3 -> comp17:i0:n [linkref="32", label="32", penwidth="6", weight="6"];
+    port4 -> comp18:i0:n [linkref="33", label="33", penwidth="2", weight="2"];
+    comp19:o0:s -> comp24:n [linkref="34", label="34", penwidth="1", weight="1"];
+    comp19:o1:s -> comp22:i0:n [linkref="35", label="35", penwidth="6", weight="6"];
+    comp20:o0:s -> comp25:n [linkref="36", label="36", penwidth="1", weight="1"];
+    comp20:o1:s -> comp22:i1:n [linkref="37", label="37", penwidth="6", weight="6"];
+    comp21:o0:s -> comp26:n [linkref="38", label="38", penwidth="1", weight="1"];
+    comp21:o1:s -> comp22:i2:n [linkref="39", label="39", penwidth="6", weight="6"];
+    comp22:o:s -> comp23:i:n [linkref="40", label="40", penwidth="6", weight="6"];
+    comp23:o0:s -> comp28:i0:n [linkref="41", label="41", penwidth="1", weight="1"];
+    comp23:o1:s -> port5 [linkref="42", label="42", penwidth="6", weight="6"];
+    comp24:s -> comp27:i0:n [linkref="43", label="43", penwidth="2", weight="2"];
+    comp25:s -> comp27:i1:n [linkref="44", label="44", penwidth="2", weight="2"];
+    comp26:s -> comp27:i2:n [linkref="45", label="45", penwidth="2", weight="2"];
+    comp27:o:s -> comp28:i1:n [linkref="46", label="46", penwidth="2", weight="2"];
+    comp28:o:s -> comp29:i:n [linkref="47", label="47", penwidth="2", weight="2"]
+  }
+}

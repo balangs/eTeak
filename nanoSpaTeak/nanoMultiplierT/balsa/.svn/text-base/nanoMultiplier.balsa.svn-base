@@ -1,0 +1,106 @@
+-- Radix-3 Booth's multiplier for nanoSpa / aviSpa
+-- Implements two versions:
+--    nanoMultiplier(ROLLED) Radix-3 Booth's algorithm (11 iteration cycles)
+--    nanoMultiplier(UNROLLED) Radix-3 Booth's algorithm unrolled 2 times (6 iteration cycles)
+--
+-- v1.0 20/04/2007 -ltaraz
+--
+
+import [balsa.types.basic]
+import [nanoMulTypes]
+import [nanoMultSupport]
+import [nanoMBoothR3rolled]
+
+procedure CSAdder_DP2 is CSAdder(Datapath_2)
+procedure CPadder  is fullCPadder(Datapath)
+
+procedure nanoMultiplier
+( 
+  parameter  style : multStyle; 
+  input bypass  : bit;
+  input bypassH : bit;
+  input mType : MulType;
+  input a   : Datapath;
+  input b   : Datapath;
+  input c   : Datapath;
+  output mpH: Datapath;
+  output mpL: Datapath;
+  output mZ : bit;
+  output mN : bit
+) is
+
+local
+    channel sa  : Datapath_2
+    channel sb  : Datapath_3
+    channel sc  : Datapath_2
+    channel mlength : bit
+    channel macc    : bit
+
+    channel ba  : Datapath
+    channel bb  : Datapath
+    channel bc  : Datapath
+    channel bmType : MulType
+
+    channel opA  : Datapath_2
+    channel opB  : Datapath_2
+    channel cs   : Datapath_2
+    channel cin : Datapath_2
+    channel res : Datapath_2
+
+    channel raA  : Datapath
+    channel raB  : Datapath
+    channel rac0 : bit
+    channel raS  : Datapath
+    channel racN : bit
+    
+    channel load : bit
+    channel done : bit
+    
+    channel pH  : Datapath
+    channel pL  : Datapath
+    channel z   : bit
+    channel n  : bit
+
+    channel bpH  : Datapath
+    channel bpL  : Datapath
+    channel bz   : bit
+    channel bn  : bit
+    channel bH, bL : bit
+begin
+    CSAdder_DP2(opA,opB,cs,cin,res)
+  ||CPadder(raA,raB,rac0,raS,racN)
+  ||nanoMBoothR3rolled(cin,res, sa, sb, sc, mlength, macc, load,done,opA,opB,cs,raA,raB,rac0,raS,racN,pH,pL,z,n)
+  ||mControl10(load,done)
+  ||signAdj(bmType, ba, bb, bc, sa, sb, sc, mlength, macc)
+  ||bypassMul(bypass, bypassH, a, b, c, mType, ba, bb, bc, bmType, bH, bL) 
+  ||doByPass(bH, bL, pH, pL, z, n, mpH, mpL, mZ, mN)
+end
+
+procedure nanoSpaMultiplier is nanoMultiplier(ROLLED)
+
+procedure nmult(
+  input bypass  : bit;
+  input bypassH : bit;
+  input mType : MulType;
+  input a   : Datapath;
+  input b   : Datapath;
+  input c   : Datapath;
+  output mpH: Datapath;
+  output mpL: Datapath;
+  output mZ : bit;
+  output mN : bit
+) is
+begin
+    nanoSpaMultiplier(
+        bypass,
+        bypassH,
+        mType,
+        a,
+        b,
+        c,
+        mpH,
+        mpL,
+        mZ,
+        mN
+    )
+end

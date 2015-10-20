@@ -1,0 +1,45 @@
+
+-- EXPECT unused.balsa:unused_inp:3:1: unused port `inp' in procedure `unused_inp'
+procedure unused_inp (input inp : 32 bits; output out : 32 bits) is
+begin
+	out <- 0
+end
+
+-- EXPECT unused.balsa:unused_out:9:1: unused port `out' in procedure `unused_out'
+procedure unused_out (input inp : 32 bits; output out : 32 bits) is
+begin
+	inp -> then continue end
+end
+
+-- EXPECT unused.balsa:unused_both:15:1: unused ports `inp, out' in procedure `unused_both'
+procedure unused_both (input inp : 32 bits; output out : 32 bits) is
+begin
+	continue
+end
+
+-- EXPECT unused.balsa:unused_deep:21:1: unused port `d' in procedure `unused_deep'
+procedure unused_deep (input d : 32 bits; output e : 32 bits) is
+	procedure f (input g : 32 bits; output h : 32 bits) is
+	begin
+		h <- 10
+	end
+begin
+	f (d, e)
+end
+
+-- EXPECT unused.balsa:unread_var:33:5: reads but no writes to variable `v'
+procedure unread_var (output b : 8 bits)
+is
+	variable v : 8 bits
+begin
+	b <- v
+end
+
+-- EXPECT unused.balsa:unread_chan:41:5: on channel `c', incomplete channel, no write
+procedure unread_chan (output b : 8 bits)
+is
+	channel c : 8 bits
+begin
+	c -> b
+end
+

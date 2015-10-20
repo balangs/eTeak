@@ -1,0 +1,106 @@
+#! /bin/sh
+CMD=`basename $0`
+USAGE="usage: ${CMD} <test> [DEV dev] [SR] [OOF] [TECH tech] [SPACER 0|1] [NRESET] [RESET]"
+ERROR="*** ${CMD}: "
+DIR=${HOME}/scratch/tmpsimulations
+#DIR=/tmp/simulations
+if [ x$1 = x ] 
+then
+  echo ${USAGE}
+  exit 1
+fi
+TEST=`basename $1`
+PROGDIR=`dirname $1`
+if [ ! -f ${PROGDIR}/${TEST}.hex ]
+then
+  echo "${ERROR} Can't open ${PROGDIR}/${TEST}.hex"
+  PROGDIR=/home/amulinks/g3card/g3validate/armv4/bin
+  echo "${ERROR} Trying ${PROGDIR}/${TEST}.hex"
+  if [ ! -f ${PROGDIR}/${TEST}.hex ]
+  then
+	echo "${ERROR} Can't open ${PROGDIR}/${TEST}.hex"
+    PROGDIR=/home/plana/SPA/Code
+    echo "${ERROR} Trying ${PROGDIR}/${TEST}.hex"
+    if [ ! -f ${PROGDIR}/${TEST}.hex ]
+    then
+	  echo "${ERROR} Can't open ${PROGDIR}/${TEST}.hex"
+	  exit 1
+    fi
+  fi
+fi
+HARNESS=test-spaHarvard.v
+if [ ! -f ${HARNESS} ]
+then
+  echo "${ERROR} Can't open ${HARNESS}"
+  exit 1
+fi
+DEV=spaHarvard
+shift
+while [ x$1 != x ]
+do
+  case $1 in
+    DEV)
+		shift
+		DEV=$1;;
+    SR)
+		if [ x$OPT1 = x ]
+		then
+			OPT1=_SR
+			SR=+define+SR=true
+		else
+			echo "${ERROR} Can't have SR and OOF"
+		fi;;
+    OOF)
+		if [ x$OPT1 = x ]
+		then
+			OPT1=_OOF
+			OOF=+define+OOF=true
+		else
+			echo "${ERROR} Can't have SR and OOF"
+		fi;;
+    TECH)
+		shift
+        TFILE=+define+TECHFILE=\\\"technology.$1.v\\\"
+		OPT2=_TECH_$1;;
+    NRESET)
+		NRESET=+define+NRESET=true
+		OPT3=_NRESET;;
+    RESET)
+		RESET=+define+RESET=true
+		OPT4=_RESET;;
+    SPACER)
+		shift
+		if [ x$1 = x0 ]
+		then
+			OPT5=_No
+		elif [ x$1 != x1 ]
+		then
+			echo ${USAGE}
+			exit 1
+		fi
+		OPT5=${OPT5}_Spacer
+		SPACER=+define+SPACER=$1;;
+    DUMPVARS)
+		shift
+		DUMPVARS=+define+DUMPVARS=$1;;
+  esac
+  shift
+done
+OPT=V${OPT1}${OPT2}${OPT3}${OPT4}${OPT5}
+if [ ! -f ${DEV}.v ]
+then
+  echo "${ERROR} Can't open ${DEV}.v"
+  exit 1
+fi
+NAME=${DEV}_${OPT}_${TEST}
+NLST=+define+NLSTFILE=\\\"${DEV}.v\\\"
+DUMP=+define+DUMPFILE=\\\"${DIR}\/${NAME}.vcd\\\"
+PROG=+define+PROGFILE=\\\"${PROGDIR}\/${TEST}.hex\\\"
+TUBE=+define+TUBEFILE=\\\"${DIR}\/${NAME}.tube\\\"
+if [ -f ${TEST}_txrx.hex ]
+then
+	TERIO=+define+TERMFILE=\\\"${DIR}\/${NAME}.term\\\"
+	TXFILE=+define+TXRXFILE=\\\"${TEST}_txrx.hex\\\"
+fi
+#ncxlmode  -l ${DIR}/${NAME}.log ${NLST} ${TFILE} ${DUMP} ${PROG} ${TUBE} ${TERIO} ${TXFILE} ${SR} ${OOF} ${SPACER} ${NRESET} ${HARNESS} +access+r
+verilog  -l ${DIR}/${NAME}.log ${NLST} ${TFILE} ${DUMP} ${DUMPVARS} ${PROG} ${TUBE} ${TERIO} ${TXFILE} ${SR} ${OOF} ${SPACER} ${NRESET} ${RESET} ${HARNESS}

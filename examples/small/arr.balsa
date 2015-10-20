@@ -1,0 +1,10 @@
+procedure a (
+	output o : 8 bits
+) is
+	variable i : 1 bits
+	variable v : array 2 of 8 bits
+begin
+	v := 0 as array 2 of 8 bits ||
+	i := 0 ||
+	o <- v[i]
+end

@@ -1,0 +1,13 @@
+type dir is enumeration
+	WEST, NORTH, EAST, LOCAL
+end
+
+procedure a is
+	variable d : array over dir of 2 bits
+begin
+	d[WEST] := 0;
+	d[NORTH] := 1;
+	d[EAST] := 2;
+	d[LOCAL] := 3;
+	print d[WEST], d[NORTH], d[EAST], d[LOCAL]
+end

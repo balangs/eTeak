@@ -1,0 +1,18 @@
+
+procedure adder (
+ input a, b   : 8 bits;
+ output sum   : 8 bits;
+ output carry : bit
+ ) is
+   channel cs : 9 bits
+ begin
+    loop
+        a, b -> then
+            cs <- (a + b as 9 bits)
+          end ||
+          cs -> then
+            sum <- (#cs[0..7] as 8 bits) ||
+             carry <- (#cs[7] as bit)
+        end
+    end
+ end

@@ -1,0 +1,13 @@
+-- import [balsa.types.synthesis]
+import [balsa.sim.string]
+
+procedure a is
+	variable tt : StringTokenTail
+begin
+	tt.tail := "Hello world";
+	loop
+	while not StringEqual (tt.tail, "") then
+		tt := StringGetToken (tt.tail);
+		print tt.token
+	end
+end

@@ -1,0 +1,32 @@
+procedure a (
+	parameter w : 32 bits;
+	parameter t : type;
+	input i : w bits;
+	output o : t
+) is
+	variable i_v : w bits
+begin
+	i -> i_v;
+	o <- (i_v as t)
+end
+
+type A is 8 bits
+type B is 32 bits
+
+procedure a_Aw is a (sizeof A)
+procedure a_Aw_B is a (sizeof A, B)
+
+procedure top is
+	channel cA1, cA2, cA3 : A
+	channel cB1, cB2, cB3 : B
+begin
+	cA1 <- 0 || cB1 -> then continue end ||
+	cA2 <- 0 || cB2 -> then continue end ||
+	cA3 <- 0 || cB3 -> then continue end ||
+
+	a (sizeof A, B, cA1, cB1) ||
+	a_Aw (B, cA2, cB2) ||
+	-- a (sizeof A, B, cA2, cB2) ||
+	a_Aw_B (cA3, cB3)
+	-- a (sizeof A, B, cA3, cB3)
+end

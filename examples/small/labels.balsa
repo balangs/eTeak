@@ -1,0 +1,18 @@
+type b is 16 bits
+
+type j is record a : bit; b : 9 bits end
+
+procedure a (
+	input i0, i1 : 8 bits;
+	output o : 11 bits
+) is
+	-- procedure b (input c : 8 bits; output d : 8 bits) is begin c -> then d <- c + 7 end end
+begin
+	loop
+		yyy: i1 -> then
+			i0 -> then
+				zzz: o <- (j {1, i0 + i1} as 10 bits) + 10
+			end
+		end
+	end
+end

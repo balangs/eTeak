@@ -1,0 +1,18 @@
+-- Name clashes
+
+constant others = 0b101010
+constant others = 01000
+constant others = 0o1000
+constant others = 0xAa_01
+
+procedure procedures is begin continue end
+procedure procedures is begin continue end
+
+procedure not_global is
+	constant local_others = 0xAa_01
+	variable local_others : bit
+	channel local_others : bit
+
+	procedure local_procedures is begin continue end
+	procedure local_procedures is begin continue end
+begin continue end

@@ -1,0 +1,154 @@
+-- Teak output file
+-- from command: teak -o z --plot a.teak
+
+Part 
+{
+  networkName = "Expr", notAnElement = 10,
+  networkPorts = 
+  [
+    NetworkPort "go" Input 0 (Just (InstanceAccess (Ref 1))),
+    NetworkPort "done" Output 1 (Just (InstanceAccess (Ref 2)))
+  ],
+  networkBody = (Network
+  {
+    networkLinkCount = 2,
+    networkCompCount = 0,
+    networkLinks = 
+    [
+      NetworkLink L1 0 (HalfBuffer 0),
+      NetworkLink L2 1 (HalfBuffer 0)
+    ],
+    networkLinkUsage = [
+      (1,NetworkLinkUsage NoConn (LinkAccess (InstanceAccess (Ref 1)) [0,0])),
+      (2,NetworkLinkUsage (LinkAccess (InstanceAccess (Ref 2)) [0,0]) NoConn)],
+    networkComps = [],
+    networkAccesses = 
+    [
+      Access (InstanceAccess (Ref 1)) [PortLinkAccess Passive L1],
+      Access (InstanceAccess (Ref 2)) [PortLinkAccess Active L2]
+    ],
+    networkProperties = []
+  })
+}
+Part 
+{
+  networkName = "Lvalue",
+  networkPorts = 
+  [
+    NetworkPort "go" Input 0 (Just (InstanceAccess (Ref 1))),
+    NetworkPort "done" Output 0 (Just (InstanceAccess (Ref 2)))
+  ],
+  networkBody = (Network
+  {
+    networkLinkCount = 2,
+    networkCompCount = 0,
+    networkLinks = 
+    [
+      NetworkLink L1 0 (HalfBuffer 0),
+      NetworkLink L2 0 (HalfBuffer 0)
+    ],
+    networkLinkUsage = [
+      (1,NetworkLinkUsage NoConn (LinkAccess (InstanceAccess (Ref 1)) [0,0])),
+      (2,NetworkLinkUsage (LinkAccess (InstanceAccess (Ref 2)) [0,0]) NoConn)],
+    networkComps = [],
+    networkAccesses = 
+    [
+      Access (InstanceAccess (Ref 1)) [PortLinkAccess Passive L1],
+      Access (InstanceAccess (Ref 2)) [PortLinkAccess Active L2]
+    ],
+    networkProperties = []
+  })
+}
+Part 
+{
+  networkName = "Cmd",
+  networkPorts = 
+  [
+    NetworkPort "go" Input 0 (Just (InstanceAccess (Ref 1))),
+    NetworkPort "done" Output 0 (Just (InstanceAccess (Ref 2)))
+  ],
+  networkBody = (Network
+  {
+    networkLinkCount = 2,
+    networkCompCount = 0,
+    networkLinks = 
+    [
+      NetworkLink L1 0 (HalfBuffer 0),
+      NetworkLink L2 0 (HalfBuffer 0)
+    ],
+    networkLinkUsage = [
+      (1,NetworkLinkUsage NoConn (LinkAccess (InstanceAccess (Ref 1)) [0,0])),
+      (2,NetworkLinkUsage (LinkAccess (InstanceAccess (Ref 2)) [0,0]) NoConn)],
+    networkComps = [],
+    networkAccesses = 
+    [
+      Access (InstanceAccess (Ref 1)) [PortLinkAccess Passive L1],
+      Access (InstanceAccess (Ref 2)) [PortLinkAccess Active L2]
+    ],
+    networkProperties = []
+  })
+}
+Part 
+{
+  networkName = "AssignCmd",
+  networkPorts = 
+  [
+    NetworkPort "go" Input 0 (Just (InstanceAccess (Ref 1))),
+    NetworkPort "done" Output 0 (Just (InstanceAccess (Ref 2)))
+  ],
+  networkBody = (Network
+  {
+    networkLinkCount = 3,
+    networkCompCount = 2,
+    networkLinks = 
+    [
+      NetworkLink L1 0 (HalfBuffer 0),
+      NetworkLink L2 0 (HalfBuffer 0),
+      NetworkLink L3 1 (HalfBuffer 0)
+    ],
+    networkLinkUsage = [
+      (1,NetworkLinkUsage (LinkComp C1 [0]) (LinkAccess (InstanceAccess (Ref 1)) [0,0])),
+      (2,NetworkLinkUsage (LinkAccess (InstanceAccess (Ref 2)) [0,0]) (LinkComp C2 [1])),
+      (3,NetworkLinkUsage (LinkComp C2 [0]) (LinkComp C1 [1]))],
+    networkComps = [
+      InstanceComp C1 "Expr" [NetworkPort "go" Input 0 (Just (InstanceAccess (Ref 1))),NetworkPort "done" Output 1 (Just (InstanceAccess (Ref 2)))] [One L1,One L3] NoPos,
+      InstanceComp C2 "Lvalue" [NetworkPort "go" Input 0 (Just (InstanceAccess (Ref 1))),NetworkPort "done" Output 0 (Just (InstanceAccess (Ref 2)))] [One L3,One L2] NoPos],
+    networkAccesses = 
+    [
+      Access (InstanceAccess (Ref 1)) [PortLinkAccess Passive L1],
+      Access (InstanceAccess (Ref 2)) [PortLinkAccess Active L2]
+    ],
+    networkProperties = []
+  })
+}
+Part 
+{
+  networkName = "LoopCmd",
+  networkPorts = 
+  [
+    NetworkPort "go" Input 0 (Just (InstanceAccess (Ref 1)))
+  ],
+  networkBody = (Network
+  {
+    networkLinkCount = 3,
+    networkCompCount = 2,
+    networkLinks = 
+    [
+      NetworkLink L1 0 (HalfBuffer 0),
+      NetworkLink L2 0 (HalfBuffer 0),
+      NetworkLink L3 0 (HalfBuffer 0)
+    ],
+    networkLinkUsage = [
+      (1,NetworkLinkUsage (LinkComp C2 [0,0]) (LinkAccess (InstanceAccess (Ref 1)) [0,0])),
+      (2,NetworkLinkUsage (LinkComp C1 [0]) (LinkComp C2 [1])),
+      (3,NetworkLinkUsage (LinkComp C2 [0,1]) (LinkComp C1 [1]))],
+    networkComps = [
+      InstanceComp C1 "Cmd" [NetworkPort "go" Input 0 (Just (InstanceAccess (Ref 1))),NetworkPort "done" Output 0 (Just (InstanceAccess (Ref 2)))] [One L2,One L3] NoPos,
+      TeakComp C2 (TeakM) [Many [L1,L3],One L2] NoPos],
+    networkAccesses = 
+    [
+      Access (InstanceAccess (Ref 1)) [PortLinkAccess Passive L1]
+    ],
+    networkProperties = []
+  })
+}

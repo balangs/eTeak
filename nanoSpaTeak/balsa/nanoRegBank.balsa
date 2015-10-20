@@ -1,0 +1,105 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+--  register bank module
+--  + 2 read ports/ 1 write port
+--  + sequenced reads and writes
+--  + user/svc operation modes only
+--  + svc registers: R13 & R14
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+
+import [balsa.types.basic]
+import [nanoSpaTypes]
+
+procedure nanoRegBank
+(
+  -- the read port i/f (inputs):
+--  array READPORTS of input rbk : RegBank;
+  array READPORTS of input ra  : RegSpec;
+  array READPORTS of input rc  : bit;
+
+-- the ROB read port i/f (outputs):
+--  array READPORTS of output rrbk : RegBank;
+--  array READPORTS of output rra  : RegNum;
+--  array READPORTS of input rc  : bit;
+  
+  -- the write port i/f:
+--  input wbk                    : RegBank;
+  input wa                     : RegSpec;
+  input wc                     : 2 bits;
+  input wd                     : Datapath;
+  
+  -- the read port i/f (outputs):
+  array READPORTS of output rd : Datapath
+) is
+    variable reg_bank : array 0..31 of Datapath
+--    variable reg_fiq : array 8..12 of Datapath
+--    variable R13     : array 0..7  of Datapath
+--    variable R14     : array 0..7  of Datapath
+    channel index : RegSpec
+    channel doW : token -- bit
+
+(--
+    procedure doWrite(
+        input index : RegSpec;
+        input data  : Datapath
+    ) is
+    begin
+        loop
+            index -> then
+                data -> reg_bank[index]
+            end
+        end
+    end
+--)
+	shared doWrite is begin
+		wa -> then wd -> reg_bank[wa] end
+	end
+
+begin 
+    loop
+    -- read operations go first
+        for || i in 0..READPORTS-1 then
+            rc[i] ->! then
+                if rc[i] then
+                    ra[i] ->! then
+                        rd[i] <- reg_bank[ra[i]]
+                    end -- ra[i] ->
+                end -- if rc[ i ] 
+            end -- rc[i] ->! 
+        end -- for
+      ;
+        -- write
+        wc ->! then
+            case wc of
+              0b00 then
+                continue
+            | 0b01, 0b10 then
+                -- doW <- token
+                doWrite ()
+            | 0b11 then
+                -- doW <- token
+                doWrite ()
+             ; 
+                -- doW <- token
+                doWrite ()
+            end -- case wc
+        end -- wc ->
+    end --loop
+    (-- AB
+ ||!
+    doWrite(index, wd)
+ ||
+    loop
+        doW -> then
+            wa -> index
+        end
+    end
+    --)
+end -- procedure nanoRegBank

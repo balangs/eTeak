@@ -1,0 +1,7 @@
+
+procedure a is
+	function b (c : 8 bits) = c + 1 : 8 bits
+	variable v : 8 bits
+begin
+	v := b (10)
+end

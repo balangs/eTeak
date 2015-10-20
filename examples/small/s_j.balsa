@@ -1,0 +1,15 @@
+procedure a (
+	input i : array 4 of bit;
+	output o : array 2 of bit
+) is
+begin
+	i -> then
+		local
+			variable iv : array 4 of bit
+		begin
+			iv := i;
+			-- o <- iv[2] or iv[1]
+			o <- iv[1..2]
+		end
+	end
+end

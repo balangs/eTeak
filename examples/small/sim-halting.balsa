@@ -1,0 +1,9 @@
+procedure halting is
+begin
+	if 0 then halting () end
+end
+
+procedure a is
+begin
+	halting ()
+end

@@ -1,0 +1,30 @@
+import [balsa.sim.string]
+
+function A (parameter X : type; parameter Z : 2 bits; a : X) is builtin : X
+
+procedure B (input z : 8 bits; output y : 8 bits) is
+begin
+	z -> then
+		y <- A (8 bits, 2, z)
+	end
+end
+
+procedure X (input a, b : String; output c : String) is
+	variable v : String
+begin
+	a, b -> then
+		v := StringAppend (a, b)
+	end;
+	c <- v
+end
+
+function C (parameter Z : 2 bits; a : 8 bits) is builtin : Z bits
+
+procedure Y (input a : 8 bits; output b : 3 bits) is
+	variable v : 3 bits
+begin
+	a -> then
+		v := C (3, a) ;
+		b <- v
+	end
+end

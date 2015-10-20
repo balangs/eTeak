@@ -1,0 +1,44 @@
+
+type b is array 4 of array 8 of 8 bits
+type c is 32 bits
+type d is array 4 of 8 bits
+
+procedure a (
+    array 2 of array 2 of input i : 8 bits;
+	-- array 2 of input i : 8 bits;
+	output o : 8 bits
+) is
+	variable v : 8 bits
+
+	shared s1 is
+	begin
+		i[0][0], i[0][1] -> then
+			o <- i[0][0];
+			o <- i[0][1];
+			i[1][0] -> v;
+			i[1][1] -> then
+				o <- i[0][0];
+				o <- i[1][1]
+			end
+		end
+	end
+
+(--
+	shared s2 is
+	begin
+		i[0] -> then
+			v := i[0][1]
+		end
+	end
+
+	shared s3 is
+	begin
+		i -> then
+			v := i[0][1]
+		end
+	end
+	--)
+begin
+	loop
+	end
+end

@@ -1,0 +1,11 @@
+type A is enumeration
+	Hello, World
+end
+
+procedure a (
+	output o : A
+) is
+begin
+	o <- Hello;
+	o <- World
+end

@@ -1,0 +1,20 @@
+;;; `amust018.map'
+;;; Balsa cell name mapping file
+;;; Created: Fri Oct 31 16:49:11 GMT 2008
+;;; By: tarazonl@royaloak.cs.man.ac.uk (Linux)
+;;; With net-net version: 3.5.1
+
+;;; current mapping count
+10
+
+;;; current mappings 
+("BrcVariable_35_4_s47_2_2e_2e34_3b34_2e_2e34_3b34_2e_2e34_3b1_2e_2e32" . "BrcVariable_35_4_s47_2_2e_2e34_3b34_2e_2e34_3b34_2e_2e34_3_m10m")
+("BrzVariable_35_4_s47_2_2e_2e34_3b34_2e_2e34_3b34_2e_2e34_3b1_2e_2e32" . "BrzVariable_35_4_s47_2_2e_2e34_3b34_2e_2e34_3b34_2e_2e34_3_m9m")
+("BrcCase_4_9_s67_15_2c0_3b2_2c1_3b4_2c3_3b6_2c5_3b7_3b8_3b10_2c9_3b12_2c11_3b14_2c13" . "BrcCase_4_9_s67_15_2c0_3b2_2c1_3b4_2c3_3b6_2c5_3b7_3b8_3b1_m8m")
+("BrzCase_4_9_s67_15_2c0_3b2_2c1_3b4_2c3_3b6_2c5_3b7_3b8_3b10_2c9_3b12_2c11_3b14_2c13" . "BrzCase_4_9_s67_15_2c0_3b2_2c1_3b4_2c3_3b6_2c5_3b7_3b8_3b1_m7m")
+("BrcBinaryFuncConstR_1_32_1_s6_Equals_s5_false_s5_false_s5_false_0" . "BrcBinaryFuncConstR_1_32_1_s6_Equals_s5_false_s5_false_s5__m6m")
+("BrzBinaryFuncConstR_1_32_1_s6_Equals_s5_false_s5_false_s5_false_0" . "BrzBinaryFuncConstR_1_32_1_s6_Equals_s5_false_s5_false_s5__m5m")
+("BrcActiveEagerFalseVariable_35_7_s63__3b0_2e_2e33_3b0_2e_2e32_3b1_2e_2e32_3b_3b0_2e_2e0_3b32_2e_2e32" . "BrcActiveEagerFalseVariable_35_7_s63__3b0_2e_2e33_3b0_2e_2_m4m")
+("BrzActiveEagerFalseVariable_35_7_s63__3b0_2e_2e33_3b0_2e_2e32_3b1_2e_2e32_3b_3b0_2e_2e0_3b32_2e_2e32" . "BrzActiveEagerFalseVariable_35_7_s63__3b0_2e_2e33_3b0_2e_2_m3m")
+("BrcActiveEagerFalseVariable_34_2_s22_1_2e_2e32_3b33_2e_2e33" . "BrcActiveEagerFalseVariable_34_2_s22_1_2e_2e32_3b33_2e_2e3_m2m")
+("BrzActiveEagerFalseVariable_34_2_s22_1_2e_2e32_3b33_2e_2e33" . "BrzActiveEagerFalseVariable_34_2_s22_1_2e_2e32_3b33_2e_2e3_m1m")

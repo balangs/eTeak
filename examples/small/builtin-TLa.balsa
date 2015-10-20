@@ -1,0 +1,29 @@
+import [balsa.sim.string]
+
+procedure TestPort (
+	parameter X : type;
+	input i : X;
+	output o : X
+) is
+begin
+	loop
+		i -> then
+			print "Input: ", i, " from ToString: ", ToString (X, i);
+			o <- i
+		end
+	end
+end
+
+procedure TestString is TestPort (String)
+
+type r is record
+	a, b : 8 bits
+end
+
+procedure TestRecord is TestPort (r)
+
+type e is enumeration
+	false, true, maybe
+end
+
+procedure TestEnumeration is TestPort (e)

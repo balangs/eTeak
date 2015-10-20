@@ -1,0 +1,12 @@
+
+procedure a (
+	input sel : 2 bits;
+	input w : 32 bits
+) is
+	variable v : array 4 of 32 bits
+begin
+	sink v;
+	sel, w -> then
+		v[sel] := w
+	end
+end

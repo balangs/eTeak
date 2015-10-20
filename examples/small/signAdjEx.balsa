@@ -1,0 +1,189 @@
+type Datapath is 8 bits
+constant length = sizeof Datapath
+constant xlength = sizeof Datapath + 3
+constant tbits = log (sizeof Datapath)
+type cntType is tbits bits
+type Datapath_1 is length+1 bits
+type Datapath_2 is xlength bits
+type Datapath_3 is xlength+1 bits
+type sDatapath is length signed bits
+type sDatapath_1 is length+1 signed bits
+type sDatapath_2 is xlength signed bits
+type sDatapath_3 is xlength+1 signed bits
+
+type MulType is enumeration
+    MUL=0,   -- multiply (32-bit result)
+    MLA=1,   -- multiply-accumulate (32-bit result)
+    MUND2=2,  -- undefined code
+    MUND3=3,  -- undefined code
+    UMULL=4, -- unsigned multiply long
+    UMLAL=5, -- unsigned multiply-accumulate long
+    SMULL=6, -- signed multiply long
+    SMLAL=7  -- signed multiply-accumulate long
+over 3 bits
+
+
+procedure signAdj0
+( 
+  input mType : MulType;
+  input b   : Datapath;
+  output ba : Datapath_3
+) is
+begin
+    loop
+        mType,b -> (--!--) then
+            -- Handle signed/unsigned in a,b operands, also add 0 to lsb of multiplier (b operand)
+            case mType of MUL,UMULL,UMLAL then -- unsigned, always fill with zeroes 
+                ba <- (#b[0 .. length-1] as Datapath_3)
+            else  -- signed, extend sign
+                ba <- (((#b[0 .. length-1] as sDatapath) as sDatapath_3) as Datapath_3)
+            end -- case mCode 
+        end -- mType ->
+    end -- loop
+end -- procedure signAdj
+
+
+procedure caseE1
+( input a : 1 bits;
+  output b,c : 4 bits
+) is 
+begin
+    loop
+       a -> then
+           case a of
+	    0 then
+	   	b <- 1 
+	   |1 then
+	   	b <- 4 
+	   end ||
+	   c <- 1
+       end
+   end
+end
+
+procedure caseEx
+( input a : 1 bits;
+  output b,c,d : 4 bits
+) is 
+begin
+    loop
+       a -> then
+           case a of
+	    0 then
+	   	b <- 1 || c <-2 || d <-3
+	   |1 then
+	   	b <- 4 || c <- 5 || d <- 6
+	   end
+       end
+   end
+end
+
+
+procedure caseExP
+( input a : 1 bits;
+  output b,c,d : 4 bits
+) is 
+begin
+    loop
+       a -> then
+           case a of
+	    0 then
+	   	b <- 1 
+	   |1 then
+	   	b <- 4 
+	   end ||
+           case a of
+	    0 then
+	   	c <- 2 
+	   |1 then
+	   	c <- 5 
+	   end ||
+           case a of
+	    0 then
+	   	d <- 3
+	   |1 then
+	   	d <- 6
+	   end
+       end
+   end
+end
+
+
+procedure CPadder
+( input a   : Datapath;
+  input b   : Datapath;
+  input c0  : bit;
+  output s  : Datapath;
+  output cN : bit
+) is
+local
+  constant DTLength = sizeof Datapath
+  type eDataType  is DTLength + 1 bits
+  type eeDataType is DTLength + 2 bits
+  channel es : eeDataType
+
+begin
+    loop 
+        a,b,c0 ->(--!--) then
+        es <- ((#c0[0..0] @ #a[0..DTLength-1] as eDataType) + (#c0[0..0] @ #b[0..DTLength-1] as eDataType) as eeDataType)
+        end -- ea,eb ->!
+      ||
+        es ->(--!--) then
+            s <- (#es[1..DTLength] as Datapath)
+          ||
+            cN<- (#es[DTLength+1 .. DTLength+1] as bit)
+        end -- es ->!
+    end --loop
+end -- procedure fullCPadder
+
+procedure ReadPorts2Fork (
+  input  cs : (sizeof Datapath) + 1 bits;
+  output  s : Datapath;
+  output  c : bit
+) is
+begin
+    loop
+        cs -> then
+            s <- (#cs[0 .. ((sizeof Datapath)-1)] as Datapath) ||
+            c <- (#cs[0..0] as bit)
+        end
+    end
+end
+
+procedure SimpleAdder
+( input a   : Datapath;
+  input b   : Datapath;
+  output s  : Datapath;
+  output cN : bit
+) is
+local
+  constant DTLength = sizeof Datapath
+  type eDataType  is DTLength + 1 bits
+  type eeDataType is DTLength + 2 bits
+  channel es : eeDataType
+
+begin
+    loop 
+        a,b ->(--!--) then
+        es <- (a + b as eeDataType)
+        end -- ea,eb ->!
+      ||
+        es ->(--!--) then
+            s <- (#es[1..DTLength] as Datapath)
+          ||
+            cN<- (#es[DTLength+1 .. DTLength+1] as bit)
+        end -- es ->!
+    end --loop
+end -- procedure fullCPadder
+
+
+procedure tenTwenty 
+( output out : 5 bits
+) is
+begin
+    loop
+        out <- 10; out <- 20
+    end
+end
+
+  

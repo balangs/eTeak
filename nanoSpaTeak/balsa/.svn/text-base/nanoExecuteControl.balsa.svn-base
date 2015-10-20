@@ -1,0 +1,279 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+-- execute stage control
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--  + Full multiply support (parameterised BoothR3 unrolled/"rolled" styles)
+--  + New modular decoder without merges
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+
+import [nanoSpaTypes]
+
+procedure nanoExecuteControl
+(
+  -- the decode inputs:
+  input  cc             : ConditionCode;
+  input  dColour        : Colour;
+  input  wpc            : bit;
+  input  setFlags       : 3 bits;
+  input  setMode        : 2 bits;
+  input  newmode        : psrCtl;
+--  input  saveMode       : bit;
+  array 2 of input wac  : bit;
+  input  memOp          : bit;
+  input  wmem           : bit;
+  input  sdiIn          : 4 bits;
+  input  sendS          : 2 bits;
+
+  -- the execute inputs:
+  input  flags          : Flags;
+  input  eColour        : Colour;
+  
+  -- the control outputs:
+  output stopI          : bit;
+  output stopLsm        : bit;
+  output kma, kmc, kmd  : bit;
+  array 2 of output kra : 2 bits;
+  array 2 of output krc : bit;
+--  array 2 of sync   krc;
+  output krd            : bit;
+  output kpc            : bit;
+  output kmuxDi         : bit;
+  output sdiOut         : 4 bits;
+  output ktemp          : bit;
+  output kpsr           : bit;
+  output smrm           : 2 bits;
+  output cNewmode       : psrCtl;
+  output smm            : bit;
+  output uf             : 3 bits;
+  output uc             : bit;
+  output cfm, cfC       : bit;
+  -- the multiply inputs
+  input domul           : bit;
+  input mul2w           : bit; -- long multiply accummulate: 2 writes through port w[0], uses temp 
+  input mul2res         : bit; -- long multiply: 2 results expected from multiplier
+  -- the multiply ctrl outputs
+  output mulbypass      : bit;
+  output mulbypassH     : bit;
+  output spHk           : mpHSelect;  
+  output mulflags       : 2 bits
+) is
+local
+    channel stop   : bit
+    channel compF1 : bit
+    channel doMemRead, doLmul, doMRS : bit
+begin
+    loop
+        cc, dColour, flags, eColour ->! then
+            case (#flags[0..3] @ #cc[0..3] @ #dColour[0..0] @ #eColour[0..0] as 10 bits) of
+                0b00_0000_x1xx, 0b11_0000_x1xx,
+                0b00_0001_x0xx, 0b11_0001_x0xx,
+                0b00_0010_xx1x, 0b11_0010_xx1x,
+                0b00_0011_xx0x, 0b11_0011_xx0x,
+                0b00_0100_1xxx, 0b11_0100_1xxx,
+                0b00_0101_0xxx, 0b11_0101_0xxx,
+                0b00_0110_xxx1, 0b11_0110_xxx1,
+                0b00_0111_xxx0, 0b11_0111_xxx0,
+                0b00_1000_x01x, 0b11_1000_x01x,
+                0b00_1001_xx0x, 0b11_1001_xx0x,
+                0b00_1001_x1xx, 0b11_1001_x1xx,
+                0b00_1010_0xx0, 0b11_1010_0xx0,
+                0b00_1010_1xx1, 0b11_1010_1xx1,
+                0b00_1011_0xx1, 0b11_1011_0xx1,
+                0b00_1011_1xx0, 0b11_1011_1xx0,
+                0b00_1100_00x0, 0b11_1100_00x0,
+                0b00_1100_10x1, 0b11_1100_10x1,
+                0b00_1101_x1xx, 0b11_1101_x1xx,
+                0b00_1101_00x1, 0b11_1101_00x1,
+                0b00_1101_10x0, 0b11_1101_10x0,
+                0b00_1110_xxxx, 0b11_1110_xxxx then
+                stop <- 0
+            else
+                stop <- 1
+            end -- case ( # cc [ 0 ..3 ] # flags [ 0 ..3 ] # dColour [ 0 ..0 ] # eColour [ 0 ..0 ] as 10 bits )
+        end -- dColour , flags , eColour ->
+    end -- loop
+ ||
+    loop
+        stop ->! then
+            setFlags ->! then
+                case (#setFlags[0..2] @ #stop[0..0] as 4 bits) of
+                0b0xxx then -- don't stop
+                    uf <- setFlags
+
+                | 0b10xx then 
+                    uf <- 0b000
+                | 0b1100 then -- stop swi
+                    uf <- 0b101
+                | 0b1110 then -- stop MRS
+                    uf <- 0b111
+                | 0b1101, 0b1111 then --should not happen
+                    continue
+                end -- case 
+             ||
+                case (#setFlags[0..2] @ #stop[0..0] as 4 bits) of
+                0bx011 then -- MSR execute/stop
+                    kpsr <- stop
+                else
+                    continue
+                end -- case
+             ||
+                case setFlags of
+                 0b110 then -- MRS execute
+                    doMRS <- 0b1
+                else
+                    doMRS <- 0b0
+                end -- case
+            end -- setFlags ->!
+         ||
+            setMode ->! then
+                if stop then
+                    smrm <- 0
+                else
+                    smrm <- setMode
+                end
+             ||
+                if setMode = 0b10 then
+                    newmode ->! then
+                        if stop then
+                            continue
+                        else
+                            cNewmode <- newmode
+                        end
+                    end
+                end
+            end -- setMode ->!
+         ||
+            wpc ->! then
+                uc <- (not stop) and wpc
+             ||
+                cfm <- (not stop) and wpc
+             ||
+                if wpc then                
+                    kpc <- stop
+                end -- if wpc
+             ||
+                cfC <- wpc
+            end -- wpc ->
+         ||
+            wac[0] ->! then
+                kra[0] <- (#stop[0..0] @ #(wac[0])[0..0] as 2 bits)
+             ||
+                if wac[0] then
+                    krd <- stop
+                 ||
+                    krc[0] <- not stop
+                else
+                --    sync krc[0]
+                    krc[0] <- 0b0 -- no reg sent
+                end -- if wac [ 0 ]
+            end -- wac [ 0 ] ->
+         ||
+            wac[1] ->! then
+                kra[1] <- (#stop[0..0] @ #(wac[1])[0..0] as 2 bits)
+             ||
+                if wac[1] then
+                    krc[1] <- not stop
+                else
+                    krc[1] <- 0b0 -- no reg sent
+                end -- if wac [ 1 ]
+            end -- wac [ 1 ] ->
+         ||
+            memOp, wmem ->! then
+                smm <- (not stop) and memOp
+             ||
+                if memOp then
+                    kmc <- stop
+                 ||
+                    kma <- stop
+                 ||
+                    if not wmem then                
+                        sdiIn ->! then
+                            if not stop then
+                                sdiOut <- sdiIn
+                            end -- if not stop
+                         ||
+                            doMemRead <- (#sdiIn[0..0] as bit)
+                        end -- sdiIn ->
+                    else
+                        doMemRead <- 0b0
+                    end -- if not wmem
+                else
+                    doMemRead <- 0b0
+                end -- if memOp
+             ||
+                if wmem then                
+                    kmd <- stop
+                end -- if wmem
+            end -- memOp , wmem ->
+         ||
+            sendS ->! then
+                case sendS of
+                0bx1 then
+                    stopI <- stop
+                 ||
+                    stopLsm <- stop
+                else
+                    continue
+                end -- case sendS
+             ||
+                case sendS of
+                0b0x then
+                    continue
+                | 0b10 then
+                    ktemp <- 0
+                | 0b11 then
+                    ktemp <- stop
+                end -- case sendS
+            end -- sendS ->!
+         ||
+            domul,mul2w ->! then
+                if domul then
+                    mul2res ->! then
+                        mulbypass  <- stop
+                     ||
+                        mulbypassH <- mul2res
+                     ||
+                        case (#mul2res[0..0] @ #mul2w[0..0] @ #stop[0..0] as 3 bits) of
+                        0bx00 then  -- single cycle multiply
+                            doLmul <- 0b0
+                        | 0bx1x then -- long multiply accumulate, route to temp, never kill this
+                            spHk <- 0b01
+                         ||
+                            doLmul <- 0b0
+                        | 0b001 then -- long multiply no accum
+                            spHk <- 0b10 
+                         ||
+                            doLmul <- 0b1
+                        | 0b101 then -- kill long multiply write to wb[1]
+                            spHk <- 0b00
+                         ||
+                            doLmul <- 0b1
+                        end -- case (#mul2res[0] @ #mul2w[0] @ #stop[0] as 3 bits)
+                    end -- mul2res ->
+                else
+                    doLmul <- 0b0
+                end -- if domul
+             ||
+                mulflags <- (#mul2w[0..0] @ #domul[0..0] as 2 bits)
+            end -- domul
+         || -- muxDi kill control for writeback port 1
+            doMemRead, doLmul, doMRS ->! then
+                case (#doMemRead @ #doLmul @ #doMRS @ #stop as 4 bits) of
+                 0b0xx1, 0b0x10, 0b0100 then -- operation performed
+                    kmuxDi <- 0
+                |0b1xx1, 0b1x10, 0b1100 then -- operation stopped
+                    kmuxDi <- 1
+                else
+                    continue
+                end
+            end
+        end -- stop ->
+    end -- loop
+end -- procedure executeControl
+

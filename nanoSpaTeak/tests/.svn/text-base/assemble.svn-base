@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ $# != 1 ]; then
+	echo 'usage: assemble <file>'
+fi
+
+FILE=$1
+BASE=${FILE%%.s}
+
+if test ! -x ../hexdump;
+then
+	gcc -o ./hexdump ./hexdump.c
+fi
+
+arm-unknown-linux-gnu-as -o ${BASE}.o ${FILE}
+arm-unknown-linux-gnu-objcopy -O binary ${BASE}.o ${BASE}.bin
+arm-unknown-linux-gnu-objdump -d ${BASE}.o > ${BASE}.lst
+./hexdump < ${BASE}.bin > ${BASE}.hex

@@ -1,0 +1,265 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+--  + Harvard architecture core
+--  + 3 stage, F/D/E pipeline
+--  + reduced ARM instruction set with conditional instructions
+--  + (data processing, b/bl, ldr/str, ldrb/strb, ldm/stm, swi)
+--  + RRX not supported!
+--  + flags supported: N, Z, C, V
+--  + user/svc operation modes only
+--
+--  + speculative execution of instructions
+--    (killed if condition code or colour fail)
+--
+--  + no thumb instructions
+--  + no support for prefetch aborts
+--  + no support for data aborts
+--  + no support for interrupts
+--  + no coprocessor interface
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--  + Full multiply support (parameterised BoothR3 unrolled/"rolled" styles)
+--  + New modular decoder without merges
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+
+import [nanoSpaTypes]
+import [nanoFetch]
+import [nanoDecode]
+import [nanoExecute]
+import [nanoRegBank]
+import [pipelineRegister]
+
+procedure nanoSpaHarvard
+(
+  -- the memory i/f:
+  array 2 of output memAccess    : MemAccess;
+  array 2 of output memMode      : MemProcMode;
+  array 2 of input  memDi        : MemData;
+  array 1 of output memDo        : MemData;
+  array 2 of input  memAbort     : MemAbort
+) is
+local
+    channel fiPc, foPc                   : Datapath
+    channel diPc, doPc                   : Datapath
+    channel xiPc, xoPc                   : Datapath
+    channel xiMode, xoMode               : psrCtl
+    channel dinewMode, donewMode         : psrCtl
+    channel incI, incO                   : Datapath
+    channel diLr, doLr                   : Datapath
+    channel fiColour, foColour           : Colour
+    channel diColour, doColour           : Colour
+    channel xiColour, xoColour           : Colour
+    channel xidColour, xodColour         : Colour
+    channel fiInstr, foInstr             : Instruction
+    channel fiMode, foMode               : psrCtl
+    channel diBypass, doBypass           : bit
+    channel diShiftCtrl                  : ShiftType
+    channel doShiftCtrl                  : ShiftType
+    channel diShamt                      : 5 bits
+    channel doShamt                      : 5 bits
+    channel diAluCtrl                    : AluCtrl
+    channel doAluCtrl                    : AluCtrl
+    channel diSalu                       : AluSelect
+    channel doSalu                       : AluSelect
+    channel diSrds                       : rdsSelect
+    channel doSrds                       : rdsSelect
+    channel diSetFlags                   : 3 bits
+    channel doSetFlags                   : 3 bits
+    channel diSetMode                    : 2 bits
+    channel doSetMode                    : 2 bits
+    channel dirwSreg                     : 3 bits
+    channel dorwSreg                     : 3 bits
+    channel dirwSregF                    : 3 bits
+    channel dorwSregF                    : 3 bits
+    channel diWpc                        : bit
+    channel doWpc                        : bit
+    channel diSpc                        : PcSelect
+    channel doSpc                        : PcSelect
+    channel diSab                        : sabSelect
+    channel doSab                        : sabSelect
+    channel diStp                        : bit
+    channel doStp                        : bit
+    channel dimMemAddr                   : memAddrSelect
+    channel domMemAddr                   : memAddrSelect
+    channel diMemCtrl                    : MemCtrl
+    channel doMemCtrl                    : MemCtrl
+    channel diWmem                       : bit
+    channel doWmem                       : bit
+    channel diMemOp                      : bit
+    channel doMemOp                      : bit
+    channel diSdi                        : 4 bits
+    channel doSdi                        : 4 bits
+    channel diCC, doCC                   : ConditionCode
+    channel diImm, doImm                 : Datapath
+    channel diMca, doMca                 : aBusSelect
+    channel diMcb, doMcb                 : bBusSelect
+    channel diMcr, doMcr                 : mcrSelect
+    channel dimTemp, domTemp             : tempSelect
+    channel dimDiSel, domDiSel           : mDiSelect
+    channel diMcs, doMcs                 : bit
+    channel diMcpc, doMcpc               : cPcSelect
+    channel disdLr,dosdLr                : dLrSelect
+--    array READPORTS of channel drbi, drbo : RegBank
+    array READPORTS of channel drai, drao : RegSpec
+--    array READPORTS of channel drrbi, drrbo : RegBank
+    array READPORTS of channel drrai, drrao : RegSpec
+    array READPORTS of channel drci, drco  : bit
+    array READPORTS of channel enri, enro  : bit
+    array READPORTS of channel rd        : Datapath
+    array 2 of channel wai, warob, wao   : RegNum
+    array 2 of channel waci, waco        : bit
+--    channel ewrb, wrb                    : RegBank
+    channel ewra, wra                    : RegSpec
+    channel ewd, wd                      : Datapath
+    channel ewc, wc                      : 2 bits
+  -- multiplier control
+    channel dimulType, domulType     : MulType
+    channel didomul, dodomul         : bit
+    channel dimul2w, domul2w         : bit
+    channel dimul2res, domul2res     : bit
+  -- multiplier data steer control
+    channel disrdm, dosrdm           : bit
+    
+    channel diSendS, doSendS             : 2 bits
+    channel stopI                        : bit
+    channel stopLsm                      : bit
+
+begin 
+    nanoFetch(
+      memAccess[1], memMode[1], memDi[1], memAbort[1],
+      fiPc, fiColour, fiInstr, fiMode,
+      xoPc, xoColour, xoMode
+    )
+    
+ || pipeReg_Datapath(fiPc, foPc)
+ || pipeReg_Colour(fiColour, foColour)
+ || pipeReg_Instruction(fiInstr, foInstr)
+ || pipeReg_mode(fiMode, foMode)
+
+ || nanoDecode(
+      foPc, foColour, foInstr, foMode,
+      xodColour, incI, incO, diPc, diLr, diColour, 
+      diBypass, diShiftCtrl, diShamt,
+      diAluCtrl, diSalu, diSrds,
+      diSetFlags, diSetMode, dinewMode, dirwSreg, dirwSregF,
+      diWpc, diSpc,
+      diSab, diStp, dimMemAddr, diMemCtrl, diMemOp, diWmem, diSdi,
+      diCC, diImm, diMca, diMcb, diMcr, diMcs, diMcpc, disdLr, dimTemp, dimDiSel,
+      diSendS, stopI, stopLsm,
+      --drbi, 
+      drai,  drci,
+      wai, waci,
+      dimulType, didomul, dimul2w, dimul2res, disrdm
+    )
+    
+ || pipeReg_Datapath(diPc, doPc)
+ || pipeReg_Datapath(diLr, doLr)
+ || pipeReg_Colour(diColour, doColour)
+ || pipeReg_Colour(xidColour, xodColour)
+ || pipeReg_bit(diBypass, doBypass)
+ || pipeReg_ShiftType(diShiftCtrl, doShiftCtrl)
+ || pipeReg_5bits(diShamt, doShamt)
+ || pipeReg_AluCtrl(diAluCtrl, doAluCtrl)
+ || pipeReg_AluSelect(diSalu, doSalu)
+ || pipeReg_rdsSelect(diSrds, doSrds)
+ || pipeReg_3bits(diSetFlags, doSetFlags)
+ || pipeReg_2bits(diSetMode, doSetMode)
+ || pipeReg_mode(dinewMode, donewMode)
+ || pipeReg_3bits(dirwSreg, dorwSreg)
+ || pipeReg_3bits(dirwSregF, dorwSregF)
+ || pipeReg_dLrSelect(disdLr, dosdLr)
+ || pipeReg_bit(diWpc, doWpc)
+ || pipeReg_PcSelect(diSpc, doSpc)
+ || pipeReg_sabSelect(diSab, doSab)
+ || pipeReg_bit(diStp, doStp)
+ || pipeReg_memAddrSelect(dimMemAddr, domMemAddr)
+ || pipeReg_MemCtrl(diMemCtrl, doMemCtrl)
+ || pipeReg_bit(diMemOp, doMemOp)
+ || pipeReg_bit(diWmem, doWmem)
+ || pipeReg_4bits(diSdi, doSdi)
+ || pipeReg_ConditionCode(diCC, doCC)
+ || pipeReg_Datapath(diImm, doImm)
+ || pipeReg_aBusSelect(diMca, doMca)
+ || pipeReg_bBusSelect(diMcb, doMcb)
+ || pipeReg_mcrSelect(diMcr, doMcr)
+ || pipeReg_tempSelect(dimTemp, domTemp)
+ || pipeReg_mDiSelect(dimDiSel, domDiSel)
+ || pipeReg_bit(diMcs, doMcs)
+ || pipeReg_cPcSelect(diMcpc, doMcpc)
+-- || for || i in 0..READPORTS-1 then
+--        pipeReg_RegBank(drbi[i], drbo[i])
+--    end -- for || i in 2
+ || for || i in 0..READPORTS-1 then
+        pipeReg_RegSpec(drai[i], drao[i])
+    end -- for || i in 2
+ || for || i in 0..READPORTS-1 then
+        pipeReg_bit(drci[i], drco[i])
+    end -- for || i in 2
+-- || for || i in 0..READPORTS-1 then
+--        pipeReg_bit(enri[i], enro[i])
+--    end -- for || i in 2
+-- || for || i in 0..READPORTS-1 then
+--        pipeReg_RegBank(drrbi[i], drrbo[i])
+--    end -- for || i in 2
+-- || for || i in 0..READPORTS-1 then
+--        pipeReg_RegSpec(drrai[i], drrao[i])
+--    end -- for || i in 2
+ || for || i in 0..1 then
+        pipeReg_RegNum(wai[i], warob[i])
+    end -- for || i in 0 ..1
+ || for || i in 0..1 then
+        pipeReg_RegNum(warob[i], wao[i])
+    end -- for || i in 0 ..1
+ || for || i in 0..1 then
+        pipeReg_bit(waci[i], waco[i])
+    end -- for || i in 0 ..1
+
+ || pipeReg_mulType(dimulType, domulType)
+ || pipeReg_bit(didomul, dodomul)
+ || pipeReg_bit(dimul2w, domul2w)
+ || pipeReg_bit(dimul2res, domul2res)
+ || pipeReg_bit(disrdm, dosrdm)
+
+ || pipeReg_2bits(diSendS, doSendS)
+
+ || nanoExecute(
+      xidColour, incI, incO, doPc, doLr, doColour, 
+      doBypass, doShiftCtrl, doShamt,
+      doAluCtrl, doSalu, doSrds,
+      doSetFlags, doSetMode, donewMode, dorwSreg, dorwSregF,
+      doWpc, doSpc,
+      doSab, doStp, domMemAddr, doMemCtrl, doMemOp, doWmem, doSdi,
+      doCC, doImm, doMca, doMcb, doMcr, doMcs, doMcpc, dosdLr, domTemp, domDiSel, 
+      wao, waco,
+      doSendS, stopI, stopLsm,
+      xiPc, xiColour, xiMode,
+      memAccess[0], memMode[0], memDi[0], memDo[0], memAbort[0],
+      rd,
+      ewra,  ewc,
+      ewd,
+      domulType, dodomul, domul2w, domul2res, dosrdm
+    )
+
+-- || pipeReg_2bits(ewc, wc)
+-- || pipeReg_RegSpec(ewra, wra)
+-- || pipeReg_Datapath(ewd, wd)
+
+
+ || nanoRegBank(
+      drao, drco,
+      --drrbi, drrai, --drco,
+      ewra,  ewc,
+      ewd,
+      rd
+    )
+
+ || pipeReg_Address(xiPc, xoPc)
+ || pipeReg_Colour(xiColour, xoColour)
+ || pipeReg_mode(xiMode, xoMode)
+    
+end -- procedure nanoSpaHarvard

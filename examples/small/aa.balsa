@@ -1,0 +1,5 @@
+procedure a is
+	variable b, c : 8 bits
+begin
+	b := c
+end

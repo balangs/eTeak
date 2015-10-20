@@ -1,0 +1,129 @@
+import [balsa.sim.sim]
+import [balsa.sim.string]
+import [balsa.sim.fileio]
+
+-- BalsaWriteLogLine : write a log line for some channel activity
+procedure BalsaWriteLogLine (parameter portName, activity : String;
+	input message : String) is
+begin
+	message -> then
+		print BalsaSimulationTime (), ": chan '", portName, "' ", activity, " ", message
+	end
+end
+
+-- BalsaOutputPortToLog : print activity on the output port of some
+--	component is the default format
+procedure BalsaOutputPortToLog (parameter X : type;
+	parameter portName : String; input i : X) is
+	channel s : String
+begin
+	loop
+		i -> then
+			s <- ToString (X, i) || BalsaWriteLogLine (portName, "reading", s)
+		end
+	end
+end
+
+-- BalsaOutputPortToLogWithFormat : print activity on the output port of some
+--	component is the specified format
+procedure BalsaOutputPortToLogWithFormat (parameter X : type;
+	parameter portName : String; parameter radix : 6 bits;
+	parameter underscoreSpacing : 8 bits; parameter showLeadingZeroes : bit;
+	input i : X) is
+	channel s : String
+begin
+	loop
+		i -> then
+			s <- NumberToString (X, i, radix, underscoreSpacing, showLeadingZeroes) ||
+			BalsaWriteLogLine (portName, "reading", s)
+		end
+	end
+end
+
+-- BalsaOutputPortToFile : print activity on the output port of some
+--	component is the default format
+procedure BalsaOutputPortToFile (parameter X : type;
+	parameter portName : String; input file : File; input i : X)
+is
+	variable line : String
+	channel lineC : String
+begin
+	file -> then
+		loop
+			i -> then
+				line := ToString (X, i);
+				sink FileWrite (file, line);
+				sink FileWrite (file, "\n");
+				lineC <- line || BalsaWriteLogLine (portName, "reading", lineC)
+			end
+		end
+	end
+end
+
+-- BalsaOutputPortToFileWithFormat : print activity on the output port of some
+--	component is the default format
+procedure BalsaOutputPortToFileWithFormat (parameter X : type;
+	parameter portName : String; parameter radix : 6 bits;
+	parameter underscoreSpacing : 8 bits; parameter showLeadingZeroes : bit;
+	input file : File; input i : X)
+is
+	variable line : String
+	channel lineC : String
+begin
+	file -> then
+		loop
+			i -> then
+				line := NumberToString (X, i, radix, underscoreSpacing, showLeadingZeroes);
+				sink FileWrite (file, line);
+				sink FileWrite (file, "\n");
+				lineC <- line || BalsaWriteLogLine (portName, "reading", lineC)
+			end
+		end
+	end
+end
+
+-- BalsaPrintInputPortFromValue : supply the given value to the port o each time an input
+--	happens on that port
+procedure BalsaInputPortFromValue (parameter X : type;
+	parameter portName : String; input value : X; output o : X) is
+	channel s : String
+begin
+	value -> then
+		loop
+			o <- value;
+			s <- ToString (X, value) || BalsaWriteLogLine (portName, "writing", s)
+		end
+	end
+end
+
+-- BalsaInputPortFromFile : source values for port o from the given file
+procedure BalsaInputPortFromFile (parameter X : type;
+	parameter portName : String; input file : File; output o : X)
+is
+	variable line : String
+	variable value : X
+begin
+	file -> then
+		loop while not FileEOF (file) then
+			line := FileReadLine (file);
+			o <- FromString (X, line)
+		end
+	end
+end
+
+(--
+-- BalsaInputPortFromFile : source values for port o from the given file
+procedure BalsaInputPortFromFile_ForeverIO (parameter X : type;
+	parameter portName : String; input file : File; output o : X)
+is
+	variable line : String
+	variable value : X
+begin
+	file -> then
+		loop
+			line := FileReadLine_withRetry (file);
+			o <- FromString (X, line, ForwardValuePrintMessage (portName, line))
+		end
+	end
+end
+--)

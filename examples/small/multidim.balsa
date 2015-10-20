@@ -1,0 +1,8 @@
+
+type a is array 4 of array 2 of 3 bits
+
+procedure b (
+	array 4 of array 2 of input a : 3 bits
+) is
+begin
+end

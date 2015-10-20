@@ -1,0 +1,7 @@
+
+type Word is 32 bits
+
+constant a = sizeof Word
+
+type Word2 is a bits
+type Word3 is (sizeof Word) bits

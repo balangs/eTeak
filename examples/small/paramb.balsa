@@ -1,0 +1,24 @@
+import [balsa.types.basic]
+
+procedure testIf (
+	parameter n : cardinal
+) is
+	variable v : 2 bits
+begin
+(--
+	print n = 1, n = 2, n = 3
+--)
+	-- Eek, n is Incomplete, so none of the bodies should be tested
+	if n = 1 then
+		v := 1
+	| n = 2 then
+		v := 5
+	else -- FIXME, else is a problem
+	-- | n /= 1 and n /= 2 then
+		v := 4
+	end
+end
+
+procedure testIf1 is begin testIf (1) end
+procedure testIf2 is begin testIf (2) end
+procedure testIf3 is begin testIf (3) end

@@ -1,0 +1,115 @@
+#! /bin/sh
+CMD=`basename $0`
+USAGE="usage: ${CMD} <test> [DEV dev] [SR] [TECH tech] [SPACER 0|1] [NRESET] [RESET]"
+ERROR="*** ${CMD}: "
+#DIR=/home/${USER}/scratch/simulations
+#DIR=/tmp/simulations
+DIR=${HOME}/scratch/tmpsimulations
+if [ x$1 = x ]
+then
+  echo ${USAGE} 
+  exit 1
+fi
+TEST=`basename $1`
+PROGDIR=`dirname $1`
+if [ ! -f ${PROGDIR}/${TEST}.hex ]
+then
+  echo "${ERROR} Can't open ${PROGDIR}/${TEST}.hex"
+  PROGDIR=/home/amulinks/g3card/g3validate/armv4/bin
+  echo "${ERROR} Trying ${PROGDIR}/${TEST}.hex"
+  if [ ! -f ${PROGDIR}/${TEST}.hex ]
+  then
+	echo "${ERROR} Can't open ${PROGDIR}/${TEST}.hex"
+    PROGDIR=/home/plana/SPA/Code
+    echo "${ERROR} Trying ${PROGDIR}/${TEST}.hex"
+    if [ ! -f ${PROGDIR}/${TEST}.hex ]
+    then
+	  echo "${ERROR} Can't open ${PROGDIR}/${TEST}.hex"
+	  exit 1
+    fi
+  fi
+fi
+HARNESS=test-spaHarvardT.v
+if [ ! -f ${HARNESS} ]
+then
+  echo "${ERROR} Can't open ${HARNESS}"
+  exit 1
+fi
+DEV=spaHarvard
+shift
+while [ x$1 != x ]
+do
+  case $1 in
+    DEV)
+		shift
+		DEV=$1;;
+    SR)
+		SR=true
+		OPT1=_SR;;
+    TECH)
+		shift
+        TFILE=$1
+		OPT2=_TECH_$1;;
+    NRESET)
+		NRESET=true
+		OPT3=_NRESET;;
+    RESET)
+		RESET=true
+		OPT4=_RESET;;
+    SPACER)
+		shift
+		SPACER=$1
+		if [ x$1 = x0 ]
+		then
+			OPT5=_No
+		elif [ x$1 != x1 ]
+		then
+			echo ${USAGE}
+			exit 1
+		fi
+		OPT5=${OPT5}_Spacer;;
+    DUMPVARS)
+		shift
+		DUMPVARS=$1
+  esac
+  shift
+done
+OPT=VCS${OPT1}${OPT2}${OPT3}${OPT4}${OPT5}
+NAME=${DEV}_${OPT}_${TEST}
+TESTFILE=test-${NAME}.v
+echo "\`define DUMPFILE \"${DIR}/${NAME}.vcd\"" > ${TESTFILE}
+echo "\`define PROGFILE \"${PROGDIR}/${TEST}.hex\"" >> ${TESTFILE}
+echo "\`define TUBEFILE \"${DIR}/${NAME}.tube\"" >> ${TESTFILE}
+echo "\`define NLSTFILE \"${DEV}.v\"" >> ${TESTFILE}
+if [ ${SR} ]
+then
+  echo "\`define SR true" >> ${TESTFILE}
+fi
+if [ x${TFILE} != x ]
+then
+  echo "\`define TECHFILE \"technology.${TFILE}.v\"" >> ${TESTFILE}
+fi
+if [ x${NRESET} != x ]
+then
+  echo "\`define NRESET true" >> ${TESTFILE}
+fi
+if [ x${RESET} != x ]
+then
+  echo "\`define RESET true" >> ${TESTFILE}
+fi
+if [ x${SPACER} != x ]
+then
+  echo "\`define SPACER ${SPACER}" >> ${TESTFILE}
+fi
+if [ x${DUMPVARS} != x ]
+then
+  echo "\`define DUMPVARS ${DUMPVARS}" >> ${TESTFILE}
+fi
+cat ${HARNESS} >> ${TESTFILE}
+vcs +v2k -o ${DIR}/${NAME} ${TESTFILE} 
+if [ -f ${DIR}/${NAME} ]
+then
+  ${DIR}/${NAME} -l ${DIR}/${NAME}.log
+fi
+\rm -f ${TESTFILE}
+\rm -f ${DIR}/${NAME}

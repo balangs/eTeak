@@ -1,0 +1,20 @@
+procedure buffer (
+	input inp : 8 bits;
+	output out : 8 bits
+) is
+	variable v : 8 bits
+	variable i : 8 bits
+begin
+	loop
+		inp -> then
+			v := 0 || i := 0;
+			loop
+			while i <= 10 then
+				out <- inp ||
+				v := (v + inp as 8 bits) ||
+				i := (i + 1 as 8 bits)
+			end
+		end
+	end
+	--	; out <- v
+end

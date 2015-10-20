@@ -1,0 +1,68 @@
+digraph bankSel {
+  outputorder="edgesfirst";
+  size="7.086614173228347,10.236220472440946";
+  ratio="2.0"
+  subgraph cluster_bankSel {
+    edge [fontsize="8", fontname="Helvetica", labelfontname="Helvetica", labelfontsize="8", arrowhead="normal"];
+    node [fontsize="12", fontname="Helvetica-Bold", shape="box"];
+    title [label="bankSel", fontsize="20"];
+    port0 [portref="0", label="go", style="bold", shape="none"];
+    port1 [portref="1", label="rcI", style="bold", shape="none"];
+    port2 [portref="2", label="rNumI", style="bold", shape="none"];
+    port3 [portref="3", label="pMode", style="bold", shape="none"];
+    port4 [portref="4", label="rcO", style="bold", shape="none"];
+    port5 [portref="5", label="rNumO", style="bold", shape="none"];
+    port6 [portref="6", label="rBk", style="bold", shape="none"];
+    comp4 [compref="4", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp5 [compref="5", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp6 [compref="6", label="rNumI|<w0>w0|<r0>r0", shape="record"];
+    comp8 [compref="8", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp9 [compref="9", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp10 [compref="10", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp11 [compref="11", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp12 [compref="12", label="rcI|<w0>w0|<r0>r0|<r1>r1", shape="record"];
+    comp13 [compref="13", label="pMode|<w0>w0|<r0>r0", shape="record"];
+    comp14 [compref="14", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp15 [compref="15", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp17 [compref="17", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp18 [compref="18", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp19 [compref="19", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp20 [compref="20", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp21 [compref="21", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp22 [compref="22", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp23 [compref="23", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"]
+    comp10:o0:s -> comp12:r0:n [linkref="1", label="1", penwidth="1", weight="1"];
+    comp12:r0:s -> comp21:i:n [linkref="3", label="3", penwidth="1", weight="1"];
+    comp21:o0:s -> comp11:i0:n [linkref="4", label="4", penwidth="1", weight="1"];
+    comp10:o1:s -> comp12:r1:n [linkref="5", label="5", penwidth="1", weight="1"];
+    comp12:r1:s -> comp8:i:n [linkref="6", label="6", penwidth="1", weight="1"];
+    comp8:o0:s -> comp9:i0:n [linkref="7", label="7", penwidth="1", weight="1"];
+    comp4:o0:s -> comp13:r0:n [linkref="8", label="8", penwidth="1", weight="1"];
+    comp13:r0:s -> comp23:i:n [linkref="10", label="10", penwidth="2", weight="2"];
+    comp23:o0:s -> comp5:i0:n [linkref="11", label="11", penwidth="1", weight="1"];
+    comp4:o1:s -> comp6:r0:n [linkref="12", label="12", penwidth="1", weight="1"];
+    comp6:r0:s -> comp22:i:n [linkref="14", label="14", penwidth="3", weight="3"];
+    comp22:o0:s -> comp5:i1:n [linkref="15", label="15", penwidth="1", weight="1"];
+    comp6:w0:s -> comp4:i:n [linkref="16", label="16", penwidth="1", weight="1"];
+    comp5:o:s -> comp9:i1:n [linkref="17", label="17", penwidth="1", weight="1"];
+    comp19:o:s -> comp6:w0:n [linkref="18", label="18", penwidth="3", weight="3"];
+    comp8:o1:s -> comp19:i1:n [linkref="20", label="20", penwidth="1", weight="1"];
+    comp9:o:s -> comp11:i1:n [linkref="21", label="21", penwidth="1", weight="1"];
+    comp14:o:s -> comp10:i:n [linkref="22", label="22", penwidth="1", weight="1"];
+    comp11:o:s -> comp17:i1:n [linkref="23", label="23", penwidth="1", weight="1"];
+    comp18:o:s -> comp12:w0:n [linkref="24", label="24", penwidth="1", weight="1"];
+    comp12:w0:s -> comp14:i0:n [linkref="25", label="25", penwidth="1", weight="1"];
+    comp20:o:s -> comp13:w0:n [linkref="26", label="26", penwidth="2", weight="2"];
+    comp13:w0:s -> comp14:i1:n [linkref="27", label="27", penwidth="1", weight="1"];
+    comp15:o0:s -> comp18:i1:n [linkref="29", label="29", penwidth="1", weight="1"];
+    comp15:o1:s -> comp20:i1:n [linkref="30", label="30", penwidth="1", weight="1"];
+    comp17:o:s -> comp15:i:n [linkref="31", label="31", penwidth="1", weight="1"];
+    port0 -> comp17:i0:n [linkref="32", label="32", penwidth="1", weight="1"];
+    port1 -> comp18:i0:n [linkref="33", label="33", penwidth="1", weight="1"];
+    port2 -> comp19:i0:n [linkref="34", label="34", penwidth="3", weight="3"];
+    port3 -> comp20:i0:n [linkref="35", label="35", penwidth="2", weight="2"];
+    comp21:o1:s -> port4 [linkref="36", label="36", penwidth="1", weight="1"];
+    comp22:o1:s -> port5 [linkref="37", label="37", penwidth="3", weight="3"];
+    comp23:o1:s -> port6 [linkref="38", label="38", penwidth="2", weight="2"]
+  }
+}

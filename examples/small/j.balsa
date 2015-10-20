@@ -1,0 +1,19 @@
+import [balsa.sim.string]
+
+procedure a is
+	variable v : 32 bits
+	-- variable s : String
+	type a is record
+		b : 8 bits;
+		c : 8 bits
+	end
+	variable v_a : a
+begin
+	-- s := "10";
+	-- v := NumberFromString (32 bits, s, 10);
+	v := NumberFromString (32 bits, "10", 10);
+	print "Hello", v;
+	v_a := a {10, 20};
+	print v_a;
+	sink v
+end

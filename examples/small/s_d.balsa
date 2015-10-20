@@ -1,0 +1,14 @@
+type Word is 32 bits
+type SWord is 32 signed bits -- signed word for sign extension uses
+
+function PackWordLow_simm13 (w : 13 bits) = (((w as 13 signed bits) as SWord) as Word)
+
+procedure SparklerBody (
+	output aluRhs : Word
+) is
+	shared Inst3FetchRegs is begin
+		aluRhs <- PackWordLow_simm13 (10)
+	end
+begin
+	continue
+end

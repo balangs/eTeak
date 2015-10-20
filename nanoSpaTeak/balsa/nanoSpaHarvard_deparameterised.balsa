@@ -1,0 +1,117 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+--
+--  + deparameterised version of nanoSpaHarvard
+--  + compatible with SPA interface and testbenches:
+--  + dummy coprocessor interface
+--  + dummy irq/fiq interfaces
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--   + no changes made to this module
+
+import [nanoSpaTypes]
+import [nanoSpaHarvard]
+
+procedure coproIrqFiq
+(
+  -- the coprocessor interface
+  output cpId             : cpNum;           -- which copro the decode is for
+  output cpInst           : cpInstrGroup;    -- the instruction the copros might execute + some stuff
+  input  cpCapableP       : cpCapable;       -- whether the instruction can be executed
+  output cpId2            : cpNum;           -- which copro the execute is for
+  output cpExec           : cpExecGroup;     -- instruction to execute or flush
+  output cpRegisterSpa2cp : cpRegister;      -- register data to the copros
+  input  cpRegisterCp2spa : cpRegister;      -- register data from the copros
+  input  cpMemAccessLastP : cpLastMemAccess; -- current copro memory transfer is the last?
+  
+  -- the interrupt system
+  input  irq : bit ; -- normal interrupt
+  input  fiq : bit   -- fast interrupt
+) is
+local
+    variable doIt : bit
+begin
+    doIt := 0
+  ;
+  	loop
+    if doIt then
+        loop
+            cpId <- 0
+         ||
+            cpInst <- (0 as cpInstrGroup)
+         ||
+            cpCapableP -> then
+                continue
+            end -- cpCapableP ->
+        end -- loop
+    end -- if doIt
+    end
+ ||
+ 	loop
+    if doIt then
+        loop
+            cpId2 <- 0
+         ||
+            cpExec <- (0 as cpExecGroup)
+         ||
+            cpRegisterSpa2cp <- 0
+         ||
+            cpRegisterCp2spa -> then
+                continue
+            end -- cpRegisterCp2spa ->
+         ||
+            cpMemAccessLastP -> then
+                continue
+            end -- cpMemAccessLastP ->
+        end -- loop
+    end -- if doIt
+    end
+ ||
+    loop
+        irq -> then
+            continue
+        end -- select irq
+    end -- loop
+ ||
+    loop
+        fiq -> then
+            continue
+        end -- select fiq
+    end -- loop
+end -- procedure CoproIrqFiq
+
+
+procedure _spaHarvard_V5T
+(
+  -- the memory ports: [1] is instruction, [0] is data
+  array 2 of output memAccess    : MemAccess;
+  array 2 of output memMode      : MemProcMode;
+  array 2 of input  memDi        : MemData;
+  array 1 of output memDo        : MemData;
+  array 2 of input  memAbort     : MemAbort;
+  
+  -- the coprocessor i/f:
+  output cpId             : cpNum;           -- which copro the decode is for
+  output cpInst           : cpInstrGroup;    -- the instruction the copros might execute + some stuff
+  input  cpCapableP       : cpCapable;       -- whether the instruction can be executed
+  output cpId2            : cpNum;           -- which copro the execute is for
+  output cpExec           : cpExecGroup;     -- instruction to execute or flush
+  output cpRegisterSpa2cp : cpRegister;      -- register data to the copros
+  input  cpRegisterCp2spa : cpRegister;      -- register data from the copros
+  input  cpMemAccessLastP : cpLastMemAccess; -- current copro memory transfer is the last?
+  
+  -- the interrupt system
+  input  irq : bit; -- normal interrupt
+  input  fiq : bit  -- fast interrupt
+) is
+begin
+    nanoSpaHarvard(
+      memAccess, memMode, memDi, memDo, memAbort
+    )
+ || coproIrqFiq(
+      cpId, cpInst, cpCapableP, cpId2, cpExec,
+      cpRegisterSpa2cp, cpRegisterCp2spa, cpMemAccessLastP,
+      irq, fiq
+    )
+end -- procedure _spaHarvard_V5T

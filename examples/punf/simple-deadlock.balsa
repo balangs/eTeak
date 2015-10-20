@@ -1,0 +1,6 @@
+procedure top is
+	channel c1, c2 : token
+begin
+	loop c1 -> then c2 <- token || print "A" end end ||
+	loop c2 -> then c1 <- token || print "B" end end
+end

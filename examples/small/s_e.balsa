@@ -1,0 +1,7 @@
+
+procedure b (input c, d : 8 bits; output e : 8 bits) is
+begin
+	select c then e <- c
+	| d then e <- d
+	end
+end

@@ -1,0 +1,34 @@
+import [nanoMultiplier]
+import [balsa.sim.string]
+
+function Hex (w : 32 bits) = StringDowncase (NumberToString (32 bits, w, 16, 0, 1))
+
+procedure test is
+  channel bypass  : bit
+  channel bypassH : bit
+  channel mType : MulType
+  channel a   : Datapath
+  channel b   : Datapath
+  channel c   : Datapath
+  channel mpH: Datapath
+  channel mpL: Datapath
+  channel mZ : bit
+  channel mN : bit
+begin
+	nmult (
+	  bypass, bypassH, mType, a, b, c,
+	  mpH, mpL, mZ, mN
+	) ||
+	loop mZ -> then print "mZ ", mZ end end ||
+	loop mN -> then print "mN ", mN end end ||
+	loop mpH -> then print "mpH 0x", Hex (mpH), " (", mpH, ")" end end ||
+	loop mpL -> then print "mpL 0x", Hex (mpL), " (", mpL, ")" end end ||
+	begin
+		bypass <- 0 ||
+		bypassH <- 1 ||
+		mType <- SMLAL ||
+		a <- 0x0000_0005 ||
+		b <- 0x0000_0002 ||
+		c <- 0x0000_0001
+	end
+end

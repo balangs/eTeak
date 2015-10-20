@@ -1,0 +1,22 @@
+constant c = 0b1000
+
+function offset (b : 32 bits; a : 4 bits; pad : 8 bits) = (#pad[(8-(4+b))-1..0] @ #a @ (0 as b bits) as 8 bits)
+
+constant d = ? : 4 bits
+
+procedure a is
+	variable b : 9 bits
+begin
+	b := 0;
+	loop
+	while b < 256 then
+		case (b as 8 bits) of
+		-- FIXME, these expressions don't get correctly reduced
+		  --offset (0, c, ?), offset (2, c, ?) then print "A"
+		--| offset (1, c, ?), offset (3, c, ?) then print "B"
+			0b00001000, 0b001000xx then print "A", b
+		|	0b0001000x, 0b01000xxx then print "B", b
+		end;
+		b := (b + 1 as 9 bits)
+	end
+end

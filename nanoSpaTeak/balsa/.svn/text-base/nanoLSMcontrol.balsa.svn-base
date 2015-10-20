@@ -1,0 +1,181 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+-- ldm/stm support module
+--  + generates regCount
+--  + generates regNum iteratively
+--  + no early termination, i.e., must complete
+--  + even if instruction not executed
+--
+--  v1.0 25/07/2006 -lap
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+
+import [balsa.types.basic]
+import [nanoSpaTypes]
+
+procedure adderTree
+(
+  parameter inputCount : cardinal;
+  parameter inputSize  : cardinal;
+  parameter outputSize : cardinal;
+  array inputCount of input i : inputSize bits;
+  output o : outputSize bits
+) is
+begin
+    if inputCount = 1 then
+        i[0] -> o
+    | inputCount = 2 then
+        i[0], i[1] ->! then
+            o <- (i[0] + i[1] as outputSize bits)
+        end -- i [ 0 ] , i [ 1 ] ->
+    else
+        local
+            constant lowHalfInputCount = inputCount/2
+            constant highHalfInputCount = inputCount-lowHalfInputCount
+            channel lowO, highO : outputSize-1 bits
+        begin
+            adderTree (lowHalfInputCount, inputSize, outputSize-1, i[0..lowHalfInputCount-1], lowO)
+         ||
+            adderTree (highHalfInputCount, inputSize, outputSize-1, i[lowHalfInputCount..inputCount-1], highO)
+         ||
+            adderTree (2, outputSize-1, outputSize, {lowO,highO}, o)
+        end -- local
+    end -- if inputCount = 1
+end -- procedure adderTree
+
+
+procedure lsmCount
+(
+  input  regDesc  : RegDesc;
+  output regCount : RegCnt
+) is
+local
+    array 8 of channel addedPairs : 2 bits
+begin
+    loop
+        regDesc ->! then
+            for || c in 0..7 then
+                addedPairs[c] <- (#regDesc[2*c] + #regDesc[(2*c)+1] as 2 bits)
+            end -- for || c in 0 ..7
+         ||
+            adderTree(8, 2, 5, addedPairs, regCount)
+        end -- regDesc ->
+    end -- loop
+end -- procedure lsmCount
+
+
+procedure lsmRegNums
+(
+  input  regDesc : RegDesc;
+  input  stopLsm : bit;
+  output regNum  : RegNum;
+  output last    : bit
+) is
+local
+    variable mask     : RegDesc
+    variable nextMask : RegDesc
+    variable cont     : bit
+    variable isFirst  : bit
+    variable stop     : bit
+    channel  eReg     : EncodedReg
+begin
+    loop
+        mask := 0b1111_1111_1111_1111
+     ||
+        isFirst := 1
+      ;
+        regDesc ->! then
+            loop
+                case (regDesc and mask) of
+                0b0000000000000000 then
+                    eReg <- { 0, 0b1111_1111_1111_1111}
+                | 0bxxxx_xxxx_xxxx_xxx1 then
+                    eReg <- { 0, 0b1111_1111_1111_1110}
+                | 0bxxxx_xxxx_xxxx_xx10 then
+                    eReg <- { 1, 0b1111_1111_1111_1100}
+                | 0bxxxx_xxxx_xxxx_x100 then
+                    eReg <- { 2, 0b1111_1111_1111_1000}
+                | 0bxxxx_xxxx_xxxx_1000 then
+                    eReg <- { 3, 0b1111_1111_1111_0000}
+                | 0bxxxx_xxxx_xxx1_0000 then
+                    eReg <- { 4, 0b1111_1111_1110_0000}
+                | 0bxxxx_xxxx_xx10_0000 then
+                    eReg <- { 5, 0b1111_1111_1100_0000}
+                | 0bxxxx_xxxx_x100_0000 then
+                    eReg <- { 6, 0b1111_1111_1000_0000}
+                | 0bxxxx_xxxx_1000_0000 then
+                    eReg <- { 7, 0b1111_1111_0000_0000}
+                | 0bxxxx_xxx1_0000_0000 then
+                    eReg <- { 8, 0b1111_1110_0000_0000}
+                | 0bxxxx_xx10_0000_0000 then
+                    eReg <- { 9, 0b1111_1100_0000_0000}
+                | 0bxxxx_x100_0000_0000 then
+                    eReg <- {10, 0b1111_1000_0000_0000}
+                | 0bxxxx_1000_0000_0000 then
+                    eReg <- {11, 0b1111_0000_0000_0000}
+                | 0bxxx1_0000_0000_0000 then
+                    eReg <- {12, 0b1110_0000_0000_0000}
+                | 0bxx10_0000_0000_0000 then
+                    eReg <- {13, 0b1100_0000_0000_0000}
+                | 0bx100_0000_0000_0000 then
+                    eReg <- {14, 0b1000_0000_0000_0000}
+                | 0b1000_0000_0000_0000 then
+                    eReg <- {15, 0b0000_0000_0000_0000}
+                end -- case ( regDesc and mask )
+             ||
+                eReg ->! then
+                    regNum <- eReg.Num
+                 ||
+                    nextMask := eReg.Mask
+                 ||
+                    case (regDesc and eReg.Mask) of
+                    0b0000_0000_0000_0000 then
+                        last <- 1
+                     || 
+                        cont := 0
+                    else
+                        last <- 0
+                     || 
+                        cont := 1
+                    end -- case ( regDesc and eReg.Mask )
+                end -- eReg ->
+             ||
+                if isFirst then
+                    stopLsm -> stop
+                end -- if isFirst
+            while (cont and not stop) then
+                mask := nextMask
+             ||
+                isFirst := 0
+            end -- loop
+        end -- regDesc ->
+    end -- loop
+end -- procedure lsmRegNums
+
+
+procedure lsmControl
+(
+  input  regDesc  : RegDesc;
+  input  stopLsm  : bit;
+  output regCount : RegCnt;
+  output regNum   : RegNum;
+  output last     : bit
+) is
+local
+    channel descC : RegDesc
+    channel descN : RegDesc
+begin
+    loop
+        regDesc ->! then
+            descC <- regDesc
+         ||
+            descN <- regDesc
+        end -- regDesc ->
+    end -- loop
+ ||
+    lsmCount(descC, regCount)
+ ||
+    lsmRegNums(descN, stopLsm, regNum, last)
+end -- procedure lsmControl

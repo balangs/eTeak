@@ -1,0 +1,40 @@
+import [balsa.types.basic]
+
+procedure seqMux (
+	parameter n : cardinal;
+	parameter t : type;
+	array n of input i : t;
+	output o : t
+) is
+begin
+	for ; j in 0 .. n-1 then
+		i[j] -> then
+			print "i[", j, "]:", i[j];
+			o <- i[j]
+		end
+	end
+end
+
+procedure seqMux2 (
+	input i0, i1 : 32 bits;
+	output o : 32 bits
+) is
+begin
+	seqMux (2, 32 bits, {i0, i1}, o)
+end
+
+procedure seqMux2a (
+	array 2 of input i : 32 bits;
+	output o : 32 bits
+) is
+begin
+	seqMux (2, 32 bits, i, o)
+end
+
+procedure top is
+	channel i0, i1, o : 32 bits
+begin
+	i0 <- 10 || i1 <- 20 || loop o -> then print "o: ", o end end ||
+	-- seqMux2 (i0, i1, o)
+	seqMux2a ({i0, i1}, o)
+end

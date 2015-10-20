@@ -1,0 +1,52 @@
+
+
+constant a = 10
+
+if a = 11 then
+	constant b = 20
+	-- variable v : bit
+else
+	constant b = 30
+	-- constant f = 30
+end
+
+procedure d (
+	parameter name : String;
+	parameter z : bit;
+	if z then
+		input i : bit
+	end;
+	input j : bit
+) is
+	variable o : bit
+	variable p : bit
+
+	if z then
+		constant c = 1
+		-- remove comment to test 'nature' compare.
+		-- variable d : bit
+	else
+		constant c = 2
+		constant d = 7
+	end
+begin
+	o := 0;
+	p := 0;
+	if z then
+		i -> o
+	end;
+	j -> p;
+	print name, " ", b, " ", c, " ", o
+	-- continue
+end
+
+procedure e is d ("e", 1)
+procedure f is d ("f", 0)
+
+procedure top is
+	channel a : bit
+	channel b : bit
+begin
+	[ a <- 1 || b <- 0 || e (a, b) ];
+	[ b <- 0 || f (b) ]
+end

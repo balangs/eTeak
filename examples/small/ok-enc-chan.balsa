@@ -1,0 +1,7 @@
+procedure a (
+	input i : 8 bits
+) is
+begin
+	i -> then print i end;
+	i -> then print i end
+end

@@ -1,0 +1,32 @@
+;;; Balsa Project file
+;;; Created: Thu Sep 30 02:32:10 2010
+;;; By: rhg_001@rhg-desktop (Linux)
+;;; With balsa-mgr version: 4.0 (2010-06-09)
+;;; Supplied with Balsa version: 4.0
+
+(balsa-project
+    (name "nanoSpaTeak")
+    (import-path ".")
+    (simulation-system "breezesim")
+    (files
+        "nanoAlu"
+        "nanoDecode"
+        "nanoExecute"
+        "nanoExecuteControl"
+        "nanoExecuteSupport"
+        "nanoFetch"
+        "nanoLSMcontrol"
+        "nanoMBoothR3rolled"
+        "nanoMBoothR3unrolled"
+        "nanoMultSupport"
+        "nanoMultiplier"
+        "nanoRegBank"
+        "nanoShifter"
+        "nanoSpa"
+        "nanoSpaHarvard"
+        "nanoSpaHarvard_deparameterised"
+        "nanoSpaTypes"
+        "pipelineRegister"
+        "sim"
+    )
+)

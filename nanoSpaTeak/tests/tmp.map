@@ -1,0 +1,27 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+MYMEM            0x00000000         0x00018000         xr
+MYDATA           0x10000000         0x00018000         rw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+
+.text           0x00000000       0x3f
+                0x00000000                . = ALIGN (0x4)
+ *(.text)
+ .text          0x00000000       0x3f tmp.o
+
+.glue_7         0x00000040        0x0
+
+.glue_7t        0x00000040        0x0
+
+.data           0x10000000        0x0
+                0x10000000                . = ALIGN (0x4)
+ *(.data)
+
+.bss            0x10000000        0x0
+LOAD tmp.o
+OUTPUT(tmp.elf elf32-littlearm)

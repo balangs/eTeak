@@ -1,0 +1,126 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+-- fetch pipeline stage
+--  + sequential fetch or branch
+--  + no support for interrupts
+--  + no support for prefetch aborts
+--  + user/svc operation modes only
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--   + no changes made to this module
+
+import [nanoSpaTypes]
+import [balsa.types.basic]
+
+procedure nanoFetch
+(
+  -- the memory i/f:
+  output memAccess  : MemAccess;
+  output memMode    : MemProcMode;
+  input  memDi      : MemData;
+  input  memAbort   : MemAbort;
+
+  -- the decoder i/f:
+  output fPc        : Datapath;
+  output fColour    : Colour;
+  output fInstr     : Instruction;
+  output fMode      : psrCtl;
+  -- the execute i/f:
+  input  xPc        : Datapath;
+  input  xColour    : Colour;
+  input  xMode      : psrCtl
+)
+-- (* latches="s:l1" *)
+is
+local 
+    variable pc, nextPc         : Datapath
+    variable instr              : Instruction
+    variable colour, nextColour : Colour
+    variable goSeq              : bit
+    variable trySeq             : bit
+    variable mode              : psrCtl
+    channel seqIn, seq         : token
+
+	constant arbDebug = false
+begin 
+    [
+      pc := 0
+   ||
+      colour := GREEN
+   ||
+      trySeq := 1
+   ||
+      mode := {CSVC,PRIVILEGED,0,1,1}
+    ;
+      loop
+          -- fetch instruction from memory
+          memAccess <- {READ, (pc as Address), WORD, (0 as MemLock), (trySeq as MemSeq), GREEN}
+       ||
+          memMode <- mode.priv
+       ||
+          memAbort ->! then
+              continue
+          end -- memAbort ->
+       ||
+          [
+            memDi -> instr
+          ;
+            -- complete memory access before sending to decode
+            -- to avoid deadlock if execute blocked for memory
+            fInstr <- instr
+          ]
+       ||
+          -- send pc and colour to decode
+          fPc <- pc
+       ||
+          fColour <- colour
+       ||
+          fMode <- mode 
+       ||
+          [
+            nextPc := (pc + 4 as Address)
+          ;
+            -- separate seq requests to decrease
+            -- the length of the branch shadow
+            if trySeq then
+                seqIn <- token
+            end -- if trySeq
+          ]
+       ||
+          -- prepare next pc: either sequential or branch
+          arbitrate seq then
+          	if arbDebug then print "A1 BEGIN" end;
+              goSeq := 1
+          	; if arbDebug then print "A1 END" end
+          | xColour then
+          	if arbDebug then print "A2 BEGIN" end;
+              goSeq := 0
+           ||
+              nextColour := xColour
+          	; if arbDebug then print "A2 END" end
+          end -- arbitrate seq
+        ;
+          	if arbDebug then print "A3 BEGIN" end;
+          -- update pc and colour
+          if goSeq then
+              pc := nextPc 
+          else
+              xPc -> pc
+           ||
+              colour := nextColour
+           ||
+              xMode -> mode
+          end -- if goSeq
+          ; if arbDebug then print "A3 END" end
+       ||
+          trySeq := goSeq
+    end -- loop
+  ]
+||
+   loop
+       seqIn ->! then continue end
+     ;
+       seq <- token
+   end -- loop
+end -- procedure nanoFetch

@@ -1,0 +1,12 @@
+
+procedure SparklerBody is
+	type MemAccessKind is enumeration a end
+
+	type MemAccess is record
+		kind : MemAccessKind
+	end
+
+	constant mAccess = MemAccessKind'a
+begin
+	sink {mAccess} : MemAccess
+end

@@ -1,0 +1,11 @@
+
+procedure a is
+	variable s : String
+begin
+	s := "Hello" + "World";
+	print s;
+	s := "Hello" + ToString (8 bits, 10) + "World";
+	print s;
+	s := ToString (String, "World");
+	print s
+end

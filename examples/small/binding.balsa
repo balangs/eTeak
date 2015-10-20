@@ -1,0 +1,10 @@
+
+type t is record a : 8 bits end
+type t is 8 bits
+
+procedure a is
+	variable b : t
+	variable c : s
+begin
+	continue
+end

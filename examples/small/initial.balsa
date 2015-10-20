@@ -1,0 +1,44 @@
+procedure t (output o : token) is
+begin
+	for ; i in 0..3 then o <- token end
+end
+
+procedure ibuffer (input i : token; output o : token) is
+begin
+	o <- token ; loop i -> then o <- token end end
+end
+
+procedure t2 (input i : token; output o : token) is
+	channel c1, c2, c3 : token
+	procedure ibuffer (input i : token; output o : token) is
+	begin
+		o <- token ; loop i -> then o <- token end end
+	end
+begin
+	ibuffer (i, c1) ||
+	ibuffer (c1, c2) ||
+	ibuffer (c2, c3) ||
+	ibuffer (c3, o)
+end
+
+procedure t3 (input i : bit; output o : bit) is
+	channel c1, c2, c3 : bit
+	procedure ibuffer (input i : bit; output o : bit) is
+	begin
+		o <- 0 ; loop i -> then o <- i end end
+	end
+begin
+	ibuffer (i, c1) ||
+	ibuffer (c1, c2) ||
+	ibuffer (c2, c3) ||
+	ibuffer (c3, o)
+end
+
+type t is record t1, t2 : 8 bits end
+
+procedure init_var (output o : t)
+is
+	variable v : t
+begin
+	v.t1 := 0 || v.t2 := 0; loop o <- v end
+end

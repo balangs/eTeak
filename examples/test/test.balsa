@@ -1,0 +1,8 @@
+procedure test (input i : 8 bits; output o : 9 bits) is
+begin
+	loop
+        	i -> then 
+			o <- i + 1
+		end
+	end
+end

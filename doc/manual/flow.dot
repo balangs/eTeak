@@ -1,0 +1,119 @@
+digraph "teak"
+{
+	graph [ size="8,10" ]
+	node [ shape="ellipse" ]
+
+	subgraph cluster_key
+	{
+		graph [ label="key" ]
+		Process [ label="{Process|Command line|Source code location}", shape="record" ]
+		Format [ label="Format\n:: Source code type" ]
+		InFile [ lable="Input file", shape="none" ]
+		OutFile [ lable="Output file", shape="none" ]
+		Process -> Format
+		Format -> Process
+		Process -> OutFile
+		InFile -> Process
+	}
+
+	subgraph compile
+	{
+		Balsa [ label="Balsa description\n\<file\>.balsa", shape="none" ]
+		subgraph compile2
+		{
+			Balsa -> BalsaParse
+			BalsaParse -> ParseTree_Parse
+			BalsaParse [ label="{Balsa parser|Balsa.parseBalsaFile}", shape="record" ]
+			ParseTree_Parse [ label="Balsa parse tree\n:: Context Decl" ]
+
+			ParseTree_Parse -> Compile:in:n
+			Compile:finish -> ParseTree
+			Compile [ label="{<in>Balsa compiler|(with parse: Balsa.compileBalsaFile)|{<bind>Bind.bind \>\>=|<eval>Eval.eval \>\>=|<finish>Finish.finish}}", shape="record" ]
+
+			ParseTree -> DumpParseTree
+			ParseTree_Parse -> DumpParseTree
+			Compile:bind:s -> DumpParseTree
+			Compile:eval:s -> DumpParseTree
+			DumpParseTree -> ParseTreeFiles
+			DumpParseTree [ label="{Parse tree dumper|--dump-parse-trees}", shape="record" ]
+		}
+		ParseTree [ label="Clean, elaborated Balsa parse tree\n:: Context Decl" ]
+
+		ParseTree -> Teak
+		Teak -> Network
+		Teak [ label="{Teak component generation|Teak.teak}", shape="record" ]
+		Network [ label="Teak network\n:: [Part Network]" ]
+
+		ParseTreeFiles [ label="Parse tree files\n<file>.tree-{parse,bind,eval,finish}", shape="none" ]
+	}
+
+	Network -> OptimFigure
+	OptimFigure [ label="See optimisation figure", shape="record" ]
+	FinalNetwork [ label="Final Teak network\n:: [Part Network]" ]
+	OptimFigure -> FinalNetwork
+
+	subgraph networkWrite
+	{
+		FinalNetwork -> NetworkWriter
+		NetworkWriter -> NetworkOutputFile
+		NetworkWriter [ label="{Network file writer|NetParts.writeNetworkFile}", shape="record" ]
+		NetworkOutputFile [ label="Network file\n<file>.teak", shape="none" ]
+	}
+
+	subgraph networkRead
+	{
+		NetworkInputFile -> NetworkReader
+		NetworkReader -> Network
+		NetworkInputFile [ label="Network file\n<file>.teak", shape="none" ]
+		NetworkReader [ label="{Network reader|-n (or --network-file) \<file\>\nor \<file\>.teak|NetParts.readNetworkFile}", shape="record" ]
+	}
+
+	subgraph sim1
+	{
+		graph [ label="sim" ]
+
+		ParseTree -> Sim
+		Sim [ label="{Language level simulation|-S (or --simulate)\nand -s type=language (default)|Sim.simulate}", shape="record" ]
+	}
+
+	subgraph sim2
+	{
+		Petri -> PetriSim
+		PetriSim -> PetriEvents
+		PetriSim [ label="{Petri net simulation|-S (or --simulate)\nand -s simulate (default)|SimPN.runPN}", shape="record" ]
+		PetriEvents [ label="Events file\n\<file\>.report", shape="none" ]
+
+		Petri -> HLNGen
+		HLNGen -> HLNFile
+		HLNGen [ label="{PEP HLNet writer|-s write-pn:write-pn-format=hl_net|SimPN.writeHLNet}", shape="record" ]
+		HLNFile [ label="PEP HLNet file\n\<file\>.hl_net", shape="none" ]
+
+		Petri -> PetriPlot
+		PetriPlot -> PetriPlotFile
+		PetriPlot [ label="{Petri net plotter|-s write-pn:write-pn-format=dot|SimPN.pnToDot \>\>= Dot.writeGraphsToFile}", shape="record" ]
+		PetriPlotFile [ label="Petri net plot file\n\<file\>.dot", shape="none" ]
+
+		FinalNetwork -> PetriGen
+		PetriGen -> Petri
+		PetriGen [ label="{Petri net generation|SimPN.makePartPN}", shape="record" ]
+		Petri [ label="Coloured Petri net\n:: PN SimFlow SimValue" ]
+	}
+
+	subgraph gates
+	{
+		FinalNetwork -> Gates
+		Tech -> Gates
+		Gates -> Netlist
+		Gates [ label="{Gate level generation|--gates|Gen.genPartToGateNetlist}", shape="record" ]
+		Tech [ label="Tech. mapping info.\n-X \<mapping-file\>.v\nor -X \<tech\>", shape="none" ]
+		Netlist [ label="Gate level netlist\n\<file\>.v", shape="none" ]
+	}
+
+	subgraph plot
+	{
+		FinalNetwork -> Plot
+		Plot -> PlotFile
+		Plot [ label="{Plot network|--plot|Layout.plotParts}", shape="record" ]
+		PlotFile [ label="Plot output file\n\<file\>.{ps,pdf,svg}", shape="none" ]
+	}
+}

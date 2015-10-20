@@ -1,0 +1,7 @@
+procedure a (
+	output o : String
+) is
+begin
+	o <- "Hello";
+	o <- "World"
+end

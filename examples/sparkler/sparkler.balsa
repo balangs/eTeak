@@ -1,0 +1,57 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [fetch]
+import [decode]
+import [memarb]
+import [execute]
+
+(--
+	Never implement:
+		Floating point
+		Modes
+		Tagged arithmetic
+	Missing/TODO:
+		Lots of Inst3 instructions
+		(Checking of) correct PC handling in branch shadow
+		Branch shadow annulment
+--)
+
+procedure Sparkler2 (
+	output a : Word;
+	output access : MemAccess;
+	input di : Word;
+	output do : Word
+) is
+	channel faddr : Word
+	channel finst : Inst
+	channel daddr : Word
+	channel daccess : MemAccess
+	channel dread : Word
+	channel dwrite : Word
+
+	channel inst_A, inst_P : FetchedInst
+	channel op_A, op_P : DecodedInst 
+	channel pc_A, pc_P : FetchedPC
+	channel doFetchE_A, doFetchE_P : FetchType
+	channel doFetchF_A, doFetchF_P : FetchType
+	channel newPc_A, newPc_P : Word
+begin
+	buffer (FetchedInst, inst_A, inst_P) ||
+	buffer (DecodedInst , op_A, op_P) ||
+	buffer (FetchedPC, pc_A, pc_P) ||
+	buffer (FetchType, doFetchE_A, doFetchE_P) ||
+	buffer (FetchType, doFetchF_A, doFetchF_P) ||
+	buffer (Word, newPc_A, newPc_P) ||
+
+	FetchInitial (doFetchE_P, doFetchF_A) ||
+	Fetch (doFetchF_P, newPc_P, inst_A, faddr, finst) ||
+	Decode (inst_P, op_A, pc_A) ||
+	Execute (op_P, pc_P, doFetchE_A, newPc_A, daddr, daccess, dread, dwrite) ||
+	MemArbiter (faddr, finst,
+		daddr, daccess, dread, dwrite,
+		a, access, di, do)
+end

@@ -1,0 +1,10 @@
+procedure top is
+	variable v : 8 bits
+loop
+	v := 0;
+	loop
+	while v < 20 then
+		print "Hello world", v;
+		v := v + 1 as 8 bits
+	end
+end

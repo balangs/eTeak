@@ -1,0 +1,9 @@
+
+procedure a
+is
+	variable v : 8 bits
+	variable w : 8 bits
+begin
+	v := w;
+	w := v
+end

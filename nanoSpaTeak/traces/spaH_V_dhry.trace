@@ -1,0 +1,1470 @@
+i_A 0x00000000: r p w 0xea00000a .... B 00000030
+i_A 0x00000004: r p w 0xea00000e .... B 00000040
+i_A 0x00000008: r p w 0xea000003 .... B 00000014
+i_A 0x00000030: r p w 0xe59fd8b0 .... LDR R13, 000008B8
+i_A 0x00000034: r p w 0xe3a00010 .... MOV R0, #10
+i_A 0x00000038: r p w 0xe12ff000 ../. UNDEFINED
+d_A 0x000008e8: r p w 0x000008e8 .... 
+i_A 0x0000003c: r p w 0xe59fd8a8 .... LDR R13, 000008B0
+i_A 0x00000040: r p w 0xeb00022a *... BL 000008B0
+i_A 0x0000003c: r u w 0xe59fd8a8 .... LDR R13, 000008B0
+i_A 0x00000040: r u w 0xeb00022a *... BL 000008B0
+i_A 0x00000044: r u w 0xe3a00004 .... MOV R0, #4
+d_A 0x000008ec: r u w 0x000004e8 .... 
+i_A 0x00000048: r u w 0xef000000 .... SWI 000000
+i_A 0x000008f0: r u w 0xe92d4ff0 .O-. STMDB R13!, {R4-R11,R14}
+i_A 0x000008f4: r u w 0xe24dd04c L.M. SUB R13, R13, #4C
+d_A 0x000004c4: w u w 0x00000000 .... 
+d_A 0x000004c8: w u w 0x00000000 .... 
+d_A 0x000004cc: w u w 0x00000000 .... 
+d_A 0x000004d0: w u w 0x00000000 .... 
+d_A 0x000004d4: w u w 0x00000000 .... 
+d_A 0x000004d8: w u w 0x00000000 .... 
+d_A 0x000004dc: w u w 0x00000000 .... 
+d_A 0x000004e0: w u w 0x00000000 .... 
+d_A 0x000004e4: w u w 0x00000044 D... 
+i_A 0x000008f8: r u w 0xe59f11cc .... LDR R1, 000001D4
+i_A 0x000008fc: r u w 0xe59f71cc .q.. LDR R7, 000001D4
+i_A 0x00000900: r u w 0xe59f01cc .... LDR R0, 000001D4
+d_A 0x00000acc: r u w 0x000014c8 .... 
+i_A 0x00000904: r u w 0xe5871004 .... STR R1, [R7, +#4]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000908: r u w 0xe5870000 .... STR R0, [R7]
+d_A 0x00000ad4: r u w 0x000014f8 .... 
+i_A 0x0000090c: r u w 0xe5801000 .... STR R1, [R0]
+d_A 0x0000149c: w u w 0x000014c8 .... 
+i_A 0x00000910: r u w 0xe5971000 .... LDR R1, [R7]
+d_A 0x00001498: w u w 0x000014f8 .... 
+i_A 0x00000914: r u w 0xe3a00000 .... MOV R0, #0
+d_A 0x000014f8: w u w 0x000014c8 .... 
+i_A 0x00000918: r u w 0xe5c10004 .... STRB R0, [R1, +#4]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x0000091c: r u w 0xe5970000 .... LDR R0, [R7]
+i_A 0x00000920: r u w 0xe3a01002 .... MOV R1, #2
+d_A 0x000014fc: w u b 0x00000000 .... 
+i_A 0x00000924: r u w 0xe5c01008 .... STRB R1, [R0, +#8]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000928: r u w 0xe5970000 .... LDR R0, [R7]
+i_A 0x0000092c: r u w 0xe3a01028 (... MOV R1, #28
+d_A 0x00001500: w u b 0x02020202 .... 
+i_A 0x00000930: r u w 0xe580100c .... STR R1, [R0, +#C]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000934: r u w 0xe5970000 .... LDR R0, [R7]
+i_A 0x00000938: r u w 0xe28f1f66 f... ADD R1, R15, #198
+d_A 0x00001504: w u w 0x00000028 (... 
+i_A 0x0000093c: r u w 0xe3a0201f . .. MOV R2, #1F
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000940: r u w 0xe2800010 .... ADD R0, R0, #10
+i_A 0x00000944: r u w 0xeb000182 .... BL 00000610
+i_A 0x00000948: r u w 0xe28fef6a j... ADD R14, R15, #1A8
+i_A 0x0000094c: r u w 0xe89e037e ~... LDMIA R14, {R1-R6,R8-R9}
+i_A 0x00000f54: r u w 0xe1510000 ..Q. CMP R1, R0
+i_A 0x00000f58: r u w 0x3a000090 ...: BCC 00000248
+i_A 0x00000f5c: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000f60: r u w 0xe92d4001 .@-. STMDB R13!, {R0,R14}
+i_A 0x000011a0: r u w 0xe0811002 .... ADD R1, R1, R2
+i_A 0x000011a4: r u w 0xe0800002 .... ADD R0, R0, R2
+i_A 0x000011a8: r u w 0xe2522004 . R. SUBS R2, R2, #4
+i_A 0x000011ac: r u w 0xba00001f .... BLT 00000084
+i_A 0x000011b0: r u w 0xe210c003 .... ANDS R12, R0, #3
+i_A 0x000011b4: r u w 0x1a000027 '... BNE 000000A4
+i_A 0x000011b8: r u w 0xe211c003 .... ANDS R12, R1, #3
+i_A 0x000011bc: r u w 0x1a000030 0... BNE 000000C8
+i_A 0x00001258: r u w 0xe35c0002 ..\. CMP R12, #2
+i_A 0x0000125c: r u w 0xe5713001 .0q. LDRB R3, [R1, -#1]!
+i_A 0x00001260: r u w 0xe5603001 .0`. STRB R3, [R0, -#1]!
+i_A 0x00001264: r u w 0xa5713001 .0q. LDRGEB R3, [R1, -#1]!
+d_A 0x00000af6: r u b 0xaa00aaaa .... 
+i_A 0x00001268: r u w 0xa5603001 .0`. STRGEB R3, [R0, -#1]!
+d_A 0x00001526: w u b 0x00000000 .... 
+i_A 0x0000126c: r u w 0xc5713001 .0q. LDRGTB R3, [R1, -#1]!
+d_A 0x00000af5: r u b 0xaaaa47aa .G.. 
+i_A 0x00001270: r u w 0xc5603001 .0`. STRGTB R3, [R0, -#1]!
+d_A 0x00001525: w u b 0x47474747 GGGG 
+i_A 0x00001274: r u w 0xe052200c . R. SUBS R2, R2, R12
+d_A 0x00000af4: r u b 0xaaaaaa4e N... 
+i_A 0x00001278: r u w 0xbaffffec .... BLT FFFFFFB8
+d_A 0x00001524: w u b 0x4e4e4e4e NNNN 
+i_A 0x0000127c: r u w 0xe211c003 .... ANDS R12, R1, #3
+i_A 0x00001280: r u w 0x0affffce .... BEQ FFFFFF40
+i_A 0x00001284: r u w 0xe3c11003 .... BIC R1, R1, #3
+i_A 0x00001288: r u w 0xe5913000 .0.. LDR R3, [R1]
+i_A 0x000011c0: r u w 0xe2522008 . R. SUBS R2, R2, #8
+i_A 0x000011c4: r u w 0xba000011 .... BLT 0000004C
+i_A 0x000011c8: r u w 0xe92d4010 .@-. STMDB R13!, {R4,R14}
+i_A 0x000011cc: r u w 0xe2522014 . R. SUBS R2, R2, #14
+d_A 0x00000470: w u w 0x00000000 .... 
+d_A 0x00000474: w u w 0x00000948 H... 
+i_A 0x000011d0: r u w 0xba000005 .... BLT 0000001C
+i_A 0x000011d4: r u w 0xe9315018 .P1. LDMDB R1!, {R3-R4,R12,R14}
+i_A 0x000011d8: r u w 0xe9205018 .P . STMDB R0!, {R3-R4,R12,R14}
+i_A 0x000011ec: r u w 0xe3720010 ..r. CMN R2, #10
+i_A 0x000011f0: r u w 0xa9315018 .P1. LDMGEDB R1!, {R3-R4,R12,R14}
+i_A 0x000011f4: r u w 0xa9205018 .P . STMGEDB R0!, {R3-R4,R12,R14}
+d_A 0x00000ae4: r u w 0x4152474f OGRA 
+d_A 0x00000ae8: r u w 0x53202c4d M, S 
+d_A 0x00000aec: r u w 0x20454d4f OME S
+d_A 0x00000af0: r u w 0x49525453 STRI 
+i_A 0x000011f8: r u w 0xa2422010 . B. SUBGE R2, R2, #10
+d_A 0x00001514: w u w 0x4152474f OGRA 
+d_A 0x00001518: w u w 0x53202c4d M, S 
+d_A 0x0000151c: w u w 0x20454d4f OME S
+d_A 0x00001520: w u w 0x49525453 STRI 
+i_A 0x000011fc: r u w 0xe2922014 . .. ADDS R2, R2, #14
+i_A 0x00001200: r u w 0xa9315008 .P1. LDMGEDB R1!, {R3,R12,R14}
+i_A 0x00001204: r u w 0xa9205008 .P . STMGEDB R0!, {R3,R12,R14}
+d_A 0x00000ad8: r u w 0x59524844 DHRY 
+d_A 0x00000adc: r u w 0x4e4f5453 STON 
+d_A 0x00000ae0: r u w 0x52502045 E PR 
+i_A 0x00001208: r u w 0xa242200c . B. SUBGE R2, R2, #C
+d_A 0x00001508: w u w 0x59524844 DHRY 
+d_A 0x0000150c: w u w 0x4e4f5453 STON 
+d_A 0x00001510: w u w 0x52502045 E PR 
+i_A 0x0000120c: r u w 0xe8bd4010 .@.. LDMIA R13!, {R4,R14}
+i_A 0x00001210: r u w 0xe2922008 . .. ADDS R2, R2, #8
+d_A 0x00000470: r u w 0x00000000 .... 
+d_A 0x00000474: r u w 0x00000948 H... 
+i_A 0x00001214: r u w 0xba000005 .... BLT 0000001C
+i_A 0x00001218: r u w 0xe2522004 . R. SUBS R2, R2, #4
+i_A 0x0000121c: r u w 0xb5313004 .01. LDRLT R3, [R1, -#4]!
+i_A 0x00001230: r u w 0xe2922004 . .. ADDS R2, R2, #4
+i_A 0x00001234: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00001238: r u w 0xe3520002 ..R. CMP R2, #2
+i_A 0x0000123c: r u w 0xe5713001 .0q. LDRB R3, [R1, -#1]!
+i_A 0x00000948: r u w 0xe28fef6a j... ADD R14, R15, #1A8
+i_A 0x0000094c: r u w 0xe89e037e ~... LDMIA R14, {R1-R6,R8-R9}
+i_A 0x00000950: r u w 0xe28d0020 ... ADD R0, R13, #20
+d_A 0x00000af8: r u w 0x59524844 DHRY 
+d_A 0x00000afc: r u w 0x4e4f5453 STON 
+d_A 0x00000b00: r u w 0x52502045 E PR 
+d_A 0x00000b04: r u w 0x4152474f OGRA 
+d_A 0x00000b08: r u w 0x31202c4d M, 1 
+d_A 0x00000b0c: r u w 0x20545327 'ST S
+d_A 0x00000b10: r u w 0x49525453 STRI 
+d_A 0x00000b14: r u w 0x0000474e NG.. 
+i_A 0x00000954: r u w 0xe880037e ~... STMIA R0, {R1-R6,R8-R9}
+i_A 0x00000958: r u w 0xe59f81b8 .... LDR R8, 000001C0
+d_A 0x00000498: w u w 0x59524844 DHRY 
+d_A 0x0000049c: w u w 0x4e4f5453 STON 
+d_A 0x000004a0: w u w 0x52502045 E PR 
+d_A 0x000004a4: w u w 0x4152474f OGRA 
+d_A 0x000004a8: w u w 0x31202c4d M, 1 
+d_A 0x000004ac: w u w 0x20545327 'ST S
+d_A 0x000004b0: w u w 0x49525453 STRI 
+d_A 0x000004b4: w u w 0x0000474e NG.. 
+i_A 0x0000095c: r u w 0xe3a0000a .... MOV R0, #A
+i_A 0x00000960: r u w 0xe588015c \... STR R0, [R8, +#15C]
+d_A 0x00000b18: r u w 0x000015f0 .... 
+i_A 0x00000964: r u w 0xe28f0e1b .... ADD R0, R15, #1B0
+i_A 0x00000968: r u w 0xe3a09002 .... MOV R9, #2
+d_A 0x0000174c: w u w 0x0000000a .... 
+i_A 0x0000096c: r u w 0xebfffdbc .... BL FFFFF6F8
+i_A 0x00000970: r u w 0xebfffdb8 .... BL FFFFF6E8
+i_A 0x00000974: r u w 0xe59fa1a4 .... LDR R10, 000001AC
+i_A 0x00000064: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000068: r u w 0xe4d10001 .... LDRB R0, [R1], +#1
+i_A 0x0000006c: r u w 0xe3500000 ..P. CMP R0, #0
+d_A 0x00000b1c: r u b 0xaaaaaa44 D... 
+i_A 0x00000070: r u w 0x1f000000 .... SWINE 000000
+i_A 0x00000074: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000078: r u w 0xeafffffa .... B FFFFFFF0
+i_A 0x00000008: r p w 0xea000003 .... B 00000014
+i_A 0x0000000c: r p w 0xea00000c .... B 00000038
+i_A 0x00000010: r p w 0xea00000b .... B 00000034
+i_A 0x0000001c: r p w 0xe92d0002 ..-. STMDB R13!, {R1}
+i_A 0x00000020: r p w 0xe3a01413 .... MOV R1, #13000000
+d_A 0x000008e4: w p w 0x00000b1d .... 
+i_A 0x00000024: r p w 0xe5810000 .... STR R0, [R1]
+i_A 0x00000028: r p w 0xe8bd0002 .... LDMIA R13!, {R1}
+i_A 0x0000002c: r p w 0xe1b0f00e .... MOVS R15, R14
+d_A 0x13000000: w p w 0x00000044 D... 
+d_A 0x000008e4: r p w 0x00000b1d .... 
+i_A 0x00000030: r p w 0xe59fd8b0 .... LDR R13, 000008B8
+i_A 0x00000034: r p w 0xe3a00010 .... MOV R0, #10
+i_A 0x00000074: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000078: r u w 0xeafffffa .... B FFFFFFF0
+i_A 0x0000007c: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000080: r u w 0xe3a02008 . .. MOV R2, #8
+i_A 0x00000068: r u w 0xe4d10001 .... LDRB R0, [R1], +#1
+i_A 0x0000006c: r u w 0xe3500000 ..P. CMP R0, #0
+d_A 0x00000b1d: r u b 0xaaaa3aaa .:.. 
+i_A 0x00000070: r u w 0x1f000000 .... SWINE 000000
+i_A 0x00000074: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000078: r u w 0xeafffffa .... B FFFFFFF0
+i_A 0x00000008: r p w 0xea000003 .... B 00000014
+i_A 0x0000000c: r p w 0xea00000c .... B 00000038
+i_A 0x00000010: r p w 0xea00000b .... B 00000034
+i_A 0x0000001c: r p w 0xe92d0002 ..-. STMDB R13!, {R1}
+i_A 0x00000020: r p w 0xe3a01413 .... MOV R1, #13000000
+d_A 0x000008e4: w p w 0x00000b1e .... 
+i_A 0x00000024: r p w 0xe5810000 .... STR R0, [R1]
+i_A 0x00000028: r p w 0xe8bd0002 .... LDMIA R13!, {R1}
+i_A 0x0000002c: r p w 0xe1b0f00e .... MOVS R15, R14
+d_A 0x13000000: w p w 0x0000003a :... 
+d_A 0x000008e4: r p w 0x00000b1e .... 
+i_A 0x00000030: r p w 0xe59fd8b0 .... LDR R13, 000008B8
+i_A 0x00000034: r p w 0xe3a00010 .... MOV R0, #10
+i_A 0x00000074: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000078: r u w 0xeafffffa .... B FFFFFFF0
+i_A 0x0000007c: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000080: r u w 0xe3a02008 . .. MOV R2, #8
+i_A 0x00000068: r u w 0xe4d10001 .... LDRB R0, [R1], +#1
+i_A 0x0000006c: r u w 0xe3500000 ..P. CMP R0, #0
+d_A 0x00000b1e: r u b 0xaa0aaaaa .... 
+i_A 0x00000070: r u w 0x1f000000 .... SWINE 000000
+i_A 0x00000074: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000078: r u w 0xeafffffa .... B FFFFFFF0
+i_A 0x00000008: r p w 0xea000003 .... B 00000014
+i_A 0x0000000c: r p w 0xea00000c .... B 00000038
+i_A 0x00000010: r p w 0xea00000b .... B 00000034
+i_A 0x0000001c: r p w 0xe92d0002 ..-. STMDB R13!, {R1}
+i_A 0x00000020: r p w 0xe3a01413 .... MOV R1, #13000000
+d_A 0x000008e4: w p w 0x00000b1f .... 
+i_A 0x00000024: r p w 0xe5810000 .... STR R0, [R1]
+i_A 0x00000028: r p w 0xe8bd0002 .... LDMIA R13!, {R1}
+i_A 0x0000002c: r p w 0xe1b0f00e .... MOVS R15, R14
+d_A 0x13000000: w p w 0x0000000a .... 
+d_A 0x000008e4: r p w 0x00000b1f .... 
+i_A 0x00000030: r p w 0xe59fd8b0 .... LDR R13, 000008B8
+i_A 0x00000034: r p w 0xe3a00010 .... MOV R0, #10
+i_A 0x00000074: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000078: r u w 0xeafffffa .... B FFFFFFF0
+i_A 0x0000007c: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000080: r u w 0xe3a02008 . .. MOV R2, #8
+i_A 0x00000068: r u w 0xe4d10001 .... LDRB R0, [R1], +#1
+i_A 0x0000006c: r u w 0xe3500000 ..P. CMP R0, #0
+d_A 0x00000b1f: r u b 0x00aaaaaa .... 
+i_A 0x00000070: r u w 0x1f000000 .... SWINE 000000
+i_A 0x00000074: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000078: r u w 0xeafffffa .... B FFFFFFF0
+i_A 0x0000007c: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000970: r u w 0xebfffdb8 .... BL FFFFF6E8
+i_A 0x00000974: r u w 0xe59fa1a4 .... LDR R10, 000001AC
+i_A 0x00000978: r u w 0xe3a05001 .P.. MOV R5, #1
+i_A 0x00000058: r u w 0xe3a00005 .... MOV R0, #5
+i_A 0x0000005c: r u w 0xef000000 .... SWI 000000
+i_A 0x00000060: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000064: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000008: r p w 0xea000003 .... B 00000014
+i_A 0x0000000c: r p w 0xea00000c .... B 00000038
+i_A 0x00000010: r p w 0xea00000b .... B 00000034
+i_A 0x0000001c: r p w 0xe92d0002 ..-. STMDB R13!, {R1}
+i_A 0x00000020: r p w 0xe3a01413 .... MOV R1, #13000000
+d_A 0x000008e4: w p w 0x00000b20 ... A
+i_A 0x00000024: r p w 0xe5810000 .... STR R0, [R1]
+i_A 0x00000028: r p w 0xe8bd0002 .... LDMIA R13!, {R1}
+i_A 0x0000002c: r p w 0xe1b0f00e .... MOVS R15, R14
+d_A 0x13000000: w p w 0x00000005 .... 
+d_A 0x000008e4: r p w 0x00000b20 ... A
+i_A 0x00000030: r p w 0xe59fd8b0 .... LDR R13, 000008B8
+i_A 0x00000034: r p w 0xe3a00010 .... MOV R0, #10
+i_A 0x00000060: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000064: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000068: r u w 0xe4d10001 .... LDRB R0, [R1], +#1
+i_A 0x00000974: r u w 0xe59fa1a4 .... LDR R10, 000001AC
+i_A 0x00000978: r u w 0xe3a05001 .P.. MOV R5, #1
+i_A 0x0000097c: r u w 0xe3a0b001 .... MOV R11, #1
+d_A 0x00000b20: r u w 0x00001528 (... 
+i_A 0x00000980: r u w 0xe587001c .... STR R0, [R7, +#1C]
+i_A 0x00000984: r u w 0xeb0000c4 .... BL 00000318
+i_A 0x00000988: r u w 0xeb0000b8 .... BL 000002E8
+d_A 0x000014b4: w u w 0x00000005 .... 
+i_A 0x0000098c: r u w 0xe3a00002 .... MOV R0, #2
+i_A 0x00000c9c: r u w 0xe51f01d4 .... LDR R0, FFFFFE34
+i_A 0x00000ca0: r u w 0xe3a01041 A... MOV R1, #41
+i_A 0x00000ca4: r u w 0xe5c01010 .... STRB R1, [R0, +#10]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000ca8: r u w 0xe3a01000 .... MOV R1, #0
+i_A 0x00000cac: r u w 0xe580100c .... STR R1, [R0, +#C]
+d_A 0x000014a8: w u b 0x41414141 AAAA 
+i_A 0x00000cb0: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000cb4: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+d_A 0x000014a4: w u w 0x00000000 .... 
+i_A 0x00000cb8: r u w 0xe1a05000 .P.. MOV R5, R0
+i_A 0x00000988: r u w 0xeb0000b8 .... BL 000002E8
+i_A 0x0000098c: r u w 0xe3a00002 .... MOV R0, #2
+i_A 0x00000990: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+i_A 0x00000c70: r u w 0xe51f01a8 .... LDR R0, FFFFFE60
+i_A 0x00000c74: r u w 0xe5d01010 .... LDRB R1, [R0, +#10]
+i_A 0x00000c78: r u w 0xe590200c . .. LDR R2, [R0, +#C]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000c7c: r u w 0xe3510041 A.Q. CMP R1, #41
+d_A 0x000014a8: r u b 0xaaaaaa41 A... 
+i_A 0x00000c80: r u w 0x13a01000 .... MOVNE R1, #0
+d_A 0x000014a4: r u w 0x00000000 .... 
+i_A 0x00000c84: r u w 0x03a01001 .... MOVEQ R1, #1
+i_A 0x00000c88: r u w 0xe1811002 .... ORR R1, R1, R2
+i_A 0x00000c8c: r u w 0xe580100c .... STR R1, [R0, +#C]
+i_A 0x00000c90: r u w 0xe3a01042 B... MOV R1, #42
+i_A 0x00000c94: r u w 0xe5c01014 .... STRB R1, [R0, +#14]
+d_A 0x000014a4: w u w 0x00000001 .... 
+i_A 0x00000c98: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000c9c: r u w 0xe51f01d4 .... LDR R0, FFFFFE34
+d_A 0x000014ac: w u b 0x42424242 BBBB 
+i_A 0x00000ca0: r u w 0xe3a01041 A... MOV R1, #41
+i_A 0x0000098c: r u w 0xe3a00002 .... MOV R0, #2
+i_A 0x00000990: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+i_A 0x00000994: r u w 0xe28fef62 b... ADD R14, R15, #188
+i_A 0x00000998: r u w 0xe8be100e .... LDMIA R14!, {R1-R3,R12}
+d_A 0x000004c0: w u w 0x00000002 .... 
+i_A 0x0000099c: r u w 0xe1a0000d .... MOV R0, R13
+d_A 0x00000b24: r u w 0x59524844 DHRY 
+d_A 0x00000b28: r u w 0x4e4f5453 STON 
+d_A 0x00000b2c: r u w 0x52502045 E PR 
+d_A 0x00000b30: r u w 0x4152474f OGRA 
+i_A 0x000009a0: r u w 0xe8a0100e .... STMIA R0!, {R1-R3,R12}
+i_A 0x000009a4: r u w 0xe89e100e .... LDMIA R14, {R1-R3,R12}
+d_A 0x00000478: w u w 0x59524844 DHRY 
+d_A 0x0000047c: w u w 0x4e4f5453 STON 
+d_A 0x00000480: w u w 0x52502045 E PR 
+d_A 0x00000484: w u w 0x4152474f OGRA 
+i_A 0x000009a8: r u w 0xe880100e .... STMIA R0, {R1-R3,R12}
+d_A 0x00000b34: r u w 0x32202c4d M, 2 
+d_A 0x00000b38: r u w 0x20444e27 'ND S
+d_A 0x00000b3c: r u w 0x49525453 STRI 
+d_A 0x00000b40: r u w 0x0000474e NG.. 
+i_A 0x000009ac: r u w 0xe5cdb040 @... STRB R11, [R13, +#40]
+d_A 0x00000488: w u w 0x32202c4d M, 2 
+d_A 0x0000048c: w u w 0x20444e27 'ND S
+d_A 0x00000490: w u w 0x49525453 STRI 
+d_A 0x00000494: w u w 0x0000474e NG.. 
+i_A 0x000009b0: r u w 0xe1a0100d .... MOV R1, R13
+i_A 0x000009b4: r u w 0xe28d0020 ... ADD R0, R13, #20
+d_A 0x000004b8: w u b 0x01010101 .... 
+i_A 0x000009b8: r u w 0xe3a04003 .@.. MOV R4, #3
+i_A 0x000009bc: r u w 0xeb000101 .... BL 0000040C
+i_A 0x000009c0: r u w 0xe2700001 ..p. RSBS R0, R0, #1
+i_A 0x000009c4: r u w 0x33a00000 ...3 MOVCC R0, #0
+i_A 0x00000dc8: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000dcc: r u w 0xe1a03000 .0.. MOV R3, R0
+d_A 0x0000046c: w u w 0x00000003 .... 
+d_A 0x00000470: w u w 0x00000001 .... 
+d_A 0x00000474: w u w 0x000009c0 .... 
+i_A 0x00000dd0: r u w 0xe1a02001 . .. MOV R2, R1
+i_A 0x00000dd4: r u w 0xe3a04002 .@.. MOV R4, #2
+i_A 0x00000dd8: r u w 0xe0820004 .... ADD R0, R2, R4
+i_A 0x00000ddc: r u w 0xe5d01001 .... LDRB R1, [R0, +#1]
+i_A 0x00000de0: r u w 0xe7d30004 .... LDRB R0, [R3, +R4]
+i_A 0x00000de4: r u w 0xebffffee .... BL FFFFFFC0
+d_A 0x0000047b: r u b 0x59aaaaaa ...Y 
+i_A 0x00000de8: r u w 0xe3500000 ..P. CMP R0, #0
+d_A 0x0000049a: r u b 0xaa52aaaa ..R. 
+i_A 0x00000dec: r u w 0x03a0c041 A... MOVEQ R12, #41
+i_A 0x00000da4: r u w 0xe20000ff .... AND R0, R0, #FF
+i_A 0x00000da8: r u w 0xe20110ff .... AND R1, R1, #FF
+i_A 0x00000dac: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000db0: r u w 0x059f100c .... LDREQ R1, 00000014
+i_A 0x00000db4: r u w 0x05c10000 .... STREQB R0, [R1]
+i_A 0x00000db8: r u w 0x13a00000 .... MOVNE R0, #0
+i_A 0x00000dbc: r u w 0x03a00001 .... MOVEQ R0, #1
+i_A 0x00000dc0: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000dc4: r u w 0x000014a8 .... ANDEQ R1, R0, R8 LSR #9
+i_A 0x00000dc8: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000de8: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000dec: r u w 0x03a0c041 A... MOVEQ R12, #41
+i_A 0x00000df0: r u w 0x02844001 .@.. ADDEQ R4, R4, #1
+i_A 0x00000df4: r u w 0xe3540002 ..T. CMP R4, #2
+i_A 0x00000df8: r u w 0xdafffff6 .... BLE FFFFFFE0
+i_A 0x00000dfc: r u w 0xe24c0057 W.L. SUB R0, R12, #57
+i_A 0x00000e00: r u w 0xe3500003 ..P. CMP R0, #3
+i_A 0x00000e04: r u w 0x33a04007 .@.3 MOVCC R4, #7
+i_A 0x00000e08: r u w 0xe35c0052 R.\. CMP R12, #52
+i_A 0x00000e0c: r u w 0xe3a05001 .P.. MOV R5, #1
+i_A 0x00000e10: r u w 0x01a00005 .... MOVEQ R0, R5
+i_A 0x00000e14: r u w 0x08bd8030 0... LDMEQIA R13!, {R4-R5,R15}
+i_A 0x00000e18: r u w 0xe1a01002 .... MOV R1, R2
+i_A 0x00000e1c: r u w 0xe1a00003 .... MOV R0, R3
+i_A 0x00000e20: r u w 0xeb000025 %... BL 0000009C
+i_A 0x00000e24: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000e28: r u w 0xd3a00000 .... MOVLE R0, #0
+i_A 0x00000ebc: r u w 0xe1802001 . .. ORR R2, R0, R1
+i_A 0x00000ec0: r u w 0xe3120003 .... TST R2, #3
+i_A 0x00000ec4: r u w 0x059f3084 .0.. LDREQ R3, 0000008C
+i_A 0x00000ec8: r u w 0x0a000000 .... BEQ 00000008
+i_A 0x00000ecc: r u w 0xea000016 .... B 00000060
+d_A 0x00000f50: r u w 0x01010101 .... 
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x00000498: r u w 0x59524844 DHRY 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x00000478: r u w 0x59524844 DHRY 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ee8: r u w 0xe1120383 .... TST R2, R3 LSL #7
+i_A 0x00000eec: r u w 0x0afffff7 .... BEQ FFFFFFE4
+i_A 0x00000ef0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ef4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x0000049c: r u w 0x4e4f5453 STON 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x0000047c: r u w 0x4e4f5453 STON 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ee8: r u w 0xe1120383 .... TST R2, R3 LSL #7
+i_A 0x00000eec: r u w 0x0afffff7 .... BEQ FFFFFFE4
+i_A 0x00000ef0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ef4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x000004a0: r u w 0x52502045 E PR 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x00000480: r u w 0x52502045 E PR 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ee8: r u w 0xe1120383 .... TST R2, R3 LSL #7
+i_A 0x00000eec: r u w 0x0afffff7 .... BEQ FFFFFFE4
+i_A 0x00000ef0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ef4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x000004a4: r u w 0x4152474f OGRA 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x00000484: r u w 0x4152474f OGRA 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ee8: r u w 0xe1120383 .... TST R2, R3 LSL #7
+i_A 0x00000eec: r u w 0x0afffff7 .... BEQ FFFFFFE4
+i_A 0x00000ef0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ef4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x000004a8: r u w 0x31202c4d M, 1 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x00000488: r u w 0x32202c4d M, 2 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ef8: r u w 0xe1b00c0c .... MOVS R0, R12 LSL #24
+i_A 0x00000efc: r u w 0x11a0f00e .... MOVNE R15, R14
+i_A 0x00000f00: r u w 0xe31200ff .... TST R2, #FF
+i_A 0x00000f04: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000f08: r u w 0xe1b0080c .... MOVS R0, R12 LSL #16
+i_A 0x00000f0c: r u w 0x11a0f00e .... MOVNE R15, R14
+i_A 0x00000f10: r u w 0xe3120cff .... TST R2, #FF00
+i_A 0x00000f14: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000f18: r u w 0xe1b0040c .... MOVS R0, R12 LSL #8
+i_A 0x00000f1c: r u w 0x11a0f00e .... MOVNE R15, R14
+i_A 0x00000f20: r u w 0xe31208ff .... TST R2, #FF0000
+i_A 0x00000f24: r u w 0x11a0000c .... MOVNE R0, R12
+i_A 0x00000f28: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000f2c: r u w 0xe4d02001 . .. LDRB R2, [R0], +#1
+i_A 0x00000f30: r u w 0xe4d13001 .0.. LDRB R3, [R1], +#1
+i_A 0x00000e24: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000e28: r u w 0xd3a00000 .... MOVLE R0, #0
+i_A 0x00000e2c: r u w 0xd8bd8030 0... LDMLEIA R13!, {R4-R5,R15}
+i_A 0x00000e30: r u w 0xe2840007 .... ADD R0, R4, #7
+d_A 0x0000046c: r u w 0x00000003 .... 
+d_A 0x00000470: r u w 0x00000001 .... 
+d_A 0x00000474: r u w 0x000009c0 .... 
+i_A 0x00000e34: r u w 0xe51f1110 .... LDR R1, FFFFFEF8
+i_A 0x000009c0: r u w 0xe2700001 ..p. RSBS R0, R0, #1
+i_A 0x000009c4: r u w 0x33a00000 ...3 MOVCC R0, #0
+i_A 0x000009c8: r u w 0xe587000c .... STR R0, [R7, +#C]
+i_A 0x000009cc: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009d0: r u w 0xe3500003 ..P. CMP R0, #3
+d_A 0x000014a4: w u w 0x00000001 .... 
+i_A 0x000009d4: r u w 0xaa00000c .... BGE 00000038
+d_A 0x000004c0: r u w 0x00000002 .... 
+i_A 0x000009d8: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009dc: r u w 0xe28d2044 D .. ADD R2, R13, #44
+i_A 0x000009e0: r u w 0xe0800100 .... ADD R0, R0, R0 LSL #2
+d_A 0x000004c0: r u w 0x00000002 .... 
+i_A 0x000009e4: r u w 0xe0400004 ..@. SUB R0, R0, R4
+i_A 0x000009e8: r u w 0xe58d0044 D... STR R0, [R13, +#44]
+i_A 0x000009ec: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009f0: r u w 0xe1a01004 .... MOV R1, R4
+d_A 0x000004bc: w u w 0x00000007 .... 
+i_A 0x000009f4: r u w 0xeb0000cd .... BL 0000033C
+d_A 0x000004c0: r u w 0x00000002 .... 
+i_A 0x000009f8: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009fc: r u w 0xe2800001 .... ADD R0, R0, #1
+i_A 0x00000d30: r u w 0xe2800002 .... ADD R0, R0, #2
+i_A 0x00000d34: r u w 0xe0810000 .... ADD R0, R1, R0
+i_A 0x00000d38: r u w 0xe5820000 .... STR R0, [R2]
+i_A 0x00000d3c: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000d40: r u w 0xe52de004 ..-. STR R14, [R13, -#4]!
+d_A 0x000004bc: w u w 0x00000007 .... 
+i_A 0x00000d44: r u w 0xe2822005 . .. ADD R2, R2, #5
+i_A 0x000009f8: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009fc: r u w 0xe2800001 .... ADD R0, R0, #1
+i_A 0x00000a00: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+d_A 0x000004c0: r u w 0x00000002 .... 
+i_A 0x00000a04: r u w 0xe1500004 ..P. CMP R0, R4
+i_A 0x00000a08: r u w 0xbafffff2 .... BLT FFFFFFD0
+d_A 0x000004c0: w u w 0x00000003 .... 
+i_A 0x00000a0c: r u w 0xe1a01008 .... MOV R1, R8
+i_A 0x00000a10: r u w 0xe1a0000a .... MOV R0, R10
+i_A 0x00000a14: r u w 0xe59d2048 H .. LDR R2, [R13, +#48]
+i_A 0x00000a18: r u w 0xe59d3044 D0.. LDR R3, [R13, +#44]
+i_A 0x00000a1c: r u w 0xeb0000c7 .... BL 00000324
+d_A 0x000004c0: r u w 0x00000003 .... 
+i_A 0x00000a20: r u w 0xe5970000 .... LDR R0, [R7]
+d_A 0x000004bc: r u w 0x00000007 .... 
+i_A 0x00000a24: r u w 0xeb00004e N... BL 00000140
+i_A 0x00000d40: r u w 0xe52de004 ..-. STR R14, [R13, -#4]!
+i_A 0x00000d44: r u w 0xe2822005 . .. ADD R2, R2, #5
+i_A 0x00000d48: r u w 0xe7803102 .1.. STR R3, [R0, +R2 LSL #2]
+d_A 0x00000474: w u w 0x00000a20 ... A
+i_A 0x00000d4c: r u w 0xe080c102 .... ADD R12, R0, R2 LSL #2
+i_A 0x00000d50: r u w 0xe58c2078 x .. STR R2, [R12, +#78]
+d_A 0x00001548: w u w 0x00000007 .... 
+i_A 0x00000d54: r u w 0xe58c3004 .0.. STR R3, [R12, +#4]
+i_A 0x00000d58: r u w 0xe082e102 .... ADD R14, R2, R2 LSL #2
+d_A 0x000015c0: w u w 0x00000008 .... 
+i_A 0x00000d5c: r u w 0xe081118e .... ADD R1, R1, R14 LSL #3
+d_A 0x0000154c: w u w 0x00000007 .... 
+i_A 0x00000d60: r u w 0xe282c001 .... ADD R12, R2, #1
+i_A 0x00000d64: r u w 0xe1a03002 .0.. MOV R3, R2
+i_A 0x00000d68: r u w 0xe7812103 .!.. STR R2, [R1, +R3 LSL #2]
+i_A 0x00000d6c: r u w 0xe2833001 .0.. ADD R3, R3, #1
+i_A 0x00000d70: r u w 0xe15c0003 ..\. CMP R12, R3
+d_A 0x00001750: w u w 0x00000008 .... 
+i_A 0x00000d74: r u w 0xaafffffb .... BGE FFFFFFF4
+i_A 0x00000d78: r u w 0xe0813102 .1.. ADD R3, R1, R2 LSL #2
+i_A 0x00000d7c: r u w 0xe2431004 ..C. SUB R1, R3, #4
+i_A 0x00000d68: r u w 0xe7812103 .!.. STR R2, [R1, +R3 LSL #2]
+i_A 0x00000d6c: r u w 0xe2833001 .0.. ADD R3, R3, #1
+i_A 0x00000d70: r u w 0xe15c0003 ..\. CMP R12, R3
+d_A 0x00001754: w u w 0x00000008 .... 
+i_A 0x00000d74: r u w 0xaafffffb .... BGE FFFFFFF4
+i_A 0x00000d78: r u w 0xe0813102 .1.. ADD R3, R1, R2 LSL #2
+i_A 0x00000d7c: r u w 0xe2431004 ..C. SUB R1, R3, #4
+i_A 0x00000d80: r u w 0xe591c000 .... LDR R12, [R1]
+i_A 0x00000d84: r u w 0xe28cc001 .... ADD R12, R12, #1
+i_A 0x00000d88: r u w 0xe581c000 .... STR R12, [R1]
+d_A 0x0000174c: r u w 0x0000000a .... 
+i_A 0x00000d8c: r u w 0xe7900102 .... LDR R0, [R0, +R2 LSL #2]
+i_A 0x00000d90: r u w 0xe3a01005 .... MOV R1, #5
+d_A 0x0000174c: w u w 0x0000000b .... 
+i_A 0x00000d94: r u w 0xe5830320 ... STR R0, [R3, +#320]
+d_A 0x00001548: r u w 0x00000007 .... 
+i_A 0x00000d98: r u w 0xe51f0074 t... LDR R0, FFFFFF94
+i_A 0x00000d9c: r u w 0xe5801000 .... STR R1, [R0]
+d_A 0x00001a70: w u w 0x00000007 .... 
+i_A 0x00000da0: r u w 0xe49df004 .... LDR R15, [R13], +#4
+d_A 0x00000d2c: r u w 0x000014a0 .... 
+i_A 0x00000da4: r u w 0xe20000ff .... AND R0, R0, #FF
+d_A 0x000014a0: w u w 0x00000005 .... 
+d_A 0x00000474: r u w 0x00000a20 ... A
+i_A 0x00000da8: r u w 0xe20110ff .... AND R1, R1, #FF
+i_A 0x00000a20: r u w 0xe5970000 .... LDR R0, [R7]
+i_A 0x00000a24: r u w 0xeb00004e N... BL 00000140
+i_A 0x00000a28: r u w 0xe5d70014 .... LDRB R0, [R7, +#14]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000a2c: r u w 0xe3a06041 A`.. MOV R6, #41
+i_A 0x00000b64: r u w 0xe92d4070 p@-. STMDB R13!, {R4-R6,R14}
+i_A 0x00000b68: r u w 0xe51f60a0 .`.. LDR R6, FFFFFF68
+d_A 0x00000468: w u w 0x00000003 .... 
+d_A 0x0000046c: w u w 0x00000001 .... 
+d_A 0x00000470: w u w 0x20545327 'ST S
+d_A 0x00000474: w u w 0x00000a28 (... 
+i_A 0x00000b6c: r u w 0xe1a04000 .@.. MOV R4, R0
+i_A 0x00000b70: r u w 0xe596e000 .... LDR R14, [R6]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000b74: r u w 0xe5900000 .... LDR R0, [R0]
+i_A 0x00000b78: r u w 0xe8be100e .... LDMIA R14!, {R1-R3,R12}
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000b7c: r u w 0xe1a05000 .P.. MOV R5, R0
+d_A 0x000014f8: r u w 0x000014c8 .... 
+d_A 0x000014f8: r u w 0x000014c8 .... 
+d_A 0x000014fc: r u w 0x00000000 .... 
+d_A 0x00001500: r u w 0x00000002 .... 
+d_A 0x00001504: r u w 0x00000028 (... 
+i_A 0x00000b80: r u w 0xe8a0100e .... STMIA R0!, {R1-R3,R12}
+i_A 0x00000b84: r u w 0xe8be100e .... LDMIA R14!, {R1-R3,R12}
+d_A 0x000014c8: w u w 0x000014c8 .... 
+d_A 0x000014cc: w u w 0x00000000 .... 
+d_A 0x000014d0: w u w 0x00000002 .... 
+d_A 0x000014d4: w u w 0x00000028 (... 
+i_A 0x00000b88: r u w 0xe8a0100e .... STMIA R0!, {R1-R3,R12}
+d_A 0x00001508: r u w 0x59524844 DHRY 
+d_A 0x0000150c: r u w 0x4e4f5453 STON 
+d_A 0x00001510: r u w 0x52502045 E PR 
+d_A 0x00001514: r u w 0x4152474f OGRA 
+i_A 0x00000b8c: r u w 0xe89e100e .... LDMIA R14, {R1-R3,R12}
+d_A 0x000014d8: w u w 0x59524844 DHRY 
+d_A 0x000014dc: w u w 0x4e4f5453 STON 
+d_A 0x000014e0: w u w 0x52502045 E PR 
+d_A 0x000014e4: w u w 0x4152474f OGRA 
+i_A 0x00000b90: r u w 0xe880100e .... STMIA R0, {R1-R3,R12}
+d_A 0x00001518: r u w 0x53202c4d M, S 
+d_A 0x0000151c: r u w 0x20454d4f OME S
+d_A 0x00001520: r u w 0x49525453 STRI 
+d_A 0x00001524: r u w 0x0000474e NG.. 
+i_A 0x00000b94: r u w 0xe3a00005 .... MOV R0, #5
+d_A 0x000014e8: w u w 0x53202c4d M, S 
+d_A 0x000014ec: w u w 0x20454d4f OME S
+d_A 0x000014f0: w u w 0x49525453 STRI 
+d_A 0x000014f4: w u w 0x0000474e NG.. 
+i_A 0x00000b98: r u w 0xe584000c .... STR R0, [R4, +#C]
+i_A 0x00000b9c: r u w 0xe585000c .... STR R0, [R5, +#C]
+i_A 0x00000ba0: r u w 0xe5940000 .... LDR R0, [R4]
+d_A 0x00001504: w u w 0x00000005 .... 
+i_A 0x00000ba4: r u w 0xe5850000 .... STR R0, [R5]
+d_A 0x000014d4: w u w 0x00000005 .... 
+i_A 0x00000ba8: r u w 0xe1a00005 .... MOV R0, R5
+d_A 0x000014f8: r u w 0x000014c8 .... 
+i_A 0x00000bac: r u w 0xeb000025 %... BL 0000009C
+d_A 0x000014c8: w u w 0x000014c8 .... 
+i_A 0x00000bb0: r u w 0xe5d50004 .... LDRB R0, [R5, +#4]
+i_A 0x00000bb4: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000c48: r u w 0xe51f1180 .... LDR R1, FFFFFE88
+i_A 0x00000c4c: r u w 0xe5912000 . .. LDR R2, [R1]
+i_A 0x00000c50: r u w 0xe3520000 ..R. CMP R2, #0
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000c54: r u w 0x15922000 . .. LDRNE R2, [R2]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000c58: r u w 0x15802000 . .. STRNE R2, [R0]
+i_A 0x00000c5c: r u w 0xe5910000 .... LDR R0, [R1]
+d_A 0x000014f8: r u w 0x000014c8 .... 
+i_A 0x00000c60: r u w 0xe5911008 .... LDR R1, [R1, +#8]
+d_A 0x000014c8: w u w 0x000014c8 .... 
+i_A 0x00000c64: r u w 0xe280200c . .. ADD R2, R0, #C
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000c68: r u w 0xe3a0000a .... MOV R0, #A
+d_A 0x000014a0: r u w 0x00000005 .... 
+i_A 0x00000c6c: r u w 0xea00002f /... B 000000C4
+i_A 0x00000c70: r u w 0xe51f01a8 .... LDR R0, FFFFFE60
+i_A 0x00000c74: r u w 0xe5d01010 .... LDRB R1, [R0, +#10]
+i_A 0x00000d30: r u w 0xe2800002 .... ADD R0, R0, #2
+i_A 0x00000d34: r u w 0xe0810000 .... ADD R0, R1, R0
+i_A 0x00000d38: r u w 0xe5820000 .... STR R0, [R2]
+i_A 0x00000d3c: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000d40: r u w 0xe52de004 ..-. STR R14, [R13, -#4]!
+d_A 0x00001504: w u w 0x00000011 .... 
+i_A 0x00000d44: r u w 0xe2822005 . .. ADD R2, R2, #5
+i_A 0x00000bb0: r u w 0xe5d50004 .... LDRB R0, [R5, +#4]
+i_A 0x00000bb4: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000bb8: r u w 0x1a00000c .... BNE 00000038
+d_A 0x000014cc: r u b 0xaaaaaa00 .... 
+i_A 0x00000bbc: r u w 0xe3a00006 .... MOV R0, #6
+i_A 0x00000bc0: r u w 0xe585000c .... STR R0, [R5, +#C]
+i_A 0x00000bc4: r u w 0xe5d40008 .... LDRB R0, [R4, +#8]
+i_A 0x00000bc8: r u w 0xe2851008 .... ADD R1, R5, #8
+d_A 0x000014d4: w u w 0x00000006 .... 
+i_A 0x00000bcc: r u w 0xeb000038 8... BL 000000E8
+d_A 0x00001500: r u b 0xaaaaaa02 .... 
+i_A 0x00000bd0: r u w 0xe5960000 .... LDR R0, [R6]
+i_A 0x00000bd4: r u w 0xe285200c . .. ADD R2, R5, #C
+i_A 0x00000cb4: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000cb8: r u w 0xe1a05000 .P.. MOV R5, R0
+d_A 0x0000045c: w u w 0x000014f8 .... 
+d_A 0x00000460: w u w 0x000014c8 .... 
+d_A 0x00000464: w u w 0x00000bd0 .... 
+i_A 0x00000cbc: r u w 0xe1a04001 .@.. MOV R4, R1
+i_A 0x00000cc0: r u w 0xe5c10000 .... STRB R0, [R1]
+i_A 0x00000cc4: r u w 0xeb00005e ^... BL 00000180
+i_A 0x00000cc8: r u w 0xe3500000 ..P. CMP R0, #0
+d_A 0x000014d0: w u b 0x02020202 .... 
+i_A 0x00000ccc: r u w 0xe3a01003 .... MOV R1, #3
+i_A 0x00000e44: r u w 0xe3500002 ..P. CMP R0, #2
+i_A 0x00000e48: r u w 0x13a00000 .... MOVNE R0, #0
+i_A 0x00000e4c: r u w 0x03a00001 .... MOVEQ R0, #1
+i_A 0x00000e50: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000e54: r u w 0xe1803001 .0.. ORR R3, R0, R1
+i_A 0x00000e58: r u w 0xe3130003 .... TST R3, #3
+i_A 0x00000cc8: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000ccc: r u w 0xe3a01003 .... MOV R1, #3
+i_A 0x00000cd0: r u w 0x05c41000 .... STREQB R1, [R4]
+i_A 0x00000cd4: r u w 0xe3550004 ..U. CMP R5, #4
+i_A 0x00000cd8: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000cdc: r u w 0x908ff105 .... ADDLS R15, R15, R5 LSL #2
+i_A 0x00000ce0: r u w 0xe8bd8030 0... LDMIA R13!, {R4-R5,R15}
+i_A 0x00000ce4: r u w 0xea000005 .... B 0000001C
+i_A 0x00000cec: r u w 0xea00000b .... B 00000034
+i_A 0x00000cf0: r u w 0xe8bd8030 0... LDMIA R13!, {R4-R5,R15}
+i_A 0x00000cf4: r u w 0xe3a00002 .... MOV R0, #2
+i_A 0x00000d20: r u w 0xe3a00001 .... MOV R0, #1
+i_A 0x00000d24: r u w 0xe5c40000 .... STRB R0, [R4]
+i_A 0x00000d28: r u w 0xe8bd8030 0... LDMIA R13!, {R4-R5,R15}
+i_A 0x00000d2c: r u w 0x000014a0 .... ANDEQ R1, R0, R0 LSR #9
+d_A 0x000014d0: w u b 0x01010101 .... 
+d_A 0x0000045c: r u w 0x000014f8 .... 
+d_A 0x00000460: r u w 0x000014c8 .... 
+d_A 0x00000464: r u w 0x00000bd0 .... 
+i_A 0x00000d30: r u w 0xe2800002 .... ADD R0, R0, #2
+i_A 0x00000bd0: r u w 0xe5960000 .... LDR R0, [R6]
+i_A 0x00000bd4: r u w 0xe285200c . .. ADD R2, R5, #C
+i_A 0x00000bd8: r u w 0xe5900000 .... LDR R0, [R0]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000bdc: r u w 0xe3a0100a .... MOV R1, #A
+i_A 0x00000be0: r u w 0xe5850000 .... STR R0, [R5]
+d_A 0x000014f8: r u w 0x000014c8 .... 
+i_A 0x00000be4: r u w 0xe595000c .... LDR R0, [R5, +#C]
+i_A 0x00000be8: r u w 0xe8bd4070 p@.. LDMIA R13!, {R4-R6,R14}
+d_A 0x000014c8: w u w 0x000014c8 .... 
+i_A 0x00000bec: r u w 0xea00004f O... B 00000144
+d_A 0x000014d4: r u w 0x00000006 .... 
+d_A 0x00000468: r u w 0x00000003 .... 
+d_A 0x0000046c: r u w 0x00000001 .... 
+d_A 0x00000470: r u w 0x20545327 'ST S
+d_A 0x00000474: r u w 0x00000a28 (... 
+i_A 0x00000bf0: r u w 0xe5940000 .... LDR R0, [R4]
+i_A 0x00000bf4: r u w 0xe8b0100e .... LDMIA R0!, {R1-R3,R12}
+i_A 0x00000d30: r u w 0xe2800002 .... ADD R0, R0, #2
+i_A 0x00000d34: r u w 0xe0810000 .... ADD R0, R1, R0
+i_A 0x00000d38: r u w 0xe5820000 .... STR R0, [R2]
+i_A 0x00000d3c: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000d40: r u w 0xe52de004 ..-. STR R14, [R13, -#4]!
+d_A 0x000014d4: w u w 0x00000012 .... 
+i_A 0x00000d44: r u w 0xe2822005 . .. ADD R2, R2, #5
+i_A 0x00000a28: r u w 0xe5d70014 .... LDRB R0, [R7, +#14]
+i_A 0x00000a2c: r u w 0xe3a06041 A`.. MOV R6, #41
+i_A 0x00000a30: r u w 0xe3500041 A.P. CMP R0, #41
+d_A 0x000014ac: r u b 0xaaaaaa42 B... 
+i_A 0x00000a34: r u w 0xba000015 .... BLT 0000005C
+i_A 0x00000a38: r u w 0xe1a00006 .... MOV R0, R6
+i_A 0x00000a3c: r u w 0xe3a01043 C... MOV R1, #43
+i_A 0x00000a40: r u w 0xeb0000d7 .... BL 00000364
+i_A 0x00000a44: r u w 0xe5dd1040 @... LDRB R1, [R13, +#40]
+i_A 0x00000a48: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000da4: r u w 0xe20000ff .... AND R0, R0, #FF
+i_A 0x00000da8: r u w 0xe20110ff .... AND R1, R1, #FF
+i_A 0x00000dac: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000db0: r u w 0x059f100c .... LDREQ R1, 00000014
+i_A 0x00000db4: r u w 0x05c10000 .... STREQB R0, [R1]
+i_A 0x00000db8: r u w 0x13a00000 .... MOVNE R0, #0
+i_A 0x00000dbc: r u w 0x03a00001 .... MOVEQ R0, #1
+i_A 0x00000dc0: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000dc4: r u w 0x000014a8 .... ANDEQ R1, R0, R8 LSR #9
+i_A 0x00000dc8: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000a44: r u w 0xe5dd1040 @... LDRB R1, [R13, +#40]
+i_A 0x00000a48: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000a4c: r u w 0x1a00000a .... BNE 00000030
+d_A 0x000004b8: r u b 0xaaaaaa01 .... 
+i_A 0x00000a50: r u w 0xe28d1040 @... ADD R1, R13, #40
+i_A 0x00000a54: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000a7c: r u w 0xe2860001 .... ADD R0, R6, #1
+i_A 0x00000a80: r u w 0xe20060ff .`.. AND R6, R0, #FF
+i_A 0x00000a84: r u w 0xe5d70014 .... LDRB R0, [R7, +#14]
+i_A 0x00000a88: r u w 0xe1560000 ..V. CMP R6, R0
+i_A 0x00000a8c: r u w 0xdaffffe9 .... BLE FFFFFFAC
+d_A 0x000014ac: r u b 0xaaaaaa42 B... 
+i_A 0x00000a90: r u w 0xe59d1048 H... LDR R1, [R13, +#48]
+i_A 0x00000a94: r u w 0xe0000491 .... MUL R0, R1, R4
+i_A 0x00000a38: r u w 0xe1a00006 .... MOV R0, R6
+i_A 0x00000a3c: r u w 0xe3a01043 C... MOV R1, #43
+i_A 0x00000a40: r u w 0xeb0000d7 .... BL 00000364
+i_A 0x00000a44: r u w 0xe5dd1040 @... LDRB R1, [R13, +#40]
+i_A 0x00000a48: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000da4: r u w 0xe20000ff .... AND R0, R0, #FF
+i_A 0x00000da8: r u w 0xe20110ff .... AND R1, R1, #FF
+i_A 0x00000dac: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000db0: r u w 0x059f100c .... LDREQ R1, 00000014
+i_A 0x00000db4: r u w 0x05c10000 .... STREQB R0, [R1]
+i_A 0x00000db8: r u w 0x13a00000 .... MOVNE R0, #0
+i_A 0x00000dbc: r u w 0x03a00001 .... MOVEQ R0, #1
+i_A 0x00000dc0: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000dc4: r u w 0x000014a8 .... ANDEQ R1, R0, R8 LSR #9
+i_A 0x00000dc8: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000a44: r u w 0xe5dd1040 @... LDRB R1, [R13, +#40]
+i_A 0x00000a48: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000a4c: r u w 0x1a00000a .... BNE 00000030
+d_A 0x000004b8: r u b 0xaaaaaa01 .... 
+i_A 0x00000a50: r u w 0xe28d1040 @... ADD R1, R13, #40
+i_A 0x00000a54: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000a7c: r u w 0xe2860001 .... ADD R0, R6, #1
+i_A 0x00000a80: r u w 0xe20060ff .`.. AND R6, R0, #FF
+i_A 0x00000a84: r u w 0xe5d70014 .... LDRB R0, [R7, +#14]
+i_A 0x00000a88: r u w 0xe1560000 ..V. CMP R6, R0
+i_A 0x00000a8c: r u w 0xdaffffe9 .... BLE FFFFFFAC
+d_A 0x000014ac: r u b 0xaaaaaa42 B... 
+i_A 0x00000a90: r u w 0xe59d1048 H... LDR R1, [R13, +#48]
+i_A 0x00000a94: r u w 0xe0000491 .... MUL R0, R1, R4
+i_A 0x00000a98: r u w 0xe59d1044 D... LDR R1, [R13, +#44]
+d_A 0x000004c0: r u w 0x00000003 .... 
+i_A 0x00000a9c: r u w 0xebfffd83 .... BL FFFFF614
+i_A 0x00000aa0: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+d_A 0x000004bc: r u w 0x00000007 .... 
+i_A 0x00000aa4: r u w 0xe28d0048 H... ADD R0, R13, #48
+i_A 0x000000b0: r u w 0xe3a02001 . .. MOV R2, #1
+i_A 0x000000b4: r u w 0xe1510000 ..Q. CMP R1, R0
+i_A 0x000000b8: r u w 0x31a01081 ...1 MOVCC R1, R1 LSL #1
+i_A 0x000000bc: r u w 0x31a02082 . .1 MOVCC R2, R2 LSL #1
+i_A 0x000000c0: r u w 0x3afffffb ...: BCC FFFFFFF4
+i_A 0x000000c4: r u w 0xe3a03000 .0.. MOV R3, #0
+i_A 0x000000c8: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x000000b4: r u w 0xe1510000 ..Q. CMP R1, R0
+i_A 0x000000b8: r u w 0x31a01081 ...1 MOVCC R1, R1 LSL #1
+i_A 0x000000bc: r u w 0x31a02082 . .1 MOVCC R2, R2 LSL #1
+i_A 0x000000c0: r u w 0x3afffffb ...: BCC FFFFFFF4
+i_A 0x000000c4: r u w 0xe3a03000 .0.. MOV R3, #0
+i_A 0x000000c8: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x000000cc: r u w 0x20400001 ..@ SUBCS R0, R0, R1
+i_A 0x000000d0: r u w 0x20833002 .0. ADDCS R3, R3, R2
+i_A 0x000000d4: r u w 0xe1b020a2 . .. MOVS R2, R2 LSR #1
+i_A 0x000000d8: r u w 0x11a010a1 .... MOVNE R1, R1 LSR #1
+i_A 0x000000dc: r u w 0x1afffff9 .... BNE FFFFFFEC
+i_A 0x000000e0: r u w 0xe1a00003 .... MOV R0, R3
+i_A 0x000000e4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x000000c8: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x000000cc: r u w 0x20400001 ..@ SUBCS R0, R0, R1
+i_A 0x000000d0: r u w 0x20833002 .0. ADDCS R3, R3, R2
+i_A 0x000000d4: r u w 0xe1b020a2 . .. MOVS R2, R2 LSR #1
+i_A 0x000000d8: r u w 0x11a010a1 .... MOVNE R1, R1 LSR #1
+i_A 0x000000dc: r u w 0x1afffff9 .... BNE FFFFFFEC
+i_A 0x000000e0: r u w 0xe1a00003 .... MOV R0, R3
+i_A 0x000000e4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x000000e8: r u w 0x00000000 .... ANDEQ R0, R0, R0
+i_A 0x000000ec: r u w 0x00000000 .... ANDEQ R0, R0, R0
+i_A 0x00000aa0: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+i_A 0x00000aa4: r u w 0xe28d0048 H... ADD R0, R13, #48
+i_A 0x00000aa8: r u w 0xeb000058 X... BL 00000168
+d_A 0x000004c0: w u w 0x00000001 .... 
+i_A 0x00000aac: r u w 0xe2855001 .P.. ADD R5, R5, #1
+i_A 0x00000ab0: r u w 0xe1550009 ..U. CMP R5, R9
+i_A 0x00000c10: r u w 0xe51f3148 H1.. LDR R3, FFFFFEC0
+i_A 0x00000c14: r u w 0xe5901000 .... LDR R1, [R0]
+i_A 0x00000c18: r u w 0xe5d32010 . .. LDRB R2, [R3, +#10]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000c1c: r u w 0xe281100a .... ADD R1, R1, #A
+d_A 0x000004c0: r u w 0x00000001 .... 
+i_A 0x00000c20: r u w 0xe3520041 A.R. CMP R2, #41
+d_A 0x000014a8: r u b 0xaaaaaa41 A... 
+i_A 0x00000c24: r u w 0x1a000004 .... BNE 00000018
+i_A 0x00000c28: r u w 0xe5932008 . .. LDR R2, [R3, +#8]
+i_A 0x00000c2c: r u w 0xe2411001 ..A. SUB R1, R1, #1
+i_A 0x00000c30: r u w 0xe0411002 ..A. SUB R1, R1, R2
+d_A 0x000014a0: r u w 0x00000005 .... 
+i_A 0x00000c34: r u w 0xe5801000 .... STR R1, [R0]
+i_A 0x00000c38: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000c3c: r u w 0xe35c0000 ..\. CMP R12, #0
+d_A 0x000004c0: w u w 0x00000005 .... 
+i_A 0x00000c40: r u w 0x1afffff6 .... BNE FFFFFFE0
+i_A 0x00000aac: r u w 0xe2855001 .P.. ADD R5, R5, #1
+i_A 0x00000ab0: r u w 0xe1550009 ..U. CMP R5, R9
+i_A 0x00000ab4: r u w 0xdaffffb2 .... BLE FFFFFED0
+i_A 0x00000ab8: r u w 0xebfffd66 f... BL FFFFF5A0
+i_A 0x00000abc: r u w 0xe5870020 ... STR R0, [R7, +#20]
+i_A 0x00000984: r u w 0xeb0000c4 .... BL 00000318
+i_A 0x00000988: r u w 0xeb0000b8 .... BL 000002E8
+i_A 0x0000098c: r u w 0xe3a00002 .... MOV R0, #2
+i_A 0x00000c9c: r u w 0xe51f01d4 .... LDR R0, FFFFFE34
+i_A 0x00000ca0: r u w 0xe3a01041 A... MOV R1, #41
+i_A 0x00000ca4: r u w 0xe5c01010 .... STRB R1, [R0, +#10]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000ca8: r u w 0xe3a01000 .... MOV R1, #0
+i_A 0x00000cac: r u w 0xe580100c .... STR R1, [R0, +#C]
+d_A 0x000014a8: w u b 0x41414141 AAAA 
+i_A 0x00000cb0: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000cb4: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+d_A 0x000014a4: w u w 0x00000000 .... 
+i_A 0x00000cb8: r u w 0xe1a05000 .P.. MOV R5, R0
+i_A 0x00000988: r u w 0xeb0000b8 .... BL 000002E8
+i_A 0x0000098c: r u w 0xe3a00002 .... MOV R0, #2
+i_A 0x00000990: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+i_A 0x00000c70: r u w 0xe51f01a8 .... LDR R0, FFFFFE60
+i_A 0x00000c74: r u w 0xe5d01010 .... LDRB R1, [R0, +#10]
+i_A 0x00000c78: r u w 0xe590200c . .. LDR R2, [R0, +#C]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000c7c: r u w 0xe3510041 A.Q. CMP R1, #41
+d_A 0x000014a8: r u b 0xaaaaaa41 A... 
+i_A 0x00000c80: r u w 0x13a01000 .... MOVNE R1, #0
+d_A 0x000014a4: r u w 0x00000000 .... 
+i_A 0x00000c84: r u w 0x03a01001 .... MOVEQ R1, #1
+i_A 0x00000c88: r u w 0xe1811002 .... ORR R1, R1, R2
+i_A 0x00000c8c: r u w 0xe580100c .... STR R1, [R0, +#C]
+i_A 0x00000c90: r u w 0xe3a01042 B... MOV R1, #42
+i_A 0x00000c94: r u w 0xe5c01014 .... STRB R1, [R0, +#14]
+d_A 0x000014a4: w u w 0x00000001 .... 
+i_A 0x00000c98: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000c9c: r u w 0xe51f01d4 .... LDR R0, FFFFFE34
+d_A 0x000014ac: w u b 0x42424242 BBBB 
+i_A 0x00000ca0: r u w 0xe3a01041 A... MOV R1, #41
+i_A 0x0000098c: r u w 0xe3a00002 .... MOV R0, #2
+i_A 0x00000990: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+i_A 0x00000994: r u w 0xe28fef62 b... ADD R14, R15, #188
+i_A 0x00000998: r u w 0xe8be100e .... LDMIA R14!, {R1-R3,R12}
+d_A 0x000004c0: w u w 0x00000002 .... 
+i_A 0x0000099c: r u w 0xe1a0000d .... MOV R0, R13
+d_A 0x00000b24: r u w 0x59524844 DHRY 
+d_A 0x00000b28: r u w 0x4e4f5453 STON 
+d_A 0x00000b2c: r u w 0x52502045 E PR 
+d_A 0x00000b30: r u w 0x4152474f OGRA 
+i_A 0x000009a0: r u w 0xe8a0100e .... STMIA R0!, {R1-R3,R12}
+i_A 0x000009a4: r u w 0xe89e100e .... LDMIA R14, {R1-R3,R12}
+d_A 0x00000478: w u w 0x59524844 DHRY 
+d_A 0x0000047c: w u w 0x4e4f5453 STON 
+d_A 0x00000480: w u w 0x52502045 E PR 
+d_A 0x00000484: w u w 0x4152474f OGRA 
+i_A 0x000009a8: r u w 0xe880100e .... STMIA R0, {R1-R3,R12}
+d_A 0x00000b34: r u w 0x32202c4d M, 2 
+d_A 0x00000b38: r u w 0x20444e27 'ND S
+d_A 0x00000b3c: r u w 0x49525453 STRI 
+d_A 0x00000b40: r u w 0x0000474e NG.. 
+i_A 0x000009ac: r u w 0xe5cdb040 @... STRB R11, [R13, +#40]
+d_A 0x00000488: w u w 0x32202c4d M, 2 
+d_A 0x0000048c: w u w 0x20444e27 'ND S
+d_A 0x00000490: w u w 0x49525453 STRI 
+d_A 0x00000494: w u w 0x0000474e NG.. 
+i_A 0x000009b0: r u w 0xe1a0100d .... MOV R1, R13
+i_A 0x000009b4: r u w 0xe28d0020 ... ADD R0, R13, #20
+d_A 0x000004b8: w u b 0x01010101 .... 
+i_A 0x000009b8: r u w 0xe3a04003 .@.. MOV R4, #3
+i_A 0x000009bc: r u w 0xeb000101 .... BL 0000040C
+i_A 0x000009c0: r u w 0xe2700001 ..p. RSBS R0, R0, #1
+i_A 0x000009c4: r u w 0x33a00000 ...3 MOVCC R0, #0
+i_A 0x00000dc8: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000dcc: r u w 0xe1a03000 .0.. MOV R3, R0
+d_A 0x0000046c: w u w 0x00000003 .... 
+d_A 0x00000470: w u w 0x00000002 .... 
+d_A 0x00000474: w u w 0x000009c0 .... 
+i_A 0x00000dd0: r u w 0xe1a02001 . .. MOV R2, R1
+i_A 0x00000dd4: r u w 0xe3a04002 .@.. MOV R4, #2
+i_A 0x00000dd8: r u w 0xe0820004 .... ADD R0, R2, R4
+i_A 0x00000ddc: r u w 0xe5d01001 .... LDRB R1, [R0, +#1]
+i_A 0x00000de0: r u w 0xe7d30004 .... LDRB R0, [R3, +R4]
+i_A 0x00000de4: r u w 0xebffffee .... BL FFFFFFC0
+d_A 0x0000047b: r u b 0x59aaaaaa ...Y 
+i_A 0x00000de8: r u w 0xe3500000 ..P. CMP R0, #0
+d_A 0x0000049a: r u b 0xaa52aaaa ..R. 
+i_A 0x00000dec: r u w 0x03a0c041 A... MOVEQ R12, #41
+i_A 0x00000da4: r u w 0xe20000ff .... AND R0, R0, #FF
+i_A 0x00000da8: r u w 0xe20110ff .... AND R1, R1, #FF
+i_A 0x00000dac: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000db0: r u w 0x059f100c .... LDREQ R1, 00000014
+i_A 0x00000db4: r u w 0x05c10000 .... STREQB R0, [R1]
+i_A 0x00000db8: r u w 0x13a00000 .... MOVNE R0, #0
+i_A 0x00000dbc: r u w 0x03a00001 .... MOVEQ R0, #1
+i_A 0x00000dc0: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000dc4: r u w 0x000014a8 .... ANDEQ R1, R0, R8 LSR #9
+i_A 0x00000dc8: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000de8: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000dec: r u w 0x03a0c041 A... MOVEQ R12, #41
+i_A 0x00000df0: r u w 0x02844001 .@.. ADDEQ R4, R4, #1
+i_A 0x00000df4: r u w 0xe3540002 ..T. CMP R4, #2
+i_A 0x00000df8: r u w 0xdafffff6 .... BLE FFFFFFE0
+i_A 0x00000dfc: r u w 0xe24c0057 W.L. SUB R0, R12, #57
+i_A 0x00000e00: r u w 0xe3500003 ..P. CMP R0, #3
+i_A 0x00000e04: r u w 0x33a04007 .@.3 MOVCC R4, #7
+i_A 0x00000e08: r u w 0xe35c0052 R.\. CMP R12, #52
+i_A 0x00000e0c: r u w 0xe3a05001 .P.. MOV R5, #1
+i_A 0x00000e10: r u w 0x01a00005 .... MOVEQ R0, R5
+i_A 0x00000e14: r u w 0x08bd8030 0... LDMEQIA R13!, {R4-R5,R15}
+i_A 0x00000e18: r u w 0xe1a01002 .... MOV R1, R2
+i_A 0x00000e1c: r u w 0xe1a00003 .... MOV R0, R3
+i_A 0x00000e20: r u w 0xeb000025 %... BL 0000009C
+i_A 0x00000e24: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000e28: r u w 0xd3a00000 .... MOVLE R0, #0
+i_A 0x00000ebc: r u w 0xe1802001 . .. ORR R2, R0, R1
+i_A 0x00000ec0: r u w 0xe3120003 .... TST R2, #3
+i_A 0x00000ec4: r u w 0x059f3084 .0.. LDREQ R3, 0000008C
+i_A 0x00000ec8: r u w 0x0a000000 .... BEQ 00000008
+i_A 0x00000ecc: r u w 0xea000016 .... B 00000060
+d_A 0x00000f50: r u w 0x01010101 .... 
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x00000498: r u w 0x59524844 DHRY 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x00000478: r u w 0x59524844 DHRY 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ee8: r u w 0xe1120383 .... TST R2, R3 LSL #7
+i_A 0x00000eec: r u w 0x0afffff7 .... BEQ FFFFFFE4
+i_A 0x00000ef0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ef4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x0000049c: r u w 0x4e4f5453 STON 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x0000047c: r u w 0x4e4f5453 STON 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ee8: r u w 0xe1120383 .... TST R2, R3 LSL #7
+i_A 0x00000eec: r u w 0x0afffff7 .... BEQ FFFFFFE4
+i_A 0x00000ef0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ef4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x000004a0: r u w 0x52502045 E PR 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x00000480: r u w 0x52502045 E PR 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ee8: r u w 0xe1120383 .... TST R2, R3 LSL #7
+i_A 0x00000eec: r u w 0x0afffff7 .... BEQ FFFFFFE4
+i_A 0x00000ef0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ef4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x000004a4: r u w 0x4152474f OGRA 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x00000484: r u w 0x4152474f OGRA 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ee8: r u w 0xe1120383 .... TST R2, R3 LSL #7
+i_A 0x00000eec: r u w 0x0afffff7 .... BEQ FFFFFFE4
+i_A 0x00000ef0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ef4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000ed0: r u w 0xe4902004 . .. LDR R2, [R0], +#4
+i_A 0x00000ed4: r u w 0xe491c004 .... LDR R12, [R1], +#4
+d_A 0x000004a8: r u w 0x31202c4d M, 1 
+i_A 0x00000ed8: r u w 0xe052c00c ..R. SUBS R12, R2, R12
+d_A 0x00000488: r u w 0x32202c4d M, 2 
+i_A 0x00000edc: r u w 0x1a000005 .... BNE 0000001C
+i_A 0x00000ee0: r u w 0xe042c003 ..B. SUB R12, R2, R3
+i_A 0x00000ee4: r u w 0xe1cc2002 . .. BIC R2, R12, R2
+i_A 0x00000ef8: r u w 0xe1b00c0c .... MOVS R0, R12 LSL #24
+i_A 0x00000efc: r u w 0x11a0f00e .... MOVNE R15, R14
+i_A 0x00000f00: r u w 0xe31200ff .... TST R2, #FF
+i_A 0x00000f04: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000f08: r u w 0xe1b0080c .... MOVS R0, R12 LSL #16
+i_A 0x00000f0c: r u w 0x11a0f00e .... MOVNE R15, R14
+i_A 0x00000f10: r u w 0xe3120cff .... TST R2, #FF00
+i_A 0x00000f14: r u w 0x01a0f00e .... MOVEQ R15, R14
+i_A 0x00000f18: r u w 0xe1b0040c .... MOVS R0, R12 LSL #8
+i_A 0x00000f1c: r u w 0x11a0f00e .... MOVNE R15, R14
+i_A 0x00000f20: r u w 0xe31208ff .... TST R2, #FF0000
+i_A 0x00000f24: r u w 0x11a0000c .... MOVNE R0, R12
+i_A 0x00000f28: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000f2c: r u w 0xe4d02001 . .. LDRB R2, [R0], +#1
+i_A 0x00000f30: r u w 0xe4d13001 .0.. LDRB R3, [R1], +#1
+i_A 0x00000e24: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000e28: r u w 0xd3a00000 .... MOVLE R0, #0
+i_A 0x00000e2c: r u w 0xd8bd8030 0... LDMLEIA R13!, {R4-R5,R15}
+i_A 0x00000e30: r u w 0xe2840007 .... ADD R0, R4, #7
+d_A 0x0000046c: r u w 0x00000003 .... 
+d_A 0x00000470: r u w 0x00000002 .... 
+d_A 0x00000474: r u w 0x000009c0 .... 
+i_A 0x00000e34: r u w 0xe51f1110 .... LDR R1, FFFFFEF8
+i_A 0x000009c0: r u w 0xe2700001 ..p. RSBS R0, R0, #1
+i_A 0x000009c4: r u w 0x33a00000 ...3 MOVCC R0, #0
+i_A 0x000009c8: r u w 0xe587000c .... STR R0, [R7, +#C]
+i_A 0x000009cc: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009d0: r u w 0xe3500003 ..P. CMP R0, #3
+d_A 0x000014a4: w u w 0x00000001 .... 
+i_A 0x000009d4: r u w 0xaa00000c .... BGE 00000038
+d_A 0x000004c0: r u w 0x00000002 .... 
+i_A 0x000009d8: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009dc: r u w 0xe28d2044 D .. ADD R2, R13, #44
+i_A 0x000009e0: r u w 0xe0800100 .... ADD R0, R0, R0 LSL #2
+d_A 0x000004c0: r u w 0x00000002 .... 
+i_A 0x000009e4: r u w 0xe0400004 ..@. SUB R0, R0, R4
+i_A 0x000009e8: r u w 0xe58d0044 D... STR R0, [R13, +#44]
+i_A 0x000009ec: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009f0: r u w 0xe1a01004 .... MOV R1, R4
+d_A 0x000004bc: w u w 0x00000007 .... 
+i_A 0x000009f4: r u w 0xeb0000cd .... BL 0000033C
+d_A 0x000004c0: r u w 0x00000002 .... 
+i_A 0x000009f8: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009fc: r u w 0xe2800001 .... ADD R0, R0, #1
+i_A 0x00000d30: r u w 0xe2800002 .... ADD R0, R0, #2
+i_A 0x00000d34: r u w 0xe0810000 .... ADD R0, R1, R0
+i_A 0x00000d38: r u w 0xe5820000 .... STR R0, [R2]
+i_A 0x00000d3c: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000d40: r u w 0xe52de004 ..-. STR R14, [R13, -#4]!
+d_A 0x000004bc: w u w 0x00000007 .... 
+i_A 0x00000d44: r u w 0xe2822005 . .. ADD R2, R2, #5
+i_A 0x000009f8: r u w 0xe59d0048 H... LDR R0, [R13, +#48]
+i_A 0x000009fc: r u w 0xe2800001 .... ADD R0, R0, #1
+i_A 0x00000a00: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+d_A 0x000004c0: r u w 0x00000002 .... 
+i_A 0x00000a04: r u w 0xe1500004 ..P. CMP R0, R4
+i_A 0x00000a08: r u w 0xbafffff2 .... BLT FFFFFFD0
+d_A 0x000004c0: w u w 0x00000003 .... 
+i_A 0x00000a0c: r u w 0xe1a01008 .... MOV R1, R8
+i_A 0x00000a10: r u w 0xe1a0000a .... MOV R0, R10
+i_A 0x00000a14: r u w 0xe59d2048 H .. LDR R2, [R13, +#48]
+i_A 0x00000a18: r u w 0xe59d3044 D0.. LDR R3, [R13, +#44]
+i_A 0x00000a1c: r u w 0xeb0000c7 .... BL 00000324
+d_A 0x000004c0: r u w 0x00000003 .... 
+i_A 0x00000a20: r u w 0xe5970000 .... LDR R0, [R7]
+d_A 0x000004bc: r u w 0x00000007 .... 
+i_A 0x00000a24: r u w 0xeb00004e N... BL 00000140
+i_A 0x00000d40: r u w 0xe52de004 ..-. STR R14, [R13, -#4]!
+i_A 0x00000d44: r u w 0xe2822005 . .. ADD R2, R2, #5
+i_A 0x00000d48: r u w 0xe7803102 .1.. STR R3, [R0, +R2 LSL #2]
+d_A 0x00000474: w u w 0x00000a20 ... A
+i_A 0x00000d4c: r u w 0xe080c102 .... ADD R12, R0, R2 LSL #2
+i_A 0x00000d50: r u w 0xe58c2078 x .. STR R2, [R12, +#78]
+d_A 0x00001548: w u w 0x00000007 .... 
+i_A 0x00000d54: r u w 0xe58c3004 .0.. STR R3, [R12, +#4]
+i_A 0x00000d58: r u w 0xe082e102 .... ADD R14, R2, R2 LSL #2
+d_A 0x000015c0: w u w 0x00000008 .... 
+i_A 0x00000d5c: r u w 0xe081118e .... ADD R1, R1, R14 LSL #3
+d_A 0x0000154c: w u w 0x00000007 .... 
+i_A 0x00000d60: r u w 0xe282c001 .... ADD R12, R2, #1
+i_A 0x00000d64: r u w 0xe1a03002 .0.. MOV R3, R2
+i_A 0x00000d68: r u w 0xe7812103 .!.. STR R2, [R1, +R3 LSL #2]
+i_A 0x00000d6c: r u w 0xe2833001 .0.. ADD R3, R3, #1
+i_A 0x00000d70: r u w 0xe15c0003 ..\. CMP R12, R3
+d_A 0x00001750: w u w 0x00000008 .... 
+i_A 0x00000d74: r u w 0xaafffffb .... BGE FFFFFFF4
+i_A 0x00000d78: r u w 0xe0813102 .1.. ADD R3, R1, R2 LSL #2
+i_A 0x00000d7c: r u w 0xe2431004 ..C. SUB R1, R3, #4
+i_A 0x00000d68: r u w 0xe7812103 .!.. STR R2, [R1, +R3 LSL #2]
+i_A 0x00000d6c: r u w 0xe2833001 .0.. ADD R3, R3, #1
+i_A 0x00000d70: r u w 0xe15c0003 ..\. CMP R12, R3
+d_A 0x00001754: w u w 0x00000008 .... 
+i_A 0x00000d74: r u w 0xaafffffb .... BGE FFFFFFF4
+i_A 0x00000d78: r u w 0xe0813102 .1.. ADD R3, R1, R2 LSL #2
+i_A 0x00000d7c: r u w 0xe2431004 ..C. SUB R1, R3, #4
+i_A 0x00000d80: r u w 0xe591c000 .... LDR R12, [R1]
+i_A 0x00000d84: r u w 0xe28cc001 .... ADD R12, R12, #1
+i_A 0x00000d88: r u w 0xe581c000 .... STR R12, [R1]
+d_A 0x0000174c: r u w 0x0000000b .... 
+i_A 0x00000d8c: r u w 0xe7900102 .... LDR R0, [R0, +R2 LSL #2]
+i_A 0x00000d90: r u w 0xe3a01005 .... MOV R1, #5
+d_A 0x0000174c: w u w 0x0000000c .... 
+i_A 0x00000d94: r u w 0xe5830320 ... STR R0, [R3, +#320]
+d_A 0x00001548: r u w 0x00000007 .... 
+i_A 0x00000d98: r u w 0xe51f0074 t... LDR R0, FFFFFF94
+i_A 0x00000d9c: r u w 0xe5801000 .... STR R1, [R0]
+d_A 0x00001a70: w u w 0x00000007 .... 
+i_A 0x00000da0: r u w 0xe49df004 .... LDR R15, [R13], +#4
+d_A 0x00000d2c: r u w 0x000014a0 .... 
+i_A 0x00000da4: r u w 0xe20000ff .... AND R0, R0, #FF
+d_A 0x000014a0: w u w 0x00000005 .... 
+d_A 0x00000474: r u w 0x00000a20 ... A
+i_A 0x00000da8: r u w 0xe20110ff .... AND R1, R1, #FF
+i_A 0x00000a20: r u w 0xe5970000 .... LDR R0, [R7]
+i_A 0x00000a24: r u w 0xeb00004e N... BL 00000140
+i_A 0x00000a28: r u w 0xe5d70014 .... LDRB R0, [R7, +#14]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000a2c: r u w 0xe3a06041 A`.. MOV R6, #41
+i_A 0x00000b64: r u w 0xe92d4070 p@-. STMDB R13!, {R4-R6,R14}
+i_A 0x00000b68: r u w 0xe51f60a0 .`.. LDR R6, FFFFFF68
+d_A 0x00000468: w u w 0x00000003 .... 
+d_A 0x0000046c: w u w 0x00000002 .... 
+d_A 0x00000470: w u w 0x00000043 C... 
+d_A 0x00000474: w u w 0x00000a28 (... 
+i_A 0x00000b6c: r u w 0xe1a04000 .@.. MOV R4, R0
+i_A 0x00000b70: r u w 0xe596e000 .... LDR R14, [R6]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000b74: r u w 0xe5900000 .... LDR R0, [R0]
+i_A 0x00000b78: r u w 0xe8be100e .... LDMIA R14!, {R1-R3,R12}
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000b7c: r u w 0xe1a05000 .P.. MOV R5, R0
+d_A 0x000014f8: r u w 0x000014c8 .... 
+d_A 0x000014f8: r u w 0x000014c8 .... 
+d_A 0x000014fc: r u w 0x00000000 .... 
+d_A 0x00001500: r u w 0x00000002 .... 
+d_A 0x00001504: r u w 0x00000011 .... 
+i_A 0x00000b80: r u w 0xe8a0100e .... STMIA R0!, {R1-R3,R12}
+i_A 0x00000b84: r u w 0xe8be100e .... LDMIA R14!, {R1-R3,R12}
+d_A 0x000014c8: w u w 0x000014c8 .... 
+d_A 0x000014cc: w u w 0x00000000 .... 
+d_A 0x000014d0: w u w 0x00000002 .... 
+d_A 0x000014d4: w u w 0x00000011 .... 
+i_A 0x00000b88: r u w 0xe8a0100e .... STMIA R0!, {R1-R3,R12}
+d_A 0x00001508: r u w 0x59524844 DHRY 
+d_A 0x0000150c: r u w 0x4e4f5453 STON 
+d_A 0x00001510: r u w 0x52502045 E PR 
+d_A 0x00001514: r u w 0x4152474f OGRA 
+i_A 0x00000b8c: r u w 0xe89e100e .... LDMIA R14, {R1-R3,R12}
+d_A 0x000014d8: w u w 0x59524844 DHRY 
+d_A 0x000014dc: w u w 0x4e4f5453 STON 
+d_A 0x000014e0: w u w 0x52502045 E PR 
+d_A 0x000014e4: w u w 0x4152474f OGRA 
+i_A 0x00000b90: r u w 0xe880100e .... STMIA R0, {R1-R3,R12}
+d_A 0x00001518: r u w 0x53202c4d M, S 
+d_A 0x0000151c: r u w 0x20454d4f OME S
+d_A 0x00001520: r u w 0x49525453 STRI 
+d_A 0x00001524: r u w 0x0000474e NG.. 
+i_A 0x00000b94: r u w 0xe3a00005 .... MOV R0, #5
+d_A 0x000014e8: w u w 0x53202c4d M, S 
+d_A 0x000014ec: w u w 0x20454d4f OME S
+d_A 0x000014f0: w u w 0x49525453 STRI 
+d_A 0x000014f4: w u w 0x0000474e NG.. 
+i_A 0x00000b98: r u w 0xe584000c .... STR R0, [R4, +#C]
+i_A 0x00000b9c: r u w 0xe585000c .... STR R0, [R5, +#C]
+i_A 0x00000ba0: r u w 0xe5940000 .... LDR R0, [R4]
+d_A 0x00001504: w u w 0x00000005 .... 
+i_A 0x00000ba4: r u w 0xe5850000 .... STR R0, [R5]
+d_A 0x000014d4: w u w 0x00000005 .... 
+i_A 0x00000ba8: r u w 0xe1a00005 .... MOV R0, R5
+d_A 0x000014f8: r u w 0x000014c8 .... 
+i_A 0x00000bac: r u w 0xeb000025 %... BL 0000009C
+d_A 0x000014c8: w u w 0x000014c8 .... 
+i_A 0x00000bb0: r u w 0xe5d50004 .... LDRB R0, [R5, +#4]
+i_A 0x00000bb4: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000c48: r u w 0xe51f1180 .... LDR R1, FFFFFE88
+i_A 0x00000c4c: r u w 0xe5912000 . .. LDR R2, [R1]
+i_A 0x00000c50: r u w 0xe3520000 ..R. CMP R2, #0
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000c54: r u w 0x15922000 . .. LDRNE R2, [R2]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000c58: r u w 0x15802000 . .. STRNE R2, [R0]
+i_A 0x00000c5c: r u w 0xe5910000 .... LDR R0, [R1]
+d_A 0x000014f8: r u w 0x000014c8 .... 
+i_A 0x00000c60: r u w 0xe5911008 .... LDR R1, [R1, +#8]
+d_A 0x000014c8: w u w 0x000014c8 .... 
+i_A 0x00000c64: r u w 0xe280200c . .. ADD R2, R0, #C
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000c68: r u w 0xe3a0000a .... MOV R0, #A
+d_A 0x000014a0: r u w 0x00000005 .... 
+i_A 0x00000c6c: r u w 0xea00002f /... B 000000C4
+i_A 0x00000c70: r u w 0xe51f01a8 .... LDR R0, FFFFFE60
+i_A 0x00000c74: r u w 0xe5d01010 .... LDRB R1, [R0, +#10]
+i_A 0x00000d30: r u w 0xe2800002 .... ADD R0, R0, #2
+i_A 0x00000d34: r u w 0xe0810000 .... ADD R0, R1, R0
+i_A 0x00000d38: r u w 0xe5820000 .... STR R0, [R2]
+i_A 0x00000d3c: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000d40: r u w 0xe52de004 ..-. STR R14, [R13, -#4]!
+d_A 0x00001504: w u w 0x00000011 .... 
+i_A 0x00000d44: r u w 0xe2822005 . .. ADD R2, R2, #5
+i_A 0x00000bb0: r u w 0xe5d50004 .... LDRB R0, [R5, +#4]
+i_A 0x00000bb4: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000bb8: r u w 0x1a00000c .... BNE 00000038
+d_A 0x000014cc: r u b 0xaaaaaa00 .... 
+i_A 0x00000bbc: r u w 0xe3a00006 .... MOV R0, #6
+i_A 0x00000bc0: r u w 0xe585000c .... STR R0, [R5, +#C]
+i_A 0x00000bc4: r u w 0xe5d40008 .... LDRB R0, [R4, +#8]
+i_A 0x00000bc8: r u w 0xe2851008 .... ADD R1, R5, #8
+d_A 0x000014d4: w u w 0x00000006 .... 
+i_A 0x00000bcc: r u w 0xeb000038 8... BL 000000E8
+d_A 0x00001500: r u b 0xaaaaaa02 .... 
+i_A 0x00000bd0: r u w 0xe5960000 .... LDR R0, [R6]
+i_A 0x00000bd4: r u w 0xe285200c . .. ADD R2, R5, #C
+i_A 0x00000cb4: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000cb8: r u w 0xe1a05000 .P.. MOV R5, R0
+d_A 0x0000045c: w u w 0x000014f8 .... 
+d_A 0x00000460: w u w 0x000014c8 .... 
+d_A 0x00000464: w u w 0x00000bd0 .... 
+i_A 0x00000cbc: r u w 0xe1a04001 .@.. MOV R4, R1
+i_A 0x00000cc0: r u w 0xe5c10000 .... STRB R0, [R1]
+i_A 0x00000cc4: r u w 0xeb00005e ^... BL 00000180
+i_A 0x00000cc8: r u w 0xe3500000 ..P. CMP R0, #0
+d_A 0x000014d0: w u b 0x02020202 .... 
+i_A 0x00000ccc: r u w 0xe3a01003 .... MOV R1, #3
+i_A 0x00000e44: r u w 0xe3500002 ..P. CMP R0, #2
+i_A 0x00000e48: r u w 0x13a00000 .... MOVNE R0, #0
+i_A 0x00000e4c: r u w 0x03a00001 .... MOVEQ R0, #1
+i_A 0x00000e50: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000e54: r u w 0xe1803001 .0.. ORR R3, R0, R1
+i_A 0x00000e58: r u w 0xe3130003 .... TST R3, #3
+i_A 0x00000cc8: r u w 0xe3500000 ..P. CMP R0, #0
+i_A 0x00000ccc: r u w 0xe3a01003 .... MOV R1, #3
+i_A 0x00000cd0: r u w 0x05c41000 .... STREQB R1, [R4]
+i_A 0x00000cd4: r u w 0xe3550004 ..U. CMP R5, #4
+i_A 0x00000cd8: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000cdc: r u w 0x908ff105 .... ADDLS R15, R15, R5 LSL #2
+i_A 0x00000ce0: r u w 0xe8bd8030 0... LDMIA R13!, {R4-R5,R15}
+i_A 0x00000ce4: r u w 0xea000005 .... B 0000001C
+i_A 0x00000cec: r u w 0xea00000b .... B 00000034
+i_A 0x00000cf0: r u w 0xe8bd8030 0... LDMIA R13!, {R4-R5,R15}
+i_A 0x00000cf4: r u w 0xe3a00002 .... MOV R0, #2
+i_A 0x00000d20: r u w 0xe3a00001 .... MOV R0, #1
+i_A 0x00000d24: r u w 0xe5c40000 .... STRB R0, [R4]
+i_A 0x00000d28: r u w 0xe8bd8030 0... LDMIA R13!, {R4-R5,R15}
+i_A 0x00000d2c: r u w 0x000014a0 .... ANDEQ R1, R0, R0 LSR #9
+d_A 0x000014d0: w u b 0x01010101 .... 
+d_A 0x0000045c: r u w 0x000014f8 .... 
+d_A 0x00000460: r u w 0x000014c8 .... 
+d_A 0x00000464: r u w 0x00000bd0 .... 
+i_A 0x00000d30: r u w 0xe2800002 .... ADD R0, R0, #2
+i_A 0x00000bd0: r u w 0xe5960000 .... LDR R0, [R6]
+i_A 0x00000bd4: r u w 0xe285200c . .. ADD R2, R5, #C
+i_A 0x00000bd8: r u w 0xe5900000 .... LDR R0, [R0]
+d_A 0x00001498: r u w 0x000014f8 .... 
+i_A 0x00000bdc: r u w 0xe3a0100a .... MOV R1, #A
+i_A 0x00000be0: r u w 0xe5850000 .... STR R0, [R5]
+d_A 0x000014f8: r u w 0x000014c8 .... 
+i_A 0x00000be4: r u w 0xe595000c .... LDR R0, [R5, +#C]
+i_A 0x00000be8: r u w 0xe8bd4070 p@.. LDMIA R13!, {R4-R6,R14}
+d_A 0x000014c8: w u w 0x000014c8 .... 
+i_A 0x00000bec: r u w 0xea00004f O... B 00000144
+d_A 0x000014d4: r u w 0x00000006 .... 
+d_A 0x00000468: r u w 0x00000003 .... 
+d_A 0x0000046c: r u w 0x00000002 .... 
+d_A 0x00000470: r u w 0x00000043 C... 
+d_A 0x00000474: r u w 0x00000a28 (... 
+i_A 0x00000bf0: r u w 0xe5940000 .... LDR R0, [R4]
+i_A 0x00000bf4: r u w 0xe8b0100e .... LDMIA R0!, {R1-R3,R12}
+i_A 0x00000d30: r u w 0xe2800002 .... ADD R0, R0, #2
+i_A 0x00000d34: r u w 0xe0810000 .... ADD R0, R1, R0
+i_A 0x00000d38: r u w 0xe5820000 .... STR R0, [R2]
+i_A 0x00000d3c: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000d40: r u w 0xe52de004 ..-. STR R14, [R13, -#4]!
+d_A 0x000014d4: w u w 0x00000012 .... 
+i_A 0x00000d44: r u w 0xe2822005 . .. ADD R2, R2, #5
+i_A 0x00000a28: r u w 0xe5d70014 .... LDRB R0, [R7, +#14]
+i_A 0x00000a2c: r u w 0xe3a06041 A`.. MOV R6, #41
+i_A 0x00000a30: r u w 0xe3500041 A.P. CMP R0, #41
+d_A 0x000014ac: r u b 0xaaaaaa42 B... 
+i_A 0x00000a34: r u w 0xba000015 .... BLT 0000005C
+i_A 0x00000a38: r u w 0xe1a00006 .... MOV R0, R6
+i_A 0x00000a3c: r u w 0xe3a01043 C... MOV R1, #43
+i_A 0x00000a40: r u w 0xeb0000d7 .... BL 00000364
+i_A 0x00000a44: r u w 0xe5dd1040 @... LDRB R1, [R13, +#40]
+i_A 0x00000a48: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000da4: r u w 0xe20000ff .... AND R0, R0, #FF
+i_A 0x00000da8: r u w 0xe20110ff .... AND R1, R1, #FF
+i_A 0x00000dac: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000db0: r u w 0x059f100c .... LDREQ R1, 00000014
+i_A 0x00000db4: r u w 0x05c10000 .... STREQB R0, [R1]
+i_A 0x00000db8: r u w 0x13a00000 .... MOVNE R0, #0
+i_A 0x00000dbc: r u w 0x03a00001 .... MOVEQ R0, #1
+i_A 0x00000dc0: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000dc4: r u w 0x000014a8 .... ANDEQ R1, R0, R8 LSR #9
+i_A 0x00000dc8: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000a44: r u w 0xe5dd1040 @... LDRB R1, [R13, +#40]
+i_A 0x00000a48: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000a4c: r u w 0x1a00000a .... BNE 00000030
+d_A 0x000004b8: r u b 0xaaaaaa01 .... 
+i_A 0x00000a50: r u w 0xe28d1040 @... ADD R1, R13, #40
+i_A 0x00000a54: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000a7c: r u w 0xe2860001 .... ADD R0, R6, #1
+i_A 0x00000a80: r u w 0xe20060ff .`.. AND R6, R0, #FF
+i_A 0x00000a84: r u w 0xe5d70014 .... LDRB R0, [R7, +#14]
+i_A 0x00000a88: r u w 0xe1560000 ..V. CMP R6, R0
+i_A 0x00000a8c: r u w 0xdaffffe9 .... BLE FFFFFFAC
+d_A 0x000014ac: r u b 0xaaaaaa42 B... 
+i_A 0x00000a90: r u w 0xe59d1048 H... LDR R1, [R13, +#48]
+i_A 0x00000a94: r u w 0xe0000491 .... MUL R0, R1, R4
+i_A 0x00000a38: r u w 0xe1a00006 .... MOV R0, R6
+i_A 0x00000a3c: r u w 0xe3a01043 C... MOV R1, #43
+i_A 0x00000a40: r u w 0xeb0000d7 .... BL 00000364
+i_A 0x00000a44: r u w 0xe5dd1040 @... LDRB R1, [R13, +#40]
+i_A 0x00000a48: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000da4: r u w 0xe20000ff .... AND R0, R0, #FF
+i_A 0x00000da8: r u w 0xe20110ff .... AND R1, R1, #FF
+i_A 0x00000dac: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000db0: r u w 0x059f100c .... LDREQ R1, 00000014
+i_A 0x00000db4: r u w 0x05c10000 .... STREQB R0, [R1]
+i_A 0x00000db8: r u w 0x13a00000 .... MOVNE R0, #0
+i_A 0x00000dbc: r u w 0x03a00001 .... MOVEQ R0, #1
+i_A 0x00000dc0: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000dc4: r u w 0x000014a8 .... ANDEQ R1, R0, R8 LSR #9
+i_A 0x00000dc8: r u w 0xe92d4030 0@-. STMDB R13!, {R4-R5,R14}
+i_A 0x00000a44: r u w 0xe5dd1040 @... LDRB R1, [R13, +#40]
+i_A 0x00000a48: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x00000a4c: r u w 0x1a00000a .... BNE 00000030
+d_A 0x000004b8: r u b 0xaaaaaa01 .... 
+i_A 0x00000a50: r u w 0xe28d1040 @... ADD R1, R13, #40
+i_A 0x00000a54: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000a7c: r u w 0xe2860001 .... ADD R0, R6, #1
+i_A 0x00000a80: r u w 0xe20060ff .`.. AND R6, R0, #FF
+i_A 0x00000a84: r u w 0xe5d70014 .... LDRB R0, [R7, +#14]
+i_A 0x00000a88: r u w 0xe1560000 ..V. CMP R6, R0
+i_A 0x00000a8c: r u w 0xdaffffe9 .... BLE FFFFFFAC
+d_A 0x000014ac: r u b 0xaaaaaa42 B... 
+i_A 0x00000a90: r u w 0xe59d1048 H... LDR R1, [R13, +#48]
+i_A 0x00000a94: r u w 0xe0000491 .... MUL R0, R1, R4
+i_A 0x00000a98: r u w 0xe59d1044 D... LDR R1, [R13, +#44]
+d_A 0x000004c0: r u w 0x00000003 .... 
+i_A 0x00000a9c: r u w 0xebfffd83 .... BL FFFFF614
+i_A 0x00000aa0: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+d_A 0x000004bc: r u w 0x00000007 .... 
+i_A 0x00000aa4: r u w 0xe28d0048 H... ADD R0, R13, #48
+i_A 0x000000b0: r u w 0xe3a02001 . .. MOV R2, #1
+i_A 0x000000b4: r u w 0xe1510000 ..Q. CMP R1, R0
+i_A 0x000000b8: r u w 0x31a01081 ...1 MOVCC R1, R1 LSL #1
+i_A 0x000000bc: r u w 0x31a02082 . .1 MOVCC R2, R2 LSL #1
+i_A 0x000000c0: r u w 0x3afffffb ...: BCC FFFFFFF4
+i_A 0x000000c4: r u w 0xe3a03000 .0.. MOV R3, #0
+i_A 0x000000c8: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x000000b4: r u w 0xe1510000 ..Q. CMP R1, R0
+i_A 0x000000b8: r u w 0x31a01081 ...1 MOVCC R1, R1 LSL #1
+i_A 0x000000bc: r u w 0x31a02082 . .1 MOVCC R2, R2 LSL #1
+i_A 0x000000c0: r u w 0x3afffffb ...: BCC FFFFFFF4
+i_A 0x000000c4: r u w 0xe3a03000 .0.. MOV R3, #0
+i_A 0x000000c8: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x000000cc: r u w 0x20400001 ..@ SUBCS R0, R0, R1
+i_A 0x000000d0: r u w 0x20833002 .0. ADDCS R3, R3, R2
+i_A 0x000000d4: r u w 0xe1b020a2 . .. MOVS R2, R2 LSR #1
+i_A 0x000000d8: r u w 0x11a010a1 .... MOVNE R1, R1 LSR #1
+i_A 0x000000dc: r u w 0x1afffff9 .... BNE FFFFFFEC
+i_A 0x000000e0: r u w 0xe1a00003 .... MOV R0, R3
+i_A 0x000000e4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x000000c8: r u w 0xe1500001 ..P. CMP R0, R1
+i_A 0x000000cc: r u w 0x20400001 ..@ SUBCS R0, R0, R1
+i_A 0x000000d0: r u w 0x20833002 .0. ADDCS R3, R3, R2
+i_A 0x000000d4: r u w 0xe1b020a2 . .. MOVS R2, R2 LSR #1
+i_A 0x000000d8: r u w 0x11a010a1 .... MOVNE R1, R1 LSR #1
+i_A 0x000000dc: r u w 0x1afffff9 .... BNE FFFFFFEC
+i_A 0x000000e0: r u w 0xe1a00003 .... MOV R0, R3
+i_A 0x000000e4: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x000000e8: r u w 0x00000000 .... ANDEQ R0, R0, R0
+i_A 0x000000ec: r u w 0x00000000 .... ANDEQ R0, R0, R0
+i_A 0x00000aa0: r u w 0xe58d0048 H... STR R0, [R13, +#48]
+i_A 0x00000aa4: r u w 0xe28d0048 H... ADD R0, R13, #48
+i_A 0x00000aa8: r u w 0xeb000058 X... BL 00000168
+d_A 0x000004c0: w u w 0x00000001 .... 
+i_A 0x00000aac: r u w 0xe2855001 .P.. ADD R5, R5, #1
+i_A 0x00000ab0: r u w 0xe1550009 ..U. CMP R5, R9
+i_A 0x00000c10: r u w 0xe51f3148 H1.. LDR R3, FFFFFEC0
+i_A 0x00000c14: r u w 0xe5901000 .... LDR R1, [R0]
+i_A 0x00000c18: r u w 0xe5d32010 . .. LDRB R2, [R3, +#10]
+d_A 0x00000ad0: r u w 0x00001498 .... 
+i_A 0x00000c1c: r u w 0xe281100a .... ADD R1, R1, #A
+d_A 0x000004c0: r u w 0x00000001 .... 
+i_A 0x00000c20: r u w 0xe3520041 A.R. CMP R2, #41
+d_A 0x000014a8: r u b 0xaaaaaa41 A... 
+i_A 0x00000c24: r u w 0x1a000004 .... BNE 00000018
+i_A 0x00000c28: r u w 0xe5932008 . .. LDR R2, [R3, +#8]
+i_A 0x00000c2c: r u w 0xe2411001 ..A. SUB R1, R1, #1
+i_A 0x00000c30: r u w 0xe0411002 ..A. SUB R1, R1, R2
+d_A 0x000014a0: r u w 0x00000005 .... 
+i_A 0x00000c34: r u w 0xe5801000 .... STR R1, [R0]
+i_A 0x00000c38: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000c3c: r u w 0xe35c0000 ..\. CMP R12, #0
+d_A 0x000004c0: w u w 0x00000005 .... 
+i_A 0x00000c40: r u w 0x1afffff6 .... BNE FFFFFFE0
+i_A 0x00000aac: r u w 0xe2855001 .P.. ADD R5, R5, #1
+i_A 0x00000ab0: r u w 0xe1550009 ..U. CMP R5, R9
+i_A 0x00000ab4: r u w 0xdaffffb2 .... BLE FFFFFED0
+i_A 0x00000ab8: r u w 0xebfffd66 f... BL FFFFF5A0
+i_A 0x00000abc: r u w 0xe5870020 ... STR R0, [R7, +#20]
+i_A 0x00000ac0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000058: r u w 0xe3a00005 .... MOV R0, #5
+i_A 0x0000005c: r u w 0xef000000 .... SWI 000000
+i_A 0x00000060: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000064: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000008: r p w 0xea000003 .... B 00000014
+i_A 0x0000000c: r p w 0xea00000c .... B 00000038
+i_A 0x00000010: r p w 0xea00000b .... B 00000034
+i_A 0x0000001c: r p w 0xe92d0002 ..-. STMDB R13!, {R1}
+i_A 0x00000020: r p w 0xe3a01413 .... MOV R1, #13000000
+d_A 0x000008e4: w p w 0x00000005 .... 
+i_A 0x00000024: r p w 0xe5810000 .... STR R0, [R1]
+i_A 0x00000028: r p w 0xe8bd0002 .... LDMIA R13!, {R1}
+i_A 0x0000002c: r p w 0xe1b0f00e .... MOVS R15, R14
+d_A 0x13000000: w p w 0x00000005 .... 
+d_A 0x000008e4: r p w 0x00000005 .... 
+i_A 0x00000030: r p w 0xe59fd8b0 .... LDR R13, 000008B8
+i_A 0x00000034: r p w 0xe3a00010 .... MOV R0, #10
+i_A 0x00000060: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000064: r u w 0xe1a01000 .... MOV R1, R0
+i_A 0x00000068: r u w 0xe4d10001 .... LDRB R0, [R1], +#1
+i_A 0x00000abc: r u w 0xe5870020 ... STR R0, [R7, +#20]
+i_A 0x00000ac0: r u w 0xe3a00000 .... MOV R0, #0
+i_A 0x00000ac4: r u w 0xe28dd04c L... ADD R13, R13, #4C
+d_A 0x000014b8: w u w 0x00000005 .... 
+i_A 0x00000ac8: r u w 0xe8bd8ff0 .... LDMIA R13!, {R4-R11,R15}
+i_A 0x00000acc: r u w 0x000014c8 .... ANDEQ R1, R0, R8 ASR #9
+d_A 0x000004c4: r u w 0x00000000 .... 
+d_A 0x000004c8: r u w 0x00000000 .... 
+d_A 0x000004cc: r u w 0x00000000 .... 
+d_A 0x000004d0: r u w 0x00000000 .... 
+d_A 0x000004d4: r u w 0x00000000 .... 
+d_A 0x000004d8: r u w 0x00000000 .... 
+d_A 0x000004dc: r u w 0x00000000 .... 
+d_A 0x000004e0: r u w 0x00000000 .... 
+d_A 0x000004e4: r u w 0x00000044 D... 
+i_A 0x00000ad0: r u w 0x00001498 .... MULEQ R0, R8, R4
+i_A 0x00000044: r u w 0xe3a00004 .... MOV R0, #4
+i_A 0x00000048: r u w 0xef000000 .... SWI 000000
+i_A 0x0000004c: r u w 0xeafffffe .... B 00000000
+i_A 0x00000050: r u w 0xe1a0f00e .... MOV R15, R14
+i_A 0x00000008: r p w 0xea000003 .... B 00000014
+i_A 0x0000000c: r p w 0xea00000c .... B 00000038
+i_A 0x00000010: r p w 0xea00000b .... B 00000034
+i_A 0x0000001c: r p w 0xe92d0002 ..-. STMDB R13!, {R1}
+i_A 0x00000020: r p w 0xe3a01413 .... MOV R1, #13000000
+d_A 0x000008e4: w p w 0x00000005 .... 
+i_A 0x00000024: r p w 0xe5810000 .... STR R0, [R1]
+i_A 0x00000028: r p w 0xe8bd0002 .... LDMIA R13!, {R1}
+i_A 0x0000002c: r p w 0xe1b0f00e .... MOVS R15, R14
+d_A 0x13000000: w p w 0x00000004 .... 

@@ -1,0 +1,25 @@
+digraph pipeReg_mode {
+  outputorder="edgesfirst";
+  size="7.086614173228347,10.236220472440946";
+  ratio="2.0"
+  subgraph cluster_pipeReg_mode {
+    edge [fontsize="8", fontname="Helvetica", labelfontname="Helvetica", labelfontsize="8", arrowhead="normal"];
+    node [fontsize="12", fontname="Helvetica-Bold", shape="box"];
+    title [label="pipeReg_mode", fontsize="20"];
+    port0 [portref="0", label="go", style="bold", shape="none"];
+    port1 [portref="1", label="i", style="bold", shape="none"];
+    port2 [portref="2", label="o", style="bold", shape="none"];
+    comp5 [compref="5", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp6 [compref="6", label="reg|<w0>w0|<r0>r0", shape="record"];
+    comp7 [compref="7", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp8 [compref="8", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"]
+    comp5:o:s -> comp7:i1:n [linkref="3", label="3", penwidth="1", weight="1"];
+    comp7:o:s -> comp6:w0:n [linkref="4", label="4", penwidth="3", weight="3"];
+    comp6:w0:s -> comp6:r0:n [linkref="6", label="6", penwidth="1", weight="1"];
+    comp6:r0:s -> comp8:i:n [linkref="8", label="8", penwidth="3", weight="3"];
+    comp8:o0:s -> comp5:i1:n [linkref="9", label="9", penwidth="1", weight="1"];
+    port0 -> comp5:i0:n [linkref="10", label="10", penwidth="1", weight="1"];
+    port1 -> comp7:i0:n [linkref="11", label="11", penwidth="3", weight="3"];
+    comp8:o1:s -> port2 [linkref="12", label="12", penwidth="3", weight="3"]
+  }
+}

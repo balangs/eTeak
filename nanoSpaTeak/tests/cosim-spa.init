@@ -1,0 +1,4 @@
+choose nanosim -c cosim-spa.cfg -o myDir/myName -nspice myDev.spi  -neldo /home/amulinks/amucells/cadence/amust018HS_v2/eldo/HSmodels_typ.cir  ;
+set print_thru_net a2a;
+set print_thru_net d2d;
+partition -cell Balsa___spa__V5T ;

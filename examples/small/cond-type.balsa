@@ -1,0 +1,9 @@
+if 1 then
+	type a is 32 bits
+else
+	type a is 16 bits
+end
+
+procedure z (parameter t : type) is begin continue end
+
+procedure y is z (a)

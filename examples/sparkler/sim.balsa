@@ -1,0 +1,202 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [sparkler]
+import [balsa.sim.sim]
+import [balsa.sim.fileio]
+import [balsa.sim.string]
+import [balsa.sim.memory]
+import [types]
+import [debug]
+
+constant iodebug = true
+
+-- RepackAddress : turn a byte-orientated address into a word one
+function RepackAddress (a : Word) = (#a[31..2] as Word)
+
+function Time =
+	FitStringToWidth (BalsaSimulationTime (), 10, right) + " "
+
+procedure FillMemoryFromFile (
+	parameter params : BalsaMemoryParams;
+	input filename : String;
+	input memory : BalsaMemory
+) is
+	variable file : File
+	-- variable line : String
+	variable line : StringTokenTail
+	variable line2 : StringTokenTail
+	variable a : params.addressWidth bits
+	variable d : params.dataWidth bits
+	variable aString, dString : String
+begin
+	filename, memory -> then
+		file := FileOpen (filename, read);
+		loop
+		while not FileEOF (file) then
+			line.tail := FileReadLine (file);
+			line2 := StringGetToken (line.tail);
+			line := line2;
+			a := NumberFromString (params.addressWidth bits, line.token, 16);
+			aString := NumberToString (params.addressWidth bits, a, 16, 4, 1);
+
+			if (a as 2 bits) /= 0 then
+				print "Unaligned write to address: ", aString, " not allowing"
+			else
+				line := StringGetToken (line.tail);
+				dString := line.token;
+
+				if not StringEqual (SubString (dString, 0, 1), "-") and
+					not StringEqual (SubString (dString, 0, 1), ".") then
+					d := NumberFromString (params.dataWidth bits, dString, 16);
+
+					sink BalsaMemoryWrite (params, memory, RepackAddress (a), d);
+					print "M[", aString, "] := ", NumberToString (params.dataWidth bits, d, 16, 4, 1)
+				end
+			end
+		end
+	end
+end
+
+procedure test
+	-- (* optim="no-tvn" *) -- FIXME, something to do with a-access interaction with d auto assignment
+		-- tvn happens on a-access for access.dir (for the case statement) and a (for the d := M[...a...] line)
+is
+	channel a, di, do : Word
+	channel access : MemAccess
+
+	-- variable memory : BalsaMemory
+	-- constant memoryParams = {32, 32} : BalsaMemoryParams
+	variable d : Word
+	variable count : Word
+	variable aString, dString, kString, postString : String
+	variable message : String
+
+	variable M : array 128 of Word
+
+	variable run : bit
+begin
+	(--
+	local
+		channel filenameC : String
+		channel memoryC : BalsaMemory
+		variable fn : String
+	begin
+		fn := BalsaGetCommandLineArg ("file");
+		begin
+			filenameC <- fn ||
+			memoryC <- memory ||
+			FillMemoryFromFile (memoryParams, filenameC, memoryC)
+		end
+	end;
+	--)
+	Sparkler2 (a, access, di, do) ||
+	begin
+		print "*** Started Sparkler";
+		count := 0;
+		message := "";
+		-- memory := BalsaMemoryNew ();
+		-- M[RepackAddress (0x00000000)..RepackAddress(0x00000058)] := {
+		M[(RepackAddress (0x00000000) as log 128 bits)] := 0x03000000;
+		M[(RepackAddress (0x00000004) as log 128 bits)] := 0xC4486044;
+		M[(RepackAddress (0x00000008) as log 128 bits)] := 0x86106044;
+		M[(RepackAddress (0x0000000C) as log 128 bits)] := 0x80A0A000;
+		M[(RepackAddress (0x00000010) as log 128 bits)] := 0x0280000A;
+		M[(RepackAddress (0x00000014) as log 128 bits)] := 0xC4086044;
+		M[(RepackAddress (0x00000018) as log 128 bits)] := 0x09000000;
+		M[(RepackAddress (0x0000001C) as log 128 bits)] := 0x8600E001;
+		M[(RepackAddress (0x00000020) as log 128 bits)] := 0xC2012040;
+		M[(RepackAddress (0x00000024) as log 128 bits)] := 0xC4284000;
+		M[(RepackAddress (0x00000028) as log 128 bits)] := 0xC448C000;
+		M[(RepackAddress (0x0000002C) as log 128 bits)] := 0x80A0A000;
+		M[(RepackAddress (0x00000030) as log 128 bits)] := 0x12BFFFFB;
+		M[(RepackAddress (0x00000034) as log 128 bits)] := 0xC408C000;
+		M[(RepackAddress (0x00000038) as log 128 bits)] := 0xC0282000;
+		M[(RepackAddress (0x0000003C) as log 128 bits)] := 0x01000000;
+		M[(RepackAddress (0x00000040) as log 128 bits)] := 0x0000FFFF;
+		M[(RepackAddress (0x00000044) as log 128 bits)] := 0x48656C6C;
+		M[(RepackAddress (0x00000048) as log 128 bits)] := 0x6F2C2077;
+		M[(RepackAddress (0x0000004C) as log 128 bits)] := 0x6F726C64;
+		M[(RepackAddress (0x00000050) as log 128 bits)] := 0x0A9F4B00;
+		M[(RepackAddress (0x00000054) as log 128 bits)] := 0x00000000;
+		M[(RepackAddress (0x00000058) as log 128 bits)] := 0x00000000;
+		--	0x00000000 };
+		loop
+		-- while count < 1000 then
+			begin
+				count := (count + 1 as Word);
+				if count > 1000 then sink BalsaSimulationStop () end
+			end ||
+			begin
+				if iodebug then postString := "" end;
+				a, access -> then
+					if iodebug then aString := Hex (a) end ||
+					-- d := BalsaMemoryRead (memoryParams, memory, RepackAddress (a));
+					d := M[(RepackAddress (a) as log 128 bits)];
+					-- if debug then print "Aa ", a, " ", (access.dir as bit), " ",
+					--	(access.kind as 2 bits) end;
+					case access.dir of
+					  read then
+						case access.kind of
+						  instruction then
+							if iodebug then kString := "IF" end
+						| byte then
+							if iodebug then kString := "RB" end;
+							-- print "A", Hex (d);
+							d := ((d as array 4 of byte)[(3 - (a as 2 bits) as 2 bits)] as Word) -- ;
+							-- print "B"
+						| halfword then
+							if iodebug then kString := "RH" end;
+							if #a[1] then d := (#d[31..16] as Word) end
+						| 	word then
+							if iodebug then kString := "RW" end
+						end;
+						if iodebug then dString := Hex (d) end;
+						di <- d
+					| write then
+						do -> then
+							-- if debug then print "A ", a, " ", a = 0xFFFF end;
+							case access.kind of
+							  instruction then
+								if iodebug then kString := "!!! Instruction write" end
+							| byte then
+								if a = 0xFFFF then
+									if iodebug then
+										kString := "CW";
+										local variable char : String begin
+											if (do as byte) < 32 or (do as byte) > 127 then
+												char := "<" + HexByte ((do as byte)) + ">"
+											else char := Chr ((do as byte))
+											end;
+											message := message + char;
+											postString := " '" + char + "' '" + message + "'"
+										end;
+										if do = 0x0A then message := "" end
+									else
+										print StringToPrintable (Chr ((do as byte)))
+									end
+								else if a = 0x0000 then
+									sink BalsaSimulationStop ()
+								else
+									if iodebug then kString := "WB" end
+								end
+								end
+							| halfword then
+								if iodebug then kString := "WH" end
+							| word then
+								if iodebug then kString := "WW" end
+							end;
+							if iodebug then dString := Hex (do) end;
+							-- sink BalsaMemoryWrite (memoryParams, memory, RepackAddress (a), d)
+							M[(RepackAddress (a) as log 128 bits)] := d
+						end
+					end;
+					if iodebug then print (-- Time (), --) "MEM ", kString, " ", aString, ": ", dString, postString end
+				end
+			end
+		end
+	end
+end

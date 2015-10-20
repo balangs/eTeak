@@ -1,0 +1,62 @@
+nanoSpa Balsa code
+------------------
+--  v1.0 25/07/2006 -lap
+--
+--  + Harvard architecture core
+--  + 3 stage, F/D/E pipeline
+--  + reduced ARM instruction set with conditional instructions
+--  + (data processing, b/bl, ldr/str, ldrb/strb, ldm/stm, swi)
+--  + RRX not supported!
+--  + flags supported: N, Z, C, V
+--  + user/svc operation modes only
+--
+--  + Register bank: 3 read ports/1 write port
+--  + sequenced reads and writes
+--  + speculative execution of instructions
+--    (killed if condition code or colour fail)
+--
+--  + no thumb instructions
+--  + no support for prefetch aborts
+--  + no support for data aborts
+--  + no support for interrupts
+--  + no coprocessor interface
+--
+--  + von Newmann memory interface
+--  + memory arbiter between I and D memory interfaces
+--    (memory interface and arbiter taken from SPA)
+--
+--  v1.1 21/05/2007 -lap/ltaraz
+--    Changelog:
+--  + Full multiply support (parameterised BoothR3 unrolled/"rolled" styles)
+--  + New modular decoder without merges
+--  + Colour counterflow
+--  + Early stop in ldm/stm
+--  + Mode fed back to fetch unit
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+--  Runs T1 test in amust018 tech for bundled data & dual rail
+
+Files:
+
+nanoAlu.balsa				-- Alu module
+nanoDecode.balsa			-- Decode stage
+nanoExecute.balsa			-- Execute stage
+nanoExecuteControl.balsa	-- execute control unit
+nanoExecuteSupport.balsa	-- several modules used in Execute stage 
+nanoFetch.balsa				-- Fetch stage
+nanoLSMcontrol.balsa        -- LDM/STM control module
+nanoMultiplier.balsa        -- Multiplier module
+nanoMultSupport.balsa       -- several modules used in Multiplier module
+nanoMBoothR3rolled.balsa    -- Multiplier core module (Booth Algorithm Radix 3 non-unrolled)
+nanoMBoothR3unrolled.balsa  -- Multiplier core module (Booth Algorithm Radix 3 unrolled 2 times)
+nanoRegBank.balsa			-- register bank
+nanoShifter.balsa			-- Shift module
+nanoSpa.balsa				-- top level module with SPA external interface
+nanoSpaHarvard.balsa		-- Harvard style nanoSpa module
+nanoSpaTypes.balsa			-- data type definitions for nanoSpa
+pipelineRegister.balsa      -- pipeline registers
+
+nanoSpaHarvard_deparameterised.balsa -- used for test and verification in SPA environment

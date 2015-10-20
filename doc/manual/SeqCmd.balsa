@@ -1,0 +1,7 @@
+procedure Cmd (* reallyInstantiate *) is begin continue end
+
+procedure SeqCmd is
+begin
+	Cmd ();
+	Cmd ()
+end

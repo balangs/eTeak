@@ -1,0 +1,9 @@
+
+procedure a (
+	output o : String
+) is
+	variable v : String
+begin
+	v := "Hello";
+	o <- v
+end

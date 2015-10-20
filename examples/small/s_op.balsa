@@ -1,0 +1,6 @@
+import [types]
+
+procedure a is
+begin
+	print sizeof Op3
+end

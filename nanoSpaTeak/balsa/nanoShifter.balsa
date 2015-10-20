@@ -1,0 +1,118 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+-- shifter module
+--  + implements shift/rotate operations
+--  + RRX not supported!
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--   + no changes made to this module
+
+import [balsa.types.basic]
+import [nanoSpaTypes]
+
+procedure shiftStage
+(
+  parameter shamt : cardinal;
+  input  i     : Datapath; 
+  input  fi    : bit; 
+  input  stype : ShiftType;
+  input  ctrl  : bit;
+  output o     : Datapath;
+  output fo    : bit
+) is
+begin
+    loop
+        i, fi, stype, ctrl ->! then
+            case (#stype[0..1] @ #ctrl[0..0] as 3 bits) of
+            0b0xx then
+                o <- i
+            | 0b100 then -- LSL
+                o <- (#(0 as shamt bits) @ #i[0..(sizeof Datapath -(shamt+1))] as sizeof Datapath bits)
+            | 0b101 then -- LSR
+                o <- (#i[shamt..(sizeof Datapath -1)] @ #(0 as shamt bits) as sizeof Datapath bits)
+            | 0b110 then -- ASR
+                o <- (#i[shamt..(sizeof Datapath -1)] @ #((#i[sizeof Datapath -1..sizeof Datapath -1] as 1 signed bits) as shamt signed bits) as sizeof Datapath bits)
+            | 0b111 then -- ROR
+                o <- (#i[shamt..(sizeof Datapath -1)] @ #i[0..(shamt-1)] as sizeof Datapath bits)
+            end -- case ( # stype [ 0 ..1 ] # ctrl [ 0 ..0 ] as 3 bits )
+         ||
+            case (#stype[0..1] @ #ctrl[0..0] as 3 bits) of
+            0b0xx then
+                fo <- fi
+            | 0b100 then -- LSL
+                fo <- (#i[(sizeof Datapath -shamt)..(sizeof Datapath -shamt)] as bit)
+            | 0b101 then -- LSR
+                fo <- (#i[(shamt-1)..(shamt-1)] as bit)
+            | 0b110 then -- ASR
+                fo <- (#i[(shamt-1)..(shamt-1)] as bit)
+            | 0b111 then -- ROR
+                fo <- (#i[(shamt-1)..(shamt-1)] as bit)
+            end -- case ( # stype [ 0 ..1 ] # ctrl [ 0 ..0 ] as 3 bits )
+        end -- fi , stype , ctrl ->
+    end -- loop
+end -- procedure shiftStage
+
+procedure shiftStage1  is shiftStage(1)
+procedure shiftStage2  is shiftStage(2)
+procedure shiftStage4  is shiftStage(4)
+procedure shiftStage8  is shiftStage(8)
+procedure shiftStage16 is shiftStage(16)
+
+
+procedure nanoShifter
+(
+  input  bypass : bit;
+  input  i      : Datapath; 
+  input  fi     : bit; 
+  input  stype  : ShiftType;
+  input  shamt  : 5 bits;
+  output o      : Datapath;
+  output fo     : bit
+) is
+local
+    channel il   : Datapath
+    channel fil  : bit
+    array log sizeof Datapath    of channel stl : ShiftType
+    array log sizeof Datapath    of channel ctl : bit
+    array log sizeof Datapath +1 of channel ol  : Datapath
+    array log sizeof Datapath +1 of channel fol : bit
+begin
+    shiftStage16(ol[4], fol[4], stl[4], ctl[4], ol[3], fol[3])
+ ||
+    shiftStage8(ol[3], fol[3], stl[3], ctl[3], ol[2], fol[2])
+ ||
+    shiftStage4(ol[2], fol[2], stl[2], ctl[2], ol[1], fol[1])
+ ||
+    shiftStage2(ol[1], fol[1], stl[1], ctl[1], ol[0], fol[0])
+ ||
+    shiftStage1(ol[0], fol[0], stl[0], ctl[0], ol[5], fol[5])
+ ||
+    loop
+        bypass ->! then
+            if bypass then
+                i -> o
+             ||
+                fi -> fo
+            else
+                shamt, stype ->! then
+                    for || j in 0..(log sizeof Datapath) -1 then
+                        stl[j] <- stype
+                    end -- for
+                 ||
+                    for || j in 0..(log sizeof Datapath) -1 then
+                        ctl[j] <- (#shamt[j..j] as bit)
+                    end -- for
+                 ||
+                    i -> ol[4]
+                 ||
+                    fi -> fol[4]
+                 ||
+                    ol[5] -> o
+                 ||
+                    fol[5] -> fo
+                end -- shamt , stype ->
+            end -- if bypass
+        end -- bypass ->
+    end -- loop
+end -- procedure nanoShifter

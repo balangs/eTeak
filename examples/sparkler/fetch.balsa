@@ -1,0 +1,71 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [types]
+import [debug]
+
+type FetchType is enumeration sequential, newStream end
+
+-- Note that this *must* be more than 2 to allow for the branch shadow
+constant fetchDepth = 2
+
+procedure FetchInitial (
+	input doFetchI : FetchType;
+	output doFetchO : FetchType
+) is
+begin
+	for ; i in 1..fetchDepth then doFetchO <- sequential end;
+	loop doFetchI -> doFetchO end
+end
+
+procedure Fetch (
+	input doFetch : FetchType;
+	input newPc : Word;
+	output inst : FetchedInst;
+	-- Towards memory
+	output faddr : Word;
+	input finst : Inst
+)
+	-- (* latch="simple=1" *)
+is
+	variable pc : Word
+	variable pcTemp : Word
+	variable newStream : bit
+
+	shared Fetch is begin
+		if debug then print "Fetching ", pc end;
+		begin
+			faddr <- pc ||
+			finst -> then
+				inst <- {finst, {pc, newStream}} ||
+				if debug then print "Issuing instruction inst = ", Hex ((finst as Word)), " pc = ", Hex (pc),
+					" newStream = ", newStream end
+			end ||
+			pcTemp := (pc + 4 as Word)
+		end;
+		[ pc := pcTemp || newStream := 0 ]
+	end
+begin
+	begin
+		[ pc := 0 || newStream := 1 ];
+		loop
+			doFetch -> then
+				case doFetch of
+				  sequential then Fetch ()
+				| newStream then
+					begin
+						newPc -> then
+							pc := newPc ||
+							if debug then print "NewPC", newPc end
+						end ||
+						newStream := 1
+					end;
+					Fetch ()
+				end
+			end
+		end
+	end
+end

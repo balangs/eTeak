@@ -1,0 +1,40 @@
+-- reduced nanoSpaTypes file for nanomultiplier only
+
+type signedByte is 8 signed bits
+type HalfWord is 16 bits
+type signedHalfWord is 16 signed bits
+type Address is 32 bits
+type Datapath is 32 bits
+type signedDatapath is 32 signed bits
+
+type Flags is record
+    V : bit;
+    C : bit;
+    Z : bit;
+    N : bit
+end -- type Flags
+
+-- multiplier types
+type MulType is enumeration
+    MUL=0,   -- multiply (32-bit result)
+    MLA=1,   -- multiply-accumulate (32-bit result)
+    MUND2=2,  -- undefined code
+    MUND3=3,  -- undefined code
+    UMULL=4, -- unsigned multiply long
+    UMLAL=5, -- unsigned multiply-accumulate long
+    SMULL=6, -- signed multiply long
+    SMLAL=7  -- signed multiply-accumulate long
+over 3 bits
+constant length = sizeof Datapath
+constant xlength = sizeof Datapath + 3
+constant tbits = log (sizeof Datapath)
+type cntType is tbits bits
+type Datapath_1 is length+1 bits
+type Datapath_2 is xlength bits
+type Datapath_3 is xlength+1 bits
+
+type sDatapath is length signed bits
+type sDatapath_1 is length+1 signed bits
+type sDatapath_2 is xlength signed bits
+type sDatapath_3 is xlength+1 signed bits
+type multStyle is enumeration ROLLED, UNROLLED end

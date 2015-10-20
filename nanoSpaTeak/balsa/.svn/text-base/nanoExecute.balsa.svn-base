@@ -1,0 +1,416 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+-- execute pipeline stage
+--  + reduced ARM instruction set with conditional instructions
+--  + (data processing, b/bl, ldr/str, ldrb/strb, ldm/stm, swi)
+--  + RRX not supported!
+--  + flags supported: N, Z, C, V
+--  + user/svc operation modes only
+--
+--  + speculative execution of instructions
+--    (killed if condition code or colour fail)
+--
+--  + no thumb instructions
+--  + no support for data aborts
+--  + no support for interrupts
+--  + no coprocessor interface
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--  + Full multiply support (parameterised BoothR3 unrolled/"rolled" styles)
+--  + New modular decoder without merges
+--  + Kill box merged with mux3 before port rwb[0]
+
+import [nanoSpaTypes]
+import [nanoExecuteControl]
+import [nanoExecuteSupport]
+import [nanoAlu]
+import [nanoShifter]
+import [nanoMultiplier]
+
+procedure nanoExecute
+(
+  -- the decode i/f:
+  output xdColour       : Colour;
+  output incI           : Datapath;
+  input  incO           : Datapath;
+  input  dPc            : Datapath;
+  input  dLr            : Datapath;
+  input  dColour        : Colour;
+  input  bypass         : bit;
+  input  shiftCtrl      : ShiftType;
+  input  shamt          : 5 bits;
+  input  aluCtrl        : AluCtrl;
+  input  salu           : AluSelect;
+  input  srds           : rdsSelect;
+  input  setFlags       : 3 bits;
+  input  setMode        : 2 bits;
+  input  newmode        : psrCtl;
+  input  rwSreg         : 3 bits;  
+  input  rwSregF        : 3 bits;  
+  input  wpc            : bit;
+  input  spc            : PcSelect;
+  input  sab            : sabSelect;
+  input  stp            : bit;
+  input  mMemAddr       : memAddrSelect;
+  input  memCtrl        : MemCtrl;
+  input  memOp          : bit;
+  input  wmem           : bit;
+  input  sdi            : 4 bits;
+  input  cc             : ConditionCode;  
+  input  immediate      : Datapath;
+  input  mca            : aBusSelect;
+  input  mcb            : bBusSelect;
+  input  mcr            : mcrSelect;
+  input  mcs            : bit;
+  input  mcpc           : cPcSelect;
+  input  sdLr           : dLrSelect;
+  input  mTemp          : tempSelect;
+  input  mDiSel         : mDiSelect;
+  array 2 of input  wra : RegNum;
+  array 2 of input  wrc : bit;
+
+  input  sendS          : 2 bits;
+  output stopI          : bit;
+  output stopLsm        : bit;
+  
+  -- the fetch i/f:
+  output xPc            : Datapath;
+  output xColour        : Colour;
+  output xMode          : psrCtl;
+
+  -- the memory i/f:
+  output memAccess      : MemAccess;
+  output memMode        : MemProcMode;
+  input  memDi          : MemData;
+  output memDo          : MemData;
+  input  memAbort       : MemAbort;
+
+  -- the register bank i/f:
+--  array READPORTS of input  dra : RegNum;
+--  array READPORTS of input  drc : bit;
+--  array READPORTS of output erb : RegBank;
+--  array READPORTS of output era : RegNum;
+--  array READPORTS of output erc : bit;
+
+  array READPORTS of input  rd  : Datapath;
+--  array READPORTS of input  ra  : RegSpec;
+--  array READPORTS of input  rrb : RegBank;
+--  array READPORTS of output enr : bit;
+--  array READPORTS of output  rra : RegSpec;
+
+
+--  output wb                     : RegBank;
+  output wa                     : RegSpec;
+  output wc                     : 2 bits;
+  output wd                     : Datapath;
+  -- multiplier control
+  input mulType               : MulType;
+  input domul                 : bit;
+  input mul2w                 : bit;  
+  input mul2res               : bit;
+  -- multiplier data steer control
+  input srdm                  : bit
+) is
+local
+    channel memAddress     : MemAddress    
+    channel pc0, pc1       : Datapath
+    channel xPcIn          : Datapath
+    channel eColour        : Colour
+    channel cFlags, aFlags : Flags
+    channel aluFlags       : Flags
+    channel curFlags       : Flags
+    channel psrFlags       : Flags
+    channel shiftIn        : Datapath
+    channel rdl            : Datapath
+    channel rml            : Datapath
+    channel rsl            : 5 bits
+    channel aBusIn, aBus   : Datapath
+    channel aBusD          : Datapath
+    channel aBusT          : Datapath
+    channel bBus           : Datapath
+    channel aluResult      : Datapath
+    channel aluResult0     : Datapath
+    channel aluResult1     : Datapath
+    channel aluResult2     : Datapath
+    channel aluResult3     : Datapath
+    channel incOut0        : Datapath
+    channel incOut1        : Datapath
+    channel tempIn         : Datapath
+    channel tempInK        : Datapath
+    channel tempOut        : Datapath
+    array 2 of channel rwb : Datapath
+--    channel rwbIn          : Datapath
+    channel rwbOut         : Datapath
+    channel kma, kmc, kmd  : bit
+    channel sdiK           : 4 bits
+    array 2 of channel kra : 2 bits
+    array 2 of channel krc : bit
+
+    array 2 of channel krap : 2 bits
+    array 2 of channel krcp : bit
+
+--    array 2 of sync krc
+    channel krd            : bit
+    channel kpc            : bit
+    channel ktemp          : bit
+    channel kmuxDi         : bit
+    channel kpsr           : bit
+    channel smrm           : 2 bits
+    channel cNewmode       : psrCtl
+    channel smm            : bit
+    channel uf             : 3 bits
+    channel uc             : bit
+    channel cfm, cfC       : bit
+    channel memDi0         : Datapath
+    channel memDi1         : Datapath
+    channel memDi1merge    : Datapath
+    channel dLrx, dLrw     : Datapath
+    channel psrValue       : Datapath
+    channel newPSR         : Datapath
+    channel shDst          : 5 bits
+    channel fi             : bit
+    channel fo             : bit
+    channel memMd          : MemProcMode
+    channel fMode          : 3 bits 
+    channel newPSRCtl, 
+            currentPSRCtl  : psrCtl
+    array READPORTS of channel modeR : 3 bits
+    array 2         of channel modeW : 3 bits
+
+    array 2         of channel modeWp : 3 bits
+
+    channel mulOpA         : Datapath
+    channel mulOpB         : Datapath
+    channel mulOpC         : Datapath
+    channel mulZ           : bit
+    channel mulN           : bit
+    channel mulpH          : Datapath
+    channel mulpHout0      : Datapath
+    channel mulpHout1      : Datapath
+    channel mulpL          : Datapath
+    channel spHk           : mpHSelect
+    channel mulbypass      : bit
+    channel mulbypassH     : bit
+    channel mulflags       : 2 bits
+
+-- the ROB interconnect
+    array READPORTS of channel rrd  : Datapath -- channel from kmux2
+    array READPORTS of channel fwrd : Datapath -- forwarded value
+    array READPORTS of channel sel0 : bit
+    array READPORTS of channel sel1 : bit
+--    channel robBank : RegBank
+--    channel robAddr : RegSpec
+--    channel wc      : 2 bits
+--    channel robData : Datapath
+
+
+begin 
+    nanoExecuteControl(
+      cc, dColour, 
+      wpc, setFlags, 
+      setMode, newmode, 
+      wrc, 
+      memOp, wmem,
+      sdi,
+      sendS,
+      cFlags, eColour,
+      stopI, stopLsm,
+      kma, kmc, kmd,
+      kra, krc, krd,
+      kpc, kmuxDi, sdiK,
+      ktemp, kpsr,
+      smrm, cNewmode, smm, uf,
+      uc, cfm, cfC,
+      domul, mul2w, mul2res,
+      mulbypass,mulbypassH, spHk, mulflags
+    )
+ ||
+    colour(
+      uc, cfC, eColour, xColour, xdColour
+    )
+ ||
+    modeUpd (
+        kpsr, newPSR, currentPSRCtl, curFlags, newPSRCtl, psrFlags, psrValue
+    )
+ ||
+    mode(
+      cfm,  smrm, rwSreg, smm, cNewmode, xMode, fMode, newPSRCtl, currentPSRCtl, 
+      memMd, modeW
+    )
+-- ||
+--    for || i in 0..READPORTS-1 then
+--        bankSel(
+--          drc[i], dra[i], modeR[i],
+--          erc[i], era[i], erb[i]
+--        )
+--    end -- for || i in 0 ..READPORTS 1
+ ||    
+    steerPc(
+      dPc,
+      spc,
+      pc0, pc1
+    )
+ ||
+    steerRdm(
+      rd[0],
+      srdm,
+      rml, mulOpA
+    )
+ ||
+    steerRds(
+      rd[2],
+      srds,
+      rsl, rdl, mulOpB
+    )
+ ||
+    mux3_aBus(
+      rd[1], pc1, aBusT, mca, aBusIn
+    )
+-- ROB steering & control
+-- ||
+--    for || i in 0..READPORTS-1 then
+--        kmux2(Datapath,rd[i],fwrd[i],sel0[i],rrd[i])
+--    end
+--    for || i in 0..READPORTS-1 then
+--        merge2_Datapath(rd[i],fwrd[i],rrd[i])
+--    end
+-- ||
+--    for || i in 0..READPORTS-1 then
+--        lookupROB(rra[i],rrb[i],enr[i],sel1[i])
+--    end
+-- ||
+--    for || i in 0..READPORTS-1 then
+--        readROB(sel1[i],fwrd[i])
+--    end
+
+ ||
+    selForkSteer_Datapath(
+      aBusIn,
+      sab,
+      aBus, aBusD, mulOpC
+    )
+ ||
+    mux3_bBus(
+      immediate, pc0, rml, mcb, shiftIn
+    )
+ ||
+    mux2_5bits(
+      rsl, shamt, mcs, shDst
+    )
+ ||
+    nanoShifter(
+      bypass,
+      shiftIn, fi, shiftCtrl, shDst,
+      bBus, fo
+    )
+ ||
+    nanoAlu(
+      aBus, bBus, 
+      aluCtrl,
+      aFlags, fo,
+      aluResult, aluFlags 
+    )
+ ||
+    flags( mulflags, mulZ, mulN,
+      uf, aluFlags, fMode, rwSregF, psrFlags, cFlags, curFlags, aFlags, fi
+    )
+ ||
+    steerAlu(
+      aluResult, 
+      salu,
+      aluResult0, aluResult1, 
+      aluResult2, aluResult3,
+      incI, newPSR
+    )
+ ||    
+    steerMulpH(
+      mulpH,
+      spHk,
+      mulpHout0, mulpHout1
+    )
+ ||    
+    steerdLr(
+      dLr,
+      sdLr,
+      dLrw, dLrx
+    )
+ ||
+    mux3_Datapath(
+      dLrw, aluResult1, mulpL, mcr, krd, rwbOut
+    )
+ ||
+    pipeReg_Datapath(
+      rwbOut, rwb[0]
+    )
+ ||
+    for || i in 0..1 then
+        pipeReg_3bits(modeW[i], modeWp[i])
+     ||
+        pipeReg_2bits(kra[i], krap[i])
+     ||
+        pipeReg_bit(krc[i], krcp[i])
+    end
+ ||
+    regWriteBack(
+      modeWp, wra, rwb,
+      krap, krcp,
+      wa, wc, wd
+    )
+-- ||
+--    reorderB(robAddr, wc, robData, drc, ra, rra, enr, fwrd, wa, wd)
+ ||
+    mux3_xPc(
+      memDi0, aluResult2, dLrx, mcpc, kpc, xPc
+    )
+-- ||
+--    mux2_pc(
+--      aluResult2, memDi0, mcpc, kpc, xPc
+--    )
+ ||
+   selFork_Datapath(
+      incO, stp, incOut0, incOut1
+    )
+ ||
+    mux3_Temp(incOut1, aluResult3, mulpHout0, mTemp, ktemp, tempIn
+    )
+(-- ||
+    merge3_Datapath(incOut1, aluResult3, mulpHout0, tempInK
+    )
+ ||
+    selStop_Datapath(tempInK, ktemp, tempIn
+    ) --)
+ ||
+    pipeReg_Datapath(
+      tempIn, tempOut
+    )
+ ||
+    pipeReg_Datapath(
+      tempOut, aBusT
+    )
+ ||
+    mux3_memAddr(
+      incOut0, aBusD, aluResult0, mMemAddr, memAddress
+    )
+ ||
+    memAccess(
+      memAddress, memCtrl, rdl, memMd,
+      memDi0, memDi1,
+      sdiK, kma, kmc, kmd,
+      memAccess, memMode, memDo, memDi, memAbort
+    )
+ ||
+    kmux3_Di1(
+      psrValue, mulpHout1, memDi1, mDiSel, kmuxDi, memDi1merge
+    )
+ ||
+    pipeReg_Datapath(
+      memDi1merge, rwb[1]
+    )
+ ||
+    nanoSpaMultiplier( 
+      mulbypass, mulbypassH, 
+      mulType, mulOpA, mulOpB, mulOpC,
+      mulpH, mulpL, mulZ, mulN
+    )
+end -- procedure nanoExecute

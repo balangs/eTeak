@@ -1,0 +1,6 @@
+function Expr is builtin : bit 
+
+procedure SinkCmd is
+begin
+	sink Expr ()
+end

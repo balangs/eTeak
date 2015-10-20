@@ -1,0 +1,20 @@
+import [balsa.types.basic]
+
+procedure a (
+	input b : 8 bits;
+	output c : 9 bits
+) is
+begin
+	loop
+		b -> then
+			if false then
+				if b > 10
+				then c <- b + 1
+				else c <- b + 2
+				end
+			else
+				c <- b + 1
+			end
+		end
+	end
+end

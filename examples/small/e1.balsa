@@ -1,0 +1,10 @@
+
+type a is enumeration
+	b, c, d
+end
+
+procedure p (output o : a) is
+begin
+	o <- b;
+	o <- c
+end

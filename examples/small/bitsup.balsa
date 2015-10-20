@@ -1,0 +1,26 @@
+
+type cardinal is 32 bits
+
+procedure bitSup (
+	parameter n : cardinal;
+	parameter i : cardinal;
+	parameter a : n bits;
+	output o : bit
+) is
+begin
+	if i = 0 then
+		o <- #a[0]
+	| i = 1 then
+		o <- #a[1]
+	else
+		o <- #a[i];
+		bitSup (n, i - 1, a, o)
+	end
+end
+
+procedure bitSup8 is
+	channel o : bit
+begin
+	loop o -> then print o end end ||
+	bitSup (8, 7, 0x40, o)
+end

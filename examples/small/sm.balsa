@@ -1,0 +1,15 @@
+procedure a (
+	input s : bit;
+	input i0, i1 : 8 bits;
+	output o : 8 bits
+) is
+begin
+	loop
+		s, i0, i1 -> then
+			case s of
+			| 0 then o <- i0
+			| 1 then o <- i1
+			end
+		end
+	end
+end

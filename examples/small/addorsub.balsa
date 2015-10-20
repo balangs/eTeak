@@ -1,0 +1,14 @@
+procedure add (
+	input l, r : 8 bits;
+	output o : 9 bits
+) is
+begin
+	loop
+		l, r -> then
+			case l of
+				0 then o <- l + r
+			else o <- (l - r as 9 bits)
+			end
+		end
+	end
+end

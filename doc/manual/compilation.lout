@@ -1,0 +1,138 @@
+@Section @Title {Front end: Balsa to parse tree and compilation}
+@Begin
+@LP
+@FIXME
+@BeginSubSections
+@SubSection @Title {NoCmd}
+@Begin
+@LP
+{3c @Wide @Scale @IncludeGraphic {NoCmd.cps}}
+@End @SubSection
+@SubSection @Title {LabelCmd}
+@Begin
+@LP
+@FIXME
+@End @SubSection
+@SubSection @Title {SeqCmd}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {SeqCmd.cps}}
+@End @SubSection
+@SubSection @Title {ParCmd}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {ParCmd.cps}}
+@End @SubSection
+@SubSection @Title {BlockCmd}
+@Begin
+@LP
+@FIXME
+@End @SubSection
+# EncInputCmd
+@SubSection @Title {InputCmd}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {InputCmd.cops}}
+@End @SubSection
+@SubSection @Title {OutputCmd}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {OutputCmd.cops}}
+@End @SubSection
+# SelectCmd
+@SubSection @Title {AssignCmd}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {AssignCmd.cops}}
+@End @SubSection
+@SubSection @Title {SinkCmd}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {SinkCmd.cps}}
+@End @SubSection
+@SubSection @Title {CaseCmd}
+@Begin
+@LP
+{7c @Wide @Scale @IncludeGraphic {CaseCmd.cps}}
+@End @SubSection
+# CallCmd
+# InstanceCallCmd
+# SharedCallCmd
+@SubSection @Title {PrintCmd}
+@Begin
+@LP
+{8c @Wide @Scale @IncludeGraphic {PrintCmd.cps}}
+@End @SubSection
+# ForCmd
+@SubSection @Title {LoopCmd}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {LoopCmd.cps}}
+@End @SubSection
+@SubSection @Title {WhileCmd}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {WhileCmd1.cps}}
+|0.5c
+{5c @Wide @Scale @IncludeGraphic {WhileCmd2.cps}}
+|0.5c
+{5c @Wide @Scale @IncludeGraphic {WhileCmd3.cps}}
+@End @SubSection
+@SubSection @Title {BinExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {BinExpr.ceps}}
+@End @SubSection
+@SubSection @Title {UnExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {UnExpr.ceps}}
+@End @SubSection
+# BuiltinCallExpr Pos String [FuncActual] [Expr] Type
+@SubSection @Title {BuiltinCallExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {BuiltinCallExpr.ceps}}
+@End @SubSection
+@SubSection @Title {ConsExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {ConsExpr.ceps}}
+@End @SubSection
+@SubSection @Title {AppendExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {AppendExpr.ceps}}
+@End @SubSection
+@SubSection @Title {BitfieldExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {BitfieldExpr.ceps}}
+@End @SubSection
+@SubSection @Title {ExtendExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {ExtendExpr.ceps}}
+@End @SubSection
+@SubSection @Title {CaseExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {CaseExpr.ceps}}
+@End @SubSection
+@SubSection @Title {ValueExpr}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {ValueExpr.ceps}}
+@End @SubSection
+@SubSection @Title {VarRead}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {VarRead.ceps}}
+@End @SubSection
+@SubSection @Title {OpenChanRead}
+@Begin
+@LP
+{5c @Wide @Scale @IncludeGraphic {OpenChanRead.ceps}}
+@End @SubSection
+@EndSubSections
+@End @Section

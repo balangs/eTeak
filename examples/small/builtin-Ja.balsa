@@ -1,0 +1,72 @@
+import [balsa.sim.fileio]
+import [balsa.sim.string]
+
+procedure PrintTokens (
+	input i : String
+) is
+	variable s : String
+	variable tt : StringTokenTail
+begin
+	print "AAAAA";
+	i -> then
+		tt.tail := i;
+		loop while StringLength (tt.tail) /= 0 then
+			tt := StringGetToken (tt.tail);
+			print "Token: `", tt.token, "'"
+		end
+	end
+end
+
+procedure a is
+	variable v : String
+	variable w : String
+	variable f : File
+
+begin
+	-- f := FileOpen ("builtin-Ja.balsa", read);
+	f := FileOpen ("zz.balsa", read);
+	print NumberToString (32 signed bits, 0xAA, 16, 0, false);
+	print NumberFromString (32 bits, "AA", 10);
+	v := "Hello world";
+	print SubString (v, 0, 5);
+	print SubString (v, 0, 0);
+	print SubString (v, 5, 5);
+	print SubString (v, 5, 10);
+	print StringLength (SubString (v, 5, 10));
+	print SubString (v, 20, 20);
+	print StringEqual ("Hello", "World");
+	print StringEqual ("Hello", "Hello");
+	print StringEqual ("Hello", "hello");
+	print "tfs";
+	w := FileReadLine (f);
+	-- sink WriteMessage (FromString (String, w, w));
+	-- print warning, "AA";
+	-- print FromString (String, w, w);
+	print "tfs";
+	print StringGetToken ("A B ");
+	print NumberToString (16 bits, (Ord ("A") as 16 bits), 16, 2, false);
+	print "NTS: ", NumberToString (32 bits, 0, 2, 8, true);
+	print "NTS: ", NumberToString (32 bits, 0, 2, 4, false);
+	print "NTS: ", NumberToString (28 bits, 0xDEAD, 16, 3, true);
+	print RepeatString ("ab", 5);
+	print "ba", RepeatString ("na", 6);
+	local
+		channel c : String
+	begin
+		c <- "Hello" || c -> then print c end
+	end;
+	print "A", RepeatString (" ", 5), "A";
+	print FitStringToWidth (NumberToString (32 bits, 567, 10, 0, false), 10, right);
+	print FitStringToWidth (NumberToString (32 bits, 567, 10, 0, false), 10, left);
+	print FitStringToWidth ("ABCDEF", 4, left);
+	print FitStringToWidth ("ABCDEF", 4, right);
+	print FitStringToWidth ("ABCDEF", 6, left);
+	print FitStringToWidth ("ABCDEF", 6, right);
+	local
+		channel c : String
+	begin
+		c <- "A B C D" ||
+		PrintTokens (c)
+	end;
+	print "DONE"
+end

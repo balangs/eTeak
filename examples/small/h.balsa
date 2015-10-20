@@ -1,0 +1,10 @@
+
+constant a = 10
+constant c = a + 10
+
+procedure a is
+	constant a = 10
+	constant b = c + 10
+begin
+	continue
+end

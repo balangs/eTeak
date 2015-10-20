@@ -1,0 +1,5 @@
+procedure a is
+	array 3 of array 3 of channel b : 8 bits
+begin
+	b[0] <- 0
+end

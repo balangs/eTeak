@@ -1,0 +1,25 @@
+type File is builtin
+
+type FileMode is enumeration
+	read, write,
+	writeUnbuffered, -- unbuffered file writing
+	writeLineBuffered -- flushes after each line
+over 3 bits
+
+-- FileOpen : open a file in the appropriate mode
+function FileOpen (fileName : String; mode : FileMode) is builtin : File
+
+-- FileReadLine : read upto an end of line and return a string without that trailing NL
+function FileReadLine (file : File) is builtin : String
+
+-- FileReadLine_withRetry : same as FileReadLine, but retries forever when it reaches end of file
+function FileReadLine_withRetry (file : File) is builtin : String
+
+-- FileWrite : write a string to a file, returns the file object
+function FileWrite (file : File; string : String) is builtin : File
+
+-- FileEOF : returns 1 if file is at the end of a file
+function FileEOF (file : File) is builtin : bit
+
+-- FileClose : close the file stream
+function FileClose (file : File) is builtin : File

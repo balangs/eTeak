@@ -1,0 +1,6 @@
+type e is enumeration
+	a,
+	b,
+	c,
+	a
+end

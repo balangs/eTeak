@@ -1,0 +1,8 @@
+function VarReadAccess is builtin : bit
+
+procedure OpenChanRead (input go : token; output done : bit) is
+loop
+	go -> then
+		show: done <- VarReadAccess ()
+	end
+end

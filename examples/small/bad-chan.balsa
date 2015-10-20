@@ -1,0 +1,17 @@
+
+procedure b (input i : 8 bits) is
+begin
+	loop
+		i -> then print i end
+	end
+end
+
+procedure a is
+	channel c : 8 bits
+begin
+	[ c <- 10; c <- 20 ] ||
+	[
+		c -> then print "A", c end;
+		b (c)
+	]
+end

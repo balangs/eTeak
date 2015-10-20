@@ -1,0 +1,17 @@
+set_node_vdd vdd
+set_node_gnd gnd 0
+set_gnd gnd
+
+set_print_tres 0.01ns
+;print_node_v *
+print_node_logic *
+;assign_node_i *vdd* top_level_current is_vdd
+;print_probe_i vdd top_level_current
+;print_node_i vdd
+
+; set_print_iwindow start=1000ns end=255000ns
+
+;assign_vdd_i top_level_current *
+;print_probe_i i top_level_current
+;print_probe_i a top_level_current
+;report_probe_i a top_level_current

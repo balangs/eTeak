@@ -1,0 +1,9 @@
+function Expr is builtin : bit 
+function UnOp (i1 : bit) is builtin : bit 
+
+procedure UnExpr (input go : token; output done : bit) is
+loop
+	go -> then
+		show: done <- UnOp (Expr ())
+	end
+end

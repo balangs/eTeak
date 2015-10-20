@@ -1,0 +1,11 @@
+
+procedure a is -- (parameter t : 2 bits) is
+	array 4 of channel b : 8 bits
+	-- channel z : 8 bits
+	-- channel b : 8 bits
+	-- constant g = 1 -- t
+begin
+	b[1] -> then
+		sink b[1]
+	end 
+end

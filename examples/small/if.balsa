@@ -1,0 +1,11 @@
+
+procedure a (input i : bit; output o2 : token) is
+begin
+	loop
+		i -> then
+			if i then
+				o2 <- token
+			end
+		end
+	end
+end

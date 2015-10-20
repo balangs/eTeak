@@ -1,0 +1,47 @@
+#!/bin/sh
+
+if [ $# != 1 ]; then
+	echo 'usage: assemble <file>'
+fi
+
+FILE=$1
+BASE=${FILE%%.s}
+
+if test ! -x ../hexdump;
+then
+	gcc -o ./hexdump ./hexdump.c
+fi
+
+set -ex
+
+cat > ${BASE}.ld <<EOF
+
+MEMORY
+{
+    MYMEM (rx) : ORIGIN = 0x00000000, LENGTH = 96K
+    MYDATA (rw) : ORIGIN = 0x10000000, LENGTH = 96K
+}
+
+SECTIONS
+{
+	.text :
+	{
+		. = ALIGN (4);
+		*(.text)
+	} > MYMEM
+
+	.data :
+	{
+		. = ALIGN (4);
+		*(.data)
+	} > MYDATA
+}
+
+EOF
+
+arm-gp2x-linux-as -o ${BASE}.o ${FILE}
+# arm-gp2x-linux-gcc -u _start -nostartfiles -Wl,-static -Wl,--gc-sections -Wl,-T -Xlinker \
+arm-gp2x-linux-ld -nostartfiles -static -T ${BASE}.ld -Map ${BASE}.map -o ${BASE}.elf ${BASE}.o
+arm-gp2x-linux-objcopy -O binary ${BASE}.elf ${BASE}.bin
+arm-gp2x-linux-objdump -d ${BASE}.elf > ${BASE}.lst
+./hexdump < ${BASE}.bin > ${BASE}.hex

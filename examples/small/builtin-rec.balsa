@@ -1,0 +1,12 @@
+procedure test is
+	variable i : 8 bits
+	type g is record a : String; b : 8 bits end
+	variable s : g
+begin
+	s := {"", 0};
+	loop
+		s := {s.a + ".", (s.b + 1 as 8 bits)};
+		print s
+	while s.b < 10
+	end
+end

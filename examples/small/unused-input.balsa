@@ -1,0 +1,12 @@
+procedure a (
+	input b, c : 8 bits;
+	output d : 6 bits
+) is
+	type l is record a, b : 4 bits end
+begin
+	loop
+		b, c -> then
+			d <- l {b as 4 bits, 0} as 6 bits
+		end
+	end
+end

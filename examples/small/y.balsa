@@ -1,0 +1,43 @@
+
+type card is 32 bits
+
+procedure buffer (
+	parameter width : card;
+	input d : width bits;
+	output e : width bits
+) is
+	variable v : width bits
+begin
+	loop
+		d -> v;
+		e <- v
+	end
+end
+
+procedure buffer_32 (
+	input d32 : 32 bits;
+	output e32 : 32 bits
+) is
+	channel c32 : 32 bits
+begin
+	buffer (32, d32, c32) ||
+	buffer (32, c32, e32)
+end
+
+(--
+procedure buffer_32a (
+	input d32 : 32 bits;
+	output e32 : 32 bits
+) is
+begin
+	local
+		variable v : 32 bits
+		channel z : 16 bits
+	begin
+		loop
+			d32 -> v;
+			e32 <- v
+		end
+	end
+end
+--)

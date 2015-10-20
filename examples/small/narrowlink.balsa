@@ -1,0 +1,21 @@
+procedure narrow (
+	input i : 2 bits;
+	output o : 1 bits
+) is
+begin
+	i -> then 
+		o <- 1
+	end
+end
+
+procedure narrow2 (
+	input i : 2 bits;
+	output o : 1 bits
+) is
+begin
+	loop
+		i -> then 
+			o <- 1
+		end
+	end
+end

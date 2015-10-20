@@ -1,0 +1,235 @@
+-- Radix-3 Booth's multiplier for nanoSpa / aviSpa
+-- support modules for multiplier 
+-- v1.0 20/04/2007 -ltaraz
+--
+
+import [balsa.types.basic]
+import [nanoMulTypes]
+
+procedure signAdj
+( 
+  input mType : MulType;
+  input a   : Datapath;
+  input b   : Datapath;
+  input c   : Datapath;
+  output aa : Datapath_2;
+  output ba : Datapath_3;
+  output ca : Datapath_2;
+  output mlength : bit;
+  output macc    : bit
+) is
+begin
+    loop
+        mType,a,b,c -> (--!--) then
+            -- Handle signed/unsigned in a,b operands, also add 0 to lsb of multiplier (b operand)
+            case mType of MUL,UMULL,UMLAL then -- unsigned, always fill with zeroes 
+                aa <- (a as Datapath_2)
+              ||
+                ba <- (#0b0[0..0] @ #b[0 .. length-1] as Datapath_3)
+            else  -- signed, extend sign
+                aa <- (((a as sDatapath) as sDatapath_2) as Datapath_2)
+              ||
+                ba <- (((#0b0[0..0] @ #b[0 .. length-1] as sDatapath_1) as sDatapath_3) as Datapath_3)
+            end -- case mCode 
+            -- Handle accumulate. c operand does not need sign extension, fill with zeroes
+          ||
+            ca <- (c as Datapath_2)
+          ||
+            mlength <- (#mType[2..2] as bit) -- long = 1 / short = 0
+          ||
+            macc    <- (#mType[0..0] as bit) -- acc = 1 
+        end -- mType ->
+    end -- loop
+end -- procedure signAdj
+
+procedure doByPass(
+    input  bH        : bit;
+    input  bL        : bit;
+    input  bpH           : Datapath;
+    input  bpL           : Datapath;
+    input  bmZ           : bit;
+    input  bmN          : bit;
+    output mpH           : Datapath;
+    output mpL           : Datapath;
+    output mZ           : bit;
+    output mN          : bit
+) is
+begin
+    loop
+        bH, bL -> (--!--) then
+            if bL then
+                mpL <- 0
+             ||
+                mZ <- 0
+             || 
+                mN <- 0
+             ||
+                if bH then
+                    mpH <- 0
+                end -- if bypassH
+            else
+                bpL -> then
+                    mpL <- bpL
+                end
+             ||
+                bmZ -> then
+                    mZ <- bmZ
+                end
+             || 
+                bmN -> then
+                    mN <- bmN
+                end
+             ||
+                if bH then
+                    bpH -> then
+                        mpH <- bpH
+                    end 
+                end -- if bypassH
+            end
+        end
+    end
+end
+
+-- bypasses multiplier if kill order is sent
+procedure bypassMul(
+    input  bypass         : bit;
+    input  bypassH        : bit;
+    input  mulOpA         : Datapath;
+    input  mulOpB         : Datapath;
+    input  mulOpC         : Datapath;
+    input  mulType        : MulType; 
+    output  mulOpAo       : Datapath;
+    output  mulOpBo       : Datapath;
+    output  mulOpCo       : Datapath;
+    output  mulTypeo      : MulType;
+    output  bH            : bit;
+    output  bL            : bit
+) is
+begin
+    loop
+        bypass, bypassH, mulType ->(--!--) then
+            mulOpA, mulOpB ->(--!--) then
+                if bypass then
+                    case mulType of MLA, UMLAL, SMLAL  then -- accumulate
+                        mulOpC ->(--!--) then
+                            continue
+                        end
+                    else
+                        continue
+                    end
+                else
+                    mulOpAo <- mulOpA
+                 ||
+                    mulOpBo <- mulOpB
+                 ||
+                    mulTypeo <- mulType
+                 ||
+                    case mulType of MLA, UMLAL, SMLAL  then -- accumulate
+                        mulOpC ->(--!--) then
+                            mulOpCo <- mulOpC
+                        end
+                    else
+                        mulOpCo <- 0
+                    end
+                end -- if bypass
+            end --  mulOpA mulOpB ->!
+         ||
+            bL <- bypass
+         ||
+            bH <- bypassH
+        end -- bypass, bypassH, mulType ->!
+    end --loop
+end -- procedure bypassMul
+
+
+-- carry save adder
+
+procedure CSAdder
+( parameter DataType : type;
+  input     a : DataType;
+  input     b : DataType;
+  input     cs : DataType;
+  output    cout: DataType;
+  output    s : DataType
+) is
+local
+ begin
+    loop
+        a,b,cs ->(--!--) then
+            s  <- a xor b xor cs
+          ||
+            cout <- (a and b) or (cs and a) or (cs and b)
+        end
+    end
+end -- procedure CSAdder
+
+
+-- carry propagate adder
+
+procedure fullCPadder
+( parameter DataType : type;
+  input a   : DataType;
+  input b   : DataType;
+  input c0  : bit;
+  output s  : DataType;
+  output cN : bit
+) is
+local
+  constant DTLength = sizeof DataType
+  type eDataType  is DTLength + 1 bits
+  type eeDataType is DTLength + 2 bits
+  channel ea, eb : eDataType
+  channel es : eeDataType
+
+begin
+    loop 
+        a,b,c0 ->(--!--) then
+        ea <- (#c0[0..0] @ #a[0..DTLength-1] as eDataType)
+      ||
+        eb <- (#c0[0..0] @ #b[0..DTLength-1] as eDataType)
+        end
+      ||
+        ea,eb ->(--!--) then
+            es <- (ea + eb as eeDataType)
+        end -- ea,eb ->!
+      ||
+        es ->(--!--) then
+            s <- (#es[1..DTLength] as DataType)
+          ||
+            cN<- (#es[DTLength+1 .. DTLength+1] as bit)
+        end -- es ->!
+    end --loop
+end -- procedure fullCPadder
+
+-- shift register to control iterations
+procedure mControl
+( parameter cLength : cardinal;
+  input  load : bit;
+  output done : bit
+) is
+
+variable t   :  bit
+variable c0  :  cLength bits
+variable c1  :  cLength bits
+
+begin
+    loop
+        load ->(--!--) then
+            t := load
+        end -- load ->
+      ;
+        if t then
+            c0 := ((2^(cLength-1)) - 1 as cLength bits)
+          ||
+            done <- 1
+        else
+            done  <- (#c0[0..0] as bit)
+          ||
+            c1    := (#c0[1..cLength-1] as cLength bits)
+          ;
+            c0 := c1
+        end --if t
+    end -- loop
+end  -- procedure mControl
+
+procedure mControl10 is mControl(10)

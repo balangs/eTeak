@@ -1,0 +1,11 @@
+procedure fork (
+	array 4 of output o : token
+) is
+begin
+	for || i in 0..3 then o[i] <- token end;
+	[ o[3] <- token; o[3] <- token ]
+end
+
+(--
+	(a1 -> m (m2 a)) -> m2 a1 -> m (m2 a)
+--)

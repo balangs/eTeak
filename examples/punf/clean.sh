@@ -1,0 +1,9 @@
+rm -f *.hl_net
+rm -f *.mci
+rm -f *.teak
+rm -f *.dot
+rm -f *.report
+rm -f *.log
+rm -f *.ps
+rm -f *.pdf
+rm -f *.tree*

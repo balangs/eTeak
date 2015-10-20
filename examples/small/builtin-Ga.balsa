@@ -1,0 +1,30 @@
+import [balsa.types.basic]
+import [balsa.sim.fileio]
+
+type FileAndLine is record
+	f : File;
+	lineNo : cardinal
+end
+
+procedure rf
+is
+	variable b : String
+	variable a : 32 bits
+	variable f : FileAndLine
+begin
+	f.f := FileOpen ("data", read);
+	f.lineNo := 1;
+
+	loop while not FileEOF (f.f) then
+		b := FileReadLine (f.f);
+		print "Line ", f.lineNo, ": ", b;
+		f.lineNo := (f.lineNo + 1 as cardinal)
+		(--
+		loop while StringHasTokens (b) then
+			-- scan b, a
+			print b;
+			b := ""
+		end
+		--)
+	end
+end

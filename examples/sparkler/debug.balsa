@@ -1,0 +1,12 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [balsa.sim.string]
+
+constant debug = false 
+
+function Hex (w : 32 bits) = NumberToString (32 bits, w, 16, 4, 1)
+function HexByte (w : 8 bits) = NumberToString (8 bits, w, 16, 0, 1)

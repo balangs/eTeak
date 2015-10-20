@@ -1,0 +1,35 @@
+digraph fork_Datapath {
+  outputorder="edgesfirst";
+  size="7.086614173228347,10.236220472440946";
+  ratio="2.0"
+  subgraph cluster_fork_Datapath {
+    edge [fontsize="8", fontname="Helvetica", labelfontname="Helvetica", labelfontsize="8", arrowhead="normal"];
+    node [fontsize="12", fontname="Helvetica-Bold", shape="box"];
+    title [label="fork_Datapath", fontsize="20"];
+    port0 [portref="0", label="go", style="bold", shape="none"];
+    port1 [portref="1", label="i", style="bold", shape="none"];
+    port2 [portref="2", label="o0", style="bold", shape="none"];
+    port3 [portref="3", label="o1", style="bold", shape="none"];
+    comp3 [compref="3", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp4 [compref="4", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp5 [compref="5", label="i|<w0>w0|<r0>r0|<r1>r1", shape="record"];
+    comp7 [compref="7", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp8 [compref="8", label="{{<i0>|<i1>}|{<o>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp9 [compref="9", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"];
+    comp10 [compref="10", label="{{<i>}|{<o0>|<o1>}}", height="0.4", fontsize="2", nojustify="true", shape="record"]
+    comp3:o0:s -> comp5:r0:n [linkref="1", label="1", penwidth="1", weight="1"];
+    comp5:r0:s -> comp9:i:n [linkref="3", label="3", penwidth="6", weight="6"];
+    comp9:o0:s -> comp4:i0:n [linkref="4", label="4", penwidth="1", weight="1"];
+    comp3:o1:s -> comp5:r1:n [linkref="5", label="5", penwidth="1", weight="1"];
+    comp5:r1:s -> comp10:i:n [linkref="7", label="7", penwidth="6", weight="6"];
+    comp10:o0:s -> comp4:i1:n [linkref="8", label="8", penwidth="1", weight="1"];
+    comp5:w0:s -> comp3:i:n [linkref="9", label="9", penwidth="1", weight="1"];
+    comp4:o:s -> comp7:i1:n [linkref="10", label="10", penwidth="1", weight="1"];
+    comp8:o:s -> comp5:w0:n [linkref="11", label="11", penwidth="6", weight="6"];
+    comp7:o:s -> comp8:i1:n [linkref="13", label="13", penwidth="1", weight="1"];
+    port0 -> comp7:i0:n [linkref="14", label="14", penwidth="1", weight="1"];
+    port1 -> comp8:i0:n [linkref="15", label="15", penwidth="6", weight="6"];
+    comp9:o1:s -> port2 [linkref="16", label="16", penwidth="6", weight="6"];
+    comp10:o1:s -> port3 [linkref="17", label="17", penwidth="6", weight="6"]
+  }
+}

@@ -1,0 +1,121 @@
+
+  Remove alpha channel from Layouts before EPS plotting
+  Fix CaseExpr to not replicate Expr
+
+Configuration
+  Test for: dot, lout, convert, ps2pdf
+
+Language
+  Parameterised types (for builtin Token reader, for example)
+  Make partial procedure application by ProcAlias work with channels as well as parameters
+  Make partial function application (like ProcAlias) possible
+  Input choice construct for
+
+Compiler
+  Restructure Layout/GuiSupport/Plot/Dot/Monitor
+  Make rule check make sure that resulting components have enough inputs/outputs as part of the rule
+  Make optimisation applier check network
+  Fix double error messages for descend.*C.* nodes caused by Context errors being re-reported in use in
+      expressions etc.
+  (* *) Attribute usage on command line
+  Need a `warning' format as part of error reporting
+x Error reporting in the backend needs to be by means other than `error', Error-check compilation phase before
+      Teak? or have error reporting as part of NetlistMonad
+  Add typing/type-classing/elaboration phase to compilation
+  Check zero-width types everywhere
+  Check type classes everywhere for builtins and for implicants represented as numeric types.
+  Introduce ClassCheckExpr to implement type class checking
+  Implicant arithmetic (disallow?). Restrict implicant use/arithmetic to case statements?
+  EnumElem into simpler list that Context, or RecordElems as Context elements.  Choose and make consistent
+  Hiding (by more local defns.) of type name String and builtin functions in balsa.types.builtin
+  Parameter arguments on functions (esp. builtin functions) must be const
+  Relationship between builtin values and parameters (strings in constant expressions)
+  Only allow builtin type and function defns at the top level
+  Check directions for I/O operations on port channels
+  Check use of ConstCheckExpr
+  Positions for things other than commands
+  Inside procedure/for/... Position nodes
+  Remove need for sink when return values from functions are 0 bits wide.
+  Make things like {10, 20} without a type expectation actually create an array of the type of the
+      first element.  Make numeric elemented arrays choose the widest element type.
+  Have a ranged numeric type to allow the current constant numeric casting hack to be dispensed with
+  Have a type for implicant numerics which is implicitly castable to from numeric like in the same way that
+      wide/narrow/signed/unsigned numerics can be coerced.
+
+Networks
+  Parser for new/pretty network format
+  Need network consistency checker and checker for components
+
+Optimisation:
+  Fork/Join over Variable optimisation
+x Need diamond-finding optimisation to remove J-I-F structures with more complicated construction
+x Variable elimination rules
+  Control elimination rules
+x Storage insertion for Teak -- Luis's stuff
+  Leads from Rules
+x Make trim-datapath into Rules
+x Make initial-loop into Rules
+x Make remove-rmerges into Rules
+x Make trim-vars into rules
+x Make move-forks-to into rules
+x Make trim-datapath also start from triming Os
+x Need trim-datapath to be able to trim variable read ports
+  Need to allow/allow to be removed by optimisation 0 bit variable read ports
+
+Gate netlists:
+  Cost estimates
+  Drive management
+  Gate netlist alias removal
+  Add test hardware (protocol checking?) to m in Verilog
+  OTerm bitwise optimisation
+  Think about abstracting components away from hard-coded current varieties
+  Netlist cleanup (by name, all connected, no aliases, uniquified ..., name length
+      limited/name mapping support)
+
+Simulator
+  Consider starting builtins from scratch
+  Add file/memory functions to Verilog Teak runtime
+  Finish behavioural Verilog implementation of (new?) builtin library
+  Behavioural -> Verilog synthesis
+
+GUI
+  Display/optimisation options:
+      `Don't redraw after Step/Opt.' including maybe greying out the display
+x     `Automatically generate new leads' for end of Step or Opt.
+x     `Only show applicable optimisations'
+x Annotate simulation onto GUI
+  Annotate link occupancy onto GUI
+  Show port parameters on layout view
+
+Technology
+x Need cell mapping support
+  Timing annotation
+  New cell libraries, 65nm?, 40nm?
+Examples/regression
+  Bash examples collection into more of a regression suite. 
+  Need regression suite for TeakScript too
+
+Test designs
+  nanoSpa
+x sparkler -- pipelined
+  ssem
+  viterbi
+  aes
+
+Aschem
+  ASCII art for other components: f,j,s,a,i,r,v,o
+  Ellipsis in aschem
+
+Unsolved problems (stuff to do?/old chestnuts)
+  Timing validation with conventional tools
+  DfT
+  Power measurement
+  FPGA mapping
+
+Documentation
+  Compiler construction
+  Compilation rules
+  Network format/API
+  Optimiser language/API
+  Tech description
+  Gate level component construction

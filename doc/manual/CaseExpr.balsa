@@ -1,0 +1,9 @@
+function Expr2bits is builtin : 2 bits
+function Exprarray4ofbit is builtin : array 4 of bit
+
+procedure CaseExpr (input go : token; output done : bit) is
+loop
+	go -> then
+		show: done <- Exprarray4ofbit () [Expr2bits ()]
+	end
+end

@@ -1,0 +1,113 @@
+Key:
+
+	<component_name> ( `{' <component_parameters> `}' ) ( <ports> ) NL ( <condition> )*
+
+	<ports> ::= <port> ( `,' <port> )*
+	<port> ::= `[' <port_name> `]' ( `{' <port_parameters> `}' )?
+		| <port_name> ( `{' <port_parameters> `}' )?
+
+	<component_parameters> ::= <parameter_name> ( `,' <parameter_name> )*
+	<port_parameters> ::= <parameter_name> ( `,' <parameter_name> )*
+
+	<condition> ::= HT <teakscript_expression> 
+
+	<component_name> ::= upper case character
+	<port_name> ::= lower case name
+
+A ([inp], out)
+	length inp == 2
+	all (\o -> width o == width inp) out
+
+F (inp, [out]{offset})
+	all (\o -> offset o <= (width inp - 1) && offset o >= 0 &&
+		(offset o + width o - 1) <= (width inp - 1)) out
+
+I (inp, out)
+	width inp == 0
+	width out == 0
+
+J ([inp], out)
+	sum width inp == width out
+
+L {depth} (inp, out)
+	width inp == width out
+	depth >= 0
+
+M ([inp], out)
+	all (\i -> width i == width out) inp
+
+O {terms} (inp, out)
+	length terms >= 1
+	width out == resultWidth (last terms)
+	all (\t -> resultWidth t /= 0) (init terms)
+	-- no reference to inp exceeds inp bounds
+
+R (out)
+	width out == 0
+
+S {slice} (inp, [out]{implicants, offset})
+	all (\o -> offset o <= (width inp - 1) && offset o >= 0 &&
+		(offset o + width o - 1) <= (width inp - 1)) out
+
+V {name, width, builtinOffsets} ([wgo]{writeOffset}, [wdone], [rgo], [rdone]{readOffsets})
+	length wgo == length wdone
+	length rgo == length rdone
+	all (\wd -> width wd == 0) wdone
+	all (\rg -> width rg == 0) rgo
+
+
+#. F -- Fork
+
+	F (inp, [out]{fOffset})
+		all (\o -> o.fOffset <= (inp.width - 1) && o.fOffset >= 0 &&
+			(o.fOffset + o.width - 1) <= (inp.width - 1)) out
+
+	(TeakF [fOffset]) [One inp, Many out]
+
+#. A -- Arbiter
+
+	A ([inp], out)
+
+	TeakA [Many inp, One out]
+
+#. M -- Merge
+
+	M ([inp], out)
+
+	TeakM [Many inp, One out]
+
+#. J -- Join
+	
+	J ([inp], out)
+
+	TeakJ [Many inp, One out]
+
+#. S -- Steer
+
+	S {sSlice} (inp, [out]{sOffset})
+
+	(TeakS sSlice [sOffset]) [One inp, Many out]
+
+#. O -- Operator
+	
+	O {oTerms} (inp, out)
+
+	(TeakO oTerms) [One inp, One out]
+
+#. V -- Variable
+
+	V {name, width, bOffsets} ([wg]{wOffset}, [wd], [rg], [rd]{rOffset})
+
+	(TeakV name width bOffsets) [Many wg, Many wd, Many rg, Many rd]
+
+#. I -- Initial
+
+	I (inp, out)
+
+	TeakI [One inp, One out]
+
+#. R -- Reset
+
+	R (out)
+
+	TeakR [One out]

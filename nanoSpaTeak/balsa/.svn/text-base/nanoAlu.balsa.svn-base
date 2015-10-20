@@ -1,0 +1,133 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+-- alu module
+--  + support for all ARM data processing instructions
+--  + flags supported: N, Z, C, V
+--  + use of shifter carry flag in logic operations
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--  + No changes to this module
+
+import [nanoSpaTypes]
+
+procedure nanoAlu
+(
+  input  a    : Datapath; 
+  input  b    : Datapath;
+  input  ctrl : AluCtrl;
+  input  fi   : Flags;
+--  input  compF: bit;
+  input  sfc  : bit;
+  output o    : Datapath;
+  output f    : Flags
+) is
+local
+    -- used to construct an input to the adder
+    type AddArg is record
+        ci  : bit;
+        arg : Datapath
+    end
+    
+    type AluResult is record
+        result : Datapath;
+        co : bit
+    end
+    
+    -- used to take the relevant bits of the output of the adder
+    type AddResult is record
+        _ : bit; -- the sum of the carry ins, always zero
+        result : AluResult
+    end
+    
+    channel a_v, b_v  : Datapath 
+    channel ci_v      : bit
+    channel fi_v      : bit
+    channel v1, v2    : bit
+    channel result    : AluResult
+    channel co        : bit
+    channel aXORb     : bit
+    
+begin
+    loop
+        ctrl, fi ->! then
+             -- maybe complement the a operand
+            case ctrl of 
+            RSB, RSC then
+                a ->! then
+                    a_v <- not a
+                end -- a ->
+            else
+                a -> a_v
+            end -- case ctrl.Opcode
+         ||
+            -- maybe complement the b operand
+            case ctrl of 
+            SUB, SBC, MVN, BIC, CMP then
+                b ->! then
+                    b_v <- not b
+                end -- b ->
+            else
+                b -> b_v
+            end -- case ctrl.Opcode
+         ||
+            -- prepare input carry
+            sfc ->! then
+                case ctrl of 
+                ADC, SBC, RSC then
+                    ci_v <- fi.C -- stored condition code carry
+                | SUB, RSB, CMP then 
+                    ci_v <- 1 -- this finishes the 2's comp
+                | CMN, ADD then
+                    ci_v <- 0
+                else -- logical opcodes
+                    ci_v <- sfc -- carry from the shifter
+                end -- case opcode
+            end -- sfc ->
+         || 
+            a_v, b_v, ci_v ->! then
+            -- perform actual operation
+                case ctrl of 
+                SUB, RSB, CMP, ADD, CMN, ADC, SBC, RSC then -- arithmetic operations
+                        -- find the result as (sizeof Datapath + 2) bits then chop off the top and bottom
+                    result <- (
+                      (AddArg {ci_v, a_v} as (sizeof AddArg) bits) + 
+                      (AddArg {ci_v, b_v} as (sizeof AddArg) bits) 
+                      as AddResult).result
+                | MOV, MVN then
+                    result <- {b_v, ci_v}
+                | EOR, TEQ then
+                    result <- {a_v xor b_v, ci_v}
+                | ORR then
+                    result <- {a_v or b_v, ci_v}
+                | AND, BIC, TST then
+                    result <- {a_v and b_v, ci_v}
+                end -- case ctrl.Opcode
+             ||
+                aXORb <- #(a_v)[sizeof Datapath-1] xor #(b_v)[sizeof Datapath-1]
+            end -- a_v ->!
+         ||
+--            if compF then -- get result from operation send it out and compute flags
+                aXORb, result ->! then
+                    o <- result.result
+                 ||
+                    case ctrl of 
+                    SUB, RSB, CMP, ADD, CMN, ADC, SBC, RSC then -- arithmetic operations
+                        v1 <- (result.co xor #(result.result)[sizeof Datapath-1] xor aXORb)
+                    else
+                        -- set output flags overflow bit (V) from the stored version
+                        v1 <- fi.V -- .V 
+                    end -- case ctrl.Opcode
+                 ||
+                    v2 <- (result.result = 0 as bit)
+                 ||
+                    v1, v2 ->! then 
+                        f <- {v1,  -- .V 
+                            result.co, -- .C
+                            v2, -- .Z
+                            #(result.result)[sizeof Datapath-1]} -- .N
+                    end -- v ->
+            end -- aXORb,result ->
+        end -- ctrl , fi ->
+    end -- loop
+end -- procedure nanoAlu

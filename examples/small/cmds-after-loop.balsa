@@ -1,0 +1,33 @@
+import [balsa.sim.string]
+
+(-- (*
+	myname = (* jaskdjsd askdjks asdjkas *)
+*) --)
+
+procedure b (input i : 8 bits; output o : 8 bits)
+	-- MAGIC: jdfks=jasjk
+	(--MAGIC: ajks=jdjds --)
+	(* ssjdhj *)
+	-- (* myname=(* a=b c=d *) *)
+is
+	variable v : 8 bits -- TOADD (* myname *)
+	(-- TOADD (* dontRemove *) --) variable v2 : 8 bits
+	variable v3 (-- TOADD (* dontRemove *) --) : 8 bits
+begin
+	a: (-- TOADD (* jksjdksd *) --) loop
+		i -> v; o <- v
+	end;
+	b: (-- TOADD (* jksjdksd *) --) o <- 10;
+	o <- 20;
+
+	begin -- TOADD (* ksdjskdj *)
+		continue
+	end
+end
+
+procedure top is
+	variable v : 8 bits
+begin
+	v := 0;
+	print "Hello, world", v
+end

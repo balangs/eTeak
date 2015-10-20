@@ -1,0 +1,33 @@
+
+(--
+procedure enc1 (
+	input i, j : 8 bits;
+	output o : 8 bits
+) is
+begin
+	i, j -> then
+		o <- i;
+		o <- j
+	end
+end
+--)
+
+procedure enc2 (
+	array 1+2 of input i : 8 bits;
+	output o : 8 bits
+) is
+	constant z = 0
+	-- variable v : 8 bits
+
+	shared body is
+	begin
+		i[z], i[1] -> then
+			o <- i[z];
+			o <- i[1];
+			i[2] <- 0xFF -- ;
+			-- i[2] -> v
+		end
+	end
+begin
+	continue
+end

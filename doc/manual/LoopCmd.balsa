@@ -1,0 +1,3 @@
+procedure Cmd (* reallyInstantiate *) is begin continue end
+
+procedure LoopCmd is loop Cmd () end

@@ -1,0 +1,15 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+--  pipeline register
+--  + parameterised by data type
+--
+--  v1.0 25/07/2006 -lap
+
+procedure pipeReg_Sync
+(
+  output o : token
+) is
+begin
+	loop
+    	o <- token
+    end
+end -- procedure pipeReg_Sync

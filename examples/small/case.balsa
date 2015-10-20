@@ -1,0 +1,37 @@
+
+type a is enumeration
+	b, c, d, e
+end
+
+procedure aToNum (
+	input a : a;
+	output num : 8 bits
+) is
+begin
+	a -> then
+		case a of
+			b then num <- 3
+		|	c then num <- 2
+		|	d then num <- 1
+		|	e then num <- 0
+		else num <- 0x80 
+		end;
+		case a'b of
+			b..d then num <- 3
+		|	e then num <- 0
+		end
+	end
+end
+
+(--
+procedure z is
+	variable b : 8 bits
+begin
+	case b of
+	  10 then continue
+	| 5, 6 then continue
+	| 20 .. 30 then continue
+	| for a in 0, 1 then continue
+	end
+end
+--)

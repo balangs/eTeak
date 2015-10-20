@@ -1,0 +1,423 @@
+-- user-defined types for nanoSpa
+-- + many types inherited from SPA
+--
+--  v1.0 25/07/2006 -lap
+--
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--  + Full multiply support (parameterised BoothR3 unrolled/"rolled" styles)
+--  + New modular decoder without merges
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+
+-- import [balsa.types.token]
+
+constant READPORTS = 3 -- number of readports in RegBank
+constant ROBSIZE   = 4 -- reorder buffer size
+    
+type Colour is enumeration GREEN, RED end
+
+--AB type token is bit
+--AB constant token = 0
+
+-- memory interface types
+type MemProcMode is enumeration USER=0, PRIVILEGED=1 end
+type MemAbort    is bit
+type MemRorW     is enumeration WRITE=0, READ=1 end
+type MemIorD     is enumeration INSTRUCTION, DATA end
+type MemAddress  is 32 bits
+type MemSize     is enumeration BYTE=0, HALFWORD=1, WORD=2, RESERVED=3 end
+type MemData     is 32 bits
+type MemLock     is bit -- 0 is not locked, 1 is locked
+type MemSeq      is bit -- 0 is not sequential, 1 is sequential
+type MemAccess   is record
+        RorW    : MemRorW;
+        Address : MemAddress;
+        Size    : MemSize;
+        Lock    : MemLock;
+        Seq     : MemSeq;
+        Colour  : Colour
+end
+type MemCtrl is record
+    RorW : MemRorW;
+    Size : MemSize;
+    Lock : MemLock;
+    Seq  : MemSeq
+end
+
+-- processor modes
+type procMode is enumeration 
+    USR = 0b10000,
+    FIQ = 0b10001,
+    IRQ = 0b10010,
+    SVC = 0b10011,
+    ABT = 0b10111,
+    UND = 0b11011,
+    SYS = 0b11111
+end
+--type cprocMode is enumeration 
+--    CUSR =0b000,
+--    CFIQ =0b001,
+--    CIRQ =0b010,
+--    CSVC =0b100,
+--   CABT =0b101,
+--    CUND =0b110,
+--    CSYS =0b111
+--end
+constant CUSR = 0b000
+constant CFIQ = 0b001
+constant CIRQ = 0b010
+constant CSVC = 0b100
+constant CABT = 0b101
+constant CUND = 0b110
+constant CSYS = 0b000
+constant CNUL = 0b111
+
+constant ENABLEROB=1
+
+type psrCtl is record
+    mode : 3 bits;
+    priv : MemProcMode;
+    T    : bit;
+    F    : bit;
+    I    : bit
+end
+
+constant NULLMODE = {CNUL, PRIVILEGED, 1, 1, 1} :psrCtl
+
+type signedByte is 8 signed bits
+type HalfWord is 16 bits
+type signedHalfWord is 16 signed bits
+type Address is 32 bits
+type Datapath is 32 bits
+type signedDatapath is 32 signed bits
+type Instruction is 32 bits
+type ConditionCode is 4 bits
+
+type RegNum  is 4 bits
+type RegSpec is 5 bits
+type RegDesc is 16 bits
+type RegCnt  is 5 bits
+type EncodedReg is record
+    Num  : RegNum;
+    Mask : RegDesc
+end -- type EncodedReg
+
+type RegBank is 3 bits
+
+type AluOpcode is enumeration
+    AND, EOR, SUB, RSB, ADD, ADC, SBC, RSC,
+    TST, TEQ, CMP, CMN, ORR, MOV, BIC, MVN
+end
+
+type AluCtrl is AluOpcode
+type AluSelect is 6 bits
+
+type DecodeBits is 12 bits
+type CoreInstr is 25 bits
+
+type ShiftType is 2 bits
+
+type PreDecodedI is enumeration
+    MUL=0,     --multiply
+    DPIMMOP=1, -- data processing with immediate operand
+    DPREGSH=2, -- data processing with register-specified shift
+    DPIMMSH=3, -- data processing with immediate-specified shift 
+    LDMSTM=4,  -- ldm/stm
+    LDRSTR=5,  -- ldr/str
+    BRBL=6,    -- b/bl
+    SWI=7      -- swi
+over 3 bits
+
+type MulType is enumeration
+    MUL=0,   -- multiply (32-bit result)
+    MLA=1,   -- multiply-accumulate (32-bit result)
+    MUND2=2,  -- undefined code
+    MUND3=3,  -- undefined code
+    UMULL=4, -- unsigned multiply long
+    UMLAL=5, -- unsigned multiply-accumulate long
+    SMULL=6, -- signed multiply long
+    SMLAL=7  -- signed multiply-accumulate long
+over 3 bits
+
+type decMUL is record
+    Rm      : RegNum;  -- bits  3..0
+    OZZO    : 4 bits;  -- bits  7..4
+    Rs      : RegNum;  -- bits 11..8
+    Rn_RdLo : RegNum;  -- bits 15..12
+    Rd_RdHi : RegNum;  -- bits 19..16
+    SetF    : bit;     -- bit  20
+    MulT    : MulType; -- bits 23..21
+    Z       : bit      -- bit  24
+end
+type decDPIMMOP is record
+    Imm     : 8 bits;   -- bits  7..0
+    Rot     : 4 bits;   -- bits 11..8
+    Rd      : RegNum;   -- bits 15..12
+    Rn      : RegNum;   -- bits 19..16
+    SetF    : bit;      -- bit  20
+    Opcode  : AluOpcode -- bits 24..21
+end
+type decDPIMMSH is record
+    Rm      : RegNum;   -- bits  3..0
+    Z       : bit;      -- bit   4
+    ShType  : ShiftType;-- bits  6..5
+    Shamt   : 5 bits;   -- bits 11..7
+    Rd      : RegNum;   -- bits 15..12
+    Rn      : RegNum;   -- bits 19..16
+    SetF    : bit;      -- bit  20
+    Opcode  : AluOpcode -- bits 24..21
+end
+type decDPREGSH is record
+    Rm      : RegNum;   -- bits  3..0
+    O       : bit;      -- bit   4
+    ShType  : ShiftType;-- bits  6..5
+    Z       : bit;      -- bit   7
+    Rs      : RegNum;   -- bits 11..8
+    Rd      : RegNum;   -- bits 15..12
+    Rn      : RegNum;   -- bits 19..16
+    SetF    : bit;      -- bit  20
+    Opcode  : AluOpcode -- bits 24..21
+end
+type decMHSBREGOF is record
+    Rm      : RegNum;   -- bits  3..0
+    O       : bit;      -- bit   4
+    H       : bit;      -- bit   5
+    S       : bit;      -- bit   6
+    O_      : bit;      -- bit   7
+    SBZ     : 4 bits;   -- bits 11..7
+    RdRs    : RegNum;   -- bits 15..12
+    Rn      : RegNum;   -- bits 19..16
+    L       : bit;      -- bit  20
+    W       : bit;      -- bit  21
+    Z       : bit;      -- bit  22
+    U       : bit;      -- bit  23
+    P       : bit       -- bit  24
+end
+type decMEMREGOF is record
+    Rm      : RegNum;   -- bits  3..0
+    Z       : bit;      -- bit   4
+    ShType  : ShiftType;-- bits  6..5
+    Shamt   : 5 bits;   -- bits 11..7
+    RdRs    : RegNum;   -- bits 15..12
+    Rn      : RegNum;   -- bits 19..16
+    L       : bit;      -- bit  20
+    W       : bit;      -- bit  21
+    B       : bit;      -- bit  22
+    U       : bit;      -- bit  23
+    P       : bit       -- bit  24
+end
+type decMHSBIMMOF is record
+    ImmL    : 4 bits;   -- bits  3..0
+    O       : bit;      -- bit   4
+    H       : bit;      -- bit   5
+    S       : bit;      -- bit   6
+    O_      : bit;      -- bit   7
+    ImmH    : 4 bits;   -- bits 11..7
+    RdRs    : RegNum;   -- bits 15..12
+    Rn      : RegNum;   -- bits 19..16
+    L       : bit;      -- bit  20
+    W       : bit;      -- bit  21
+    O__     : bit;      -- bit  22
+    U       : bit;      -- bit  23
+    P       : bit       -- bit  24
+end
+type decMEMIMMOF is record
+    Imm     : 12 bits;  -- bits 11..0
+    RdRs    : RegNum;   -- bits 15..12
+    Rn      : RegNum;   -- bits 19..16
+    L       : bit;      -- bit  20
+    W       : bit;      -- bit  21
+    B       : bit;      -- bit  22
+    U       : bit;      -- bit  23
+    P       : bit       -- bit  24
+end
+type decLDMSTM is record
+    RegDesc : 16 bits; -- bits 15..0
+    Rn      : RegNum;  -- bits 19..16
+    Ctrl    : 5 bits   -- bits 24..20
+end
+type decBRBL is record
+    Offset : 24 bits; -- bits 23..0
+    Link   : bit      -- bit  24
+end
+type decSWI is record
+    Imm    : 24 bits; -- bits 23..0
+    O      : bit      -- bit  24
+end
+type decMRS is record
+    SBZ    : 12 bits; -- bits 11..0
+    Rd     : RegNum;  -- bits 15..12
+    SBO    : 6 bits;  -- bits 21..16
+    R      : bit;     -- bit 22 register to read: 1=SPSR, 0=CPSR
+    TWO    : 2 bits   -- bits 24..23 ( 0b10 )    
+end
+type decMSRIMMOP is record
+    Imm     : 8 bits;   -- bits  7..0
+    Rot     : 4 bits;   -- bits 11..8
+    SBO     : 4 bits;   -- bits 15..12
+    cMask   : bit;      -- bit 16
+    xMask   : bit;      -- bit 17
+    sMask   : bit;      -- bit 18
+    fMask   : bit;      -- bit 19
+    TWO     : 2 bits;   -- bits  21..20 (0b10)
+    R       : bit;      -- bit 22 register to write: 1=SPSR, 0=CPSR
+    TWO_    : 2 bits   -- bits  24..23 (0b10)
+end
+type decMSRIMMSH is record
+    Rm      : RegNum;   -- bits 3..0
+    shamt   : 4 bits;   -- bits 7..4
+    SBZ     : 4 bits;   -- bits 11..8
+    SBO     : 4 bits;   -- bits 15..12
+    cMask   : bit;      -- bit 16
+    xMask   : bit;      -- bit 17
+    sMask   : bit;      -- bit 18
+    fMask   : bit;      -- bit 19
+    TWO     : 2 bits;   -- bits  21..20 (0b10)
+    R       : bit;      -- bit 22 register to write: 1=SPSR, 0=CPSR
+    TWO_    : 2 bits   -- bits  24..23 (0b10)
+end
+
+
+
+type AluOutCtrl is record
+    Rd     : RegNum;
+    OpCode : AluOpcode
+end -- type AbusCond
+
+type WriteCtrl is bit
+--type WriteCtrl is record
+--    Continue : bit;
+--    Write    : bit
+--end -- type WriteCtrl
+
+type Flags is record
+    V : bit;
+    C : bit;
+    Z : bit;
+    N : bit
+end -- type Flags
+
+type rdsSelect is 3 bits
+type sabSelect is 3 bits
+
+type aBusSelect is 2 bits
+type bBusSelect is 2 bits
+type mcrSelect  is 2 bits
+type dLrSelect  is 2 bits
+type memAddrSelect  is 2 bits
+type tempSelect  is 2 bits
+
+type PcSelect  is 2 bits
+type cPcSelect is 2 bits
+type mpHSelect is 2 bits
+type mDiSelect is 2 bits
+
+
+-- multiplier types
+constant length = sizeof Datapath
+constant xlength = sizeof Datapath + 3
+constant tbits = log (sizeof Datapath)
+type cntType is tbits bits
+type Datapath_1 is length+1 bits
+type Datapath_2 is xlength bits
+type Datapath_3 is xlength+1 bits
+
+type sDatapath is length signed bits
+type sDatapath_1 is length+1 signed bits
+type sDatapath_2 is xlength signed bits
+type sDatapath_3 is xlength+1 signed bits
+type multStyle is enumeration ROLLED, UNROLLED end
+
+-- SPA coprocessor types
+constant MAX_CP = 16
+constant MAX_PIPELINE_DEPTH = 4
+type cpProcMode is MemProcMode
+type cpNum is log MAX_CP bits
+type cpITag is log MAX_PIPELINE_DEPTH bits
+type cpInstructionType is enumeration
+        CDP=0, CDP2=CDP, -- these must correspond with instructionType
+        STC=1, STC2=STC, 
+        LDC=STC, LDC2=LDC, 
+        MCR=2, MCR2=MCR,
+        MRC=MCR, MRC2=MRC
+        --cpDataOp, cpDataTransfer, cpRegisterTransfer
+end
+type cpUndecInstr is 28 bits
+type cpInstr is record
+        instructionType : cpInstructionType;
+        instruction : cpUndecInstr
+end 
+type cpDataOp is record
+        cRm : 4 bits;
+        sbz : bit;
+        cop2    : 3 bits;
+        cpNum : 4 bits;
+        cRd : 4 bits;
+        cRn : 4 bits;
+        cop1    : 4 bits;
+        inst : 4 bits
+over cpUndecInstr
+type cpDataTransfer is record
+        offset  : 8 bits;
+        cpNum : 4 bits;
+        cRd : 4 bits;
+        rn  : 4 bits;
+        l   : bit;
+        w   : bit;
+        n   : bit;
+        u   : bit;
+        p   : bit;
+        instr : 3 bits
+over cpUndecInstr
+type cpRegisterTransfer is record
+        cRm : 4 bits;
+        sbo : bit;
+        cop2 : 3 bits;
+        cpNum : 4 bits;
+        rd  : 4 bits;
+        cRn : 4 bits;
+        l   : bit;  
+        cop1    : 3 bits;
+        inst : 4 bits
+over cpUndecInstr
+type cpExecutable is bit
+type cpBranch is bit
+type cpReorderable is bit
+type cpCapable is record
+        executableP : cpExecutable ;
+        branchP : cpBranch ;
+        reorderableFwP : cpReorderable ;
+        reorderableBwP : cpReorderable
+end
+type cpTransferType is enumeration none, reg, mem end
+type cpTransferDirection is MemRorW
+type cpTransfer is record
+        class : cpTransferType;
+        dir : cpTransferDirection
+end
+type cpExecute is enumeration flush=0, exec=1 end -- 0 if flush, 1 is exec
+type cpExecGroup is record
+        exec : cpExecute; -- do it or not
+        tag  : cpITag; -- the serial tag
+        xfer : cpTransfer -- what type of transfer is expected
+end
+type cpInstrGroup is record
+        class : cpInstructionType; -- what type of cp instruction
+        inst  : cpUndecInstr; -- the details of the cp instruction
+        tag   : cpITag; -- the serial tag
+        mode  : cpProcMode -- the processor mode
+end
+type cpRegister is 32 bits
+type cpMemData is 32 bits
+type cpLastMemAccess is bit -- 0 is continue, 1 is last
+
+constant EXCEPTION_VECTOR_UNDEF = 0x4
+constant EXCEPTION_VECTOR_SWI = 0x8
+constant EXCEPTION_VECTOR_PREF_ABORT = 0x0C
+constant EXCEPTION_VECTOR_DATA_ABORT = 0x10
+constant EXCEPTION_VECTOR_FIQ = 0x1C
+constant EXCEPTION_VECTOR_IRQ = 0x18

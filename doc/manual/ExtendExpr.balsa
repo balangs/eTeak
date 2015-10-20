@@ -1,0 +1,8 @@
+function Expr is builtin : 1 signed bits
+
+procedure ExtendExpr (input go : token; output done : 2 signed bits) is
+loop
+	go -> then
+		show: done <- Expr () as 2 signed bits
+	end
+end

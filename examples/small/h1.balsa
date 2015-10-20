@@ -1,0 +1,32 @@
+procedure top is
+	variable v : 8 bits
+	channel c : 8 bits
+begin
+	begin
+		v := 0;
+		loop
+		while v < 10 then
+			print "Output ", v;
+			c <- v;
+			v := (v + 1 as 8 bits)
+		end
+	end ||
+	local
+		variable w : 8 bits
+	begin
+		loop
+			c -> then
+			(--
+				case c of
+					0..4 then print "Input1  ", c
+					else print "Input1! ", c
+				end;
+				--)
+				if c < 5
+				then print "Input2  ", c
+				else print "Input2! ", c
+				end
+			end
+		end
+	end
+end

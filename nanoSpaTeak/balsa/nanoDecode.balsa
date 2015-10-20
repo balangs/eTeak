@@ -1,0 +1,3389 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+-- decode pipeline stage
+--  + reduced ARM instruction set with conditional instructions
+--  + (data processing, b/bl, ldr/str, ldrb/strb, ldm/stm, swi)
+--  + RRX not supported!
+--  + no thumb instructions
+--  + no coprocessor interface
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap
+--    Changelog:
+--  + Full multiply support (parameterised BoothR3 unrolled/"rolled" styles)
+--  + New modular decoder without merges
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+
+import [nanoSpaTypes]
+import [nanoLSMcontrol]
+import [nanoExecuteSupport]
+
+procedure decodeCore
+(
+  -- inputs from decode shell
+  input  coreIn                : CoreInstr;
+  input  mode                  : RegBank;
+  input  pdecode               : DecodeBits;
+  input  sendLr                : bit;
+  input  noshift               : bit;
+--  input  selM                  : bit;
+  input  colS                  : Colour;
+  input  colM                  : Colour;
+  input  ccS                   : ConditionCode;
+  input  ccM                   : ConditionCode;
+  output colourM               : Colour;
+  output conCodeM              : ConditionCode;
+  output wpcC                  : bit;
+  output sendLrC               : 2 bits;
+  output sendLrS               : bit;
+
+  -- the lsmControl i/f
+  output regDesc               : RegDesc;
+  input  regCount              : RegCnt;
+  input  regNum                : RegNum;
+  input  last                  : bit;
+  
+  -- the execute i/f:
+  output bypass                : bit;
+  output shiftCtrl             : ShiftType;
+  output shamt                 : 5 bits;
+  output aluCtrl               : AluCtrl;
+  output salu                  : AluSelect;
+  output srds                  : rdsSelect;
+  output setFlags              : 3 bits;
+  output setMode               : 2 bits;
+  output newmode               : psrCtl;
+  output rwSreg                : 3 bits;
+  output rwSregF               : 3 bits;
+  output wpc                   : bit;
+  output spc                   : PcSelect;
+  output sab                   : sabSelect;
+  output stp                   : bit;
+  output sMemAddr              : memAddrSelect;
+  output dMemCtrl              : MemCtrl;
+  output memOp                 : bit;
+  output wmem                  : bit;
+  output sdi                   : 4 bits;
+  output immediate             : Datapath;
+  output mca                   : aBusSelect;
+  output mcb                   : bBusSelect;
+  output mcr                   : mcrSelect;
+  output mcs                   : bit;
+  output mcpc                  : cPcSelect;
+  output mTemp                 : tempSelect;
+  output mDiSel                : mDiSelect;
+  output sendS                 : 2 bits;
+  input  stopI                 : bit;
+
+  -- the register bank i/f:
+  array READPORTS of output rb : RegBank;
+  array READPORTS of output ra : RegNum;
+  array READPORTS of output rc : bit;
+  array 2 of output wa         : RegNum;
+  array 2 of output wc         : bit;
+
+  -- multiplier control
+  output mulType               : MulType;
+  output domul                 : bit;
+  output mul2w                 : bit;
+  output mul2res               : bit;
+  -- multiplier data steer control
+  output srdm                  : bit
+)
+-- (* latches = "l:s1" *)
+is
+    variable isFirst  : bit
+    
+    shared decodeMUL is
+    begin
+        coreIn, mode ->! then
+            colM ->! then
+                case (coreIn as decMUL).MulT of
+                UMLAL, SMLAL then
+                    colourM <- colM
+                  ;
+                    colourM <- colM
+                else -- MUL, MLA, UMULL, SMULL
+                    colourM <- colM
+                end
+            end -- colMul ->
+         ||
+            ccM ->! then
+                case (coreIn as decMUL).MulT of
+                UMLAL, SMLAL then
+                    conCodeM <- ccM
+                  ;
+                    conCodeM <- ccM
+                else -- MUL, MLA, UMULL, SMULL
+                    conCodeM <- ccM
+                end
+            end -- ccMul ->
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                sendS <- 0b10
+              ;
+                sendS <- 0b00
+            else -- MUL, MLA, UMULL, SMULL
+                sendS <- 0b00
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                bypass <- 1
+            else     -- MUL, MLA, UMULL, SMULL
+                continue
+            end
+            -- *****            
+            -- shiftCtrl is not sent in MUL instructions
+            -- *****
+            -- *****            
+            -- shamt is not sent in MUL instructions
+            -- *****
+            -- *****            
+            -- mcs is not sent in MUL instructions
+            -- *****
+         ||
+            srds <- 0b100
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                srdm <- 1 -- pass Rm to multiplier 
+              ;
+                srdm <- 0 -- then pass RdH to ALU
+            else -- MUL, MLA, UMULL, SMULL
+                srdm <- 0b1
+            end
+         ||
+            mulType <- (coreIn as decMUL).MulT
+         ||
+           case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                domul <- 1
+              ;
+                domul <- 0
+            else      -- MUL, MLA, UMULL, SMULL
+                domul <- 1
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                mul2w <- 1
+              ;
+                mul2w <- 1
+            else      -- MUL, MLA, UMULL, SMULL
+                mul2w <- 0
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                mTemp <- 0b11
+--              ;
+--                mTemp <- 0b11
+            else      -- MUL, MLA, UMULL, SMULL
+                continue
+            end
+         ||
+            mul2res <- (#coreIn[23..23] as bit)
+         ||
+            case (coreIn as decMUL).MulT of
+            UMULL, SMULL then
+                mDiSel <- 0b01
+            else      -- MUL, MLA, UMULL, SMULL
+                continue
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                aluCtrl <- ADD
+            else      -- MUL, MLA, UMULL, SMULL
+                continue
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                salu <- 0b00_0010
+            else      -- MUL, MLA, UMULL, SMULL
+                continue
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                setFlags <- 0  -- first cycle do not set flags
+              ;
+                setFlags <- ((coreIn as decMUL).SetF as 3 bits)
+            else      -- MUL, MLA, UMULL, SMULL
+                setFlags <- ((coreIn as decMUL).SetF as 3 bits)
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                setMode <- 0
+              ;
+                setMode <- 0
+            else      -- MUL, MLA, UMULL, SMULL
+                setMode <- 0
+            end -- case ( coreIn as decMUL ) .MulT
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                rwSreg  <- 0
+             ||
+                rwSregF <- 0
+              ;
+                rwSreg  <- 0 
+             ||
+                rwSregF <- 0
+            else     -- MUL, MLA, UMULL, SMULL
+                rwSreg <- 0 
+             ||
+                rwSregF <- 0
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                wpc <- 0
+              ;
+                wpc <- 0
+             ||
+                wpcC <- 0
+            else     -- MUL, MLA, UMULL, SMULL
+                wpc <- 0
+             ||
+                wpcC <- 0
+            end
+         ||
+            spc <- 0b00
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                sab <- 0b100 -- send Rn to multiplier
+              ;
+                sab <- 0b001 -- then send temp (RdH) to aBus
+            | MLA then
+                sab <- 0b100 -- send Rn to multiplier
+            else -- MUL, UMULL, SMULL
+                continue     -- no accumulate value
+            end
+         ||
+            -- *****            
+            -- dMemCtrl is not sent in MUL instructions
+            -- *****
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                memOp <- 0 
+              ;
+                memOp <- 0
+            else -- MLA, MUL, UMULL, SMULL
+                memOp <- 0
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                wmem <- 0 
+              ;
+                wmem <- 0
+            else -- MLA, MUL, UMULL, SMULL
+                wmem <- 0
+            end
+            -- *****            
+            -- sdi is not sent in MUL instructions
+            -- *****
+            -- *****            
+            -- immediate is not sent in MUL instructions
+            -- *****
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                mca <- 0b00 -- pass Rn 
+              ;
+                mca <- 0b11 -- then pass temp to accumulate with RdH
+            | MLA then
+                mca <- 0b00 -- pass Rn 
+            else -- MUL, UMULL, SMULL
+                continue
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                mcb <- 0b11 -- pass RdH in second cycle of multiply 
+            else -- MUL, MLA, UMULL, SMULL
+                continue
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                mcr <- 0b11 -- pass pL to writeback 
+              ;
+                mcr <- 0b01 -- then pass pH+RdH from ALU 
+            else -- MLA, MUL, UMULL, SMULL
+                mcr <- 0b11 -- pass pL to writeback
+            end
+            -- *****            
+            -- mcpc is not sent in MUL instructions
+            -- *****
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then -- read 4 operands, use rd[0] twice
+                rc[0] <- 1 -- read Rm 
+             ;
+                rc[0] <- 1 -- then read RdH 
+            else -- MLA, MUL, UMULL, SMULL
+                rc[0] <- 1 -- read Rm
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then -- read 4 operands, use rd[0] twice
+                ra[0] <- (coreIn as decMUL).Rm -- read Rm 
+              ;
+                ra[0] <- (coreIn as decMUL).Rd_RdHi -- then read RdH 
+            else -- MLA, MUL, UMULL, SMULL
+                ra[0] <- (coreIn as decMUL).Rm -- read Rm
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then -- read 4 operands, use rd[0] twice
+                rb[0] <- mode 
+              ;
+                rb[0] <- mode -- then read RdH 
+            else -- MLA, MUL, UMULL, SMULL
+                rb[0] <- mode -- read Rm
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                rc[1] <- 1 -- read Rn 
+              ;
+                rc[1] <- 0 -- do not read this port in 2nd cycle
+            | MLA then
+                rc[1] <- 1 -- read Rn 
+            else -- MUL, UMULL, SMULL
+                rc[1] <- 0 -- do not read Rn
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            MLA, UMLAL, SMLAL then
+                ra[1] <- (coreIn as decMUL).Rn_RdLo -- read Rn
+            else -- MUL, UMULL, SMULL
+                continue
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            MLA, UMLAL, SMLAL then
+                rb[1] <- mode -- read Rn
+            else -- MUL, UMULL, SMULL
+                continue
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                rc[2] <- 1 -- read Rs 
+              ;
+                rc[2] <- 0 -- do not read this port in 2nd cycle
+            else -- MUL, MLA, UMULL, SMULL
+                rc[2] <- 1 -- read Rs
+            end
+         ||
+            ra[2] <- (coreIn as decMUL).Rs -- Read Rs
+         ||
+            rb[2] <- mode -- Read Rs
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                wc[0] <- 1 -- write pL to RdL through wb[0]
+              ;
+                wc[0] <- 1 -- write pH+RdH to RdH through wb[0]
+            else -- MUL, MLA, UMULL, SMULL
+                wc[0] <- 1 -- write result through wb[0] (MUL,MLA) or pL to RdL (UMULL, SMULL)
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                wa[0] <- (coreIn as decMUL).Rn_RdLo -- write pL to RdL through wb[0]
+              ;
+                wa[0] <- (coreIn as decMUL).Rd_RdHi -- write pH+RdH to RdH through wb[0]
+            | UMULL, SMULL then
+                wa[0] <- (coreIn as decMUL).Rn_RdLo -- write pL to RdL  (pH is written in parallel)
+            else -- MUL, MLA
+                wa[0] <- (coreIn as decMUL).Rd_RdHi -- write result through wb[0]
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMLAL, SMLAL then
+                wc[1] <- 0
+              ;
+                wc[1] <- 0
+            | UMULL, SMULL then
+                wc[1] <- 1 -- write  pH to RdH 
+            else -- MUL, MLA 
+                wc[1] <- 0
+            end
+         ||
+            case (coreIn as decMUL).MulT of
+            UMULL, SMULL then
+                wa[1] <- (coreIn as decMUL).Rd_RdHi -- write pH to RdH
+            else -- MUL, MLA, UMLAL, SMLAL 
+                continue
+            end
+        end -- coreIn ->!
+    end -- shared decodeMUL
+        
+    shared decodeDPREGSH is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            bypass <- 0
+         ||
+            shiftCtrl <- (coreIn as decDPREGSH).ShType
+            -- *****            
+            -- shamt is not sent in DPREGSH instructions
+            -- *****
+         ||
+            mcs <- 1
+         ||
+            srds <- 0b001
+         ||
+            srdm <- 0
+         ||
+            -- *****            
+            -- mulType is not sent in DPREGSH instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in DPREGSH instructions
+            -- *****
+         ||
+            aluCtrl <- ((coreIn as decDPREGSH).Opcode as AluCtrl)
+         ||
+            case (#((coreIn as decDPREGSH).Rd) @ #((coreIn as decDPREGSH).Opcode) as 8 bits) of
+            0bxxxx_1111 then -- (Rd=pc)
+                salu <- 0b00_0100
+            | 0b10xx_0xxx, 0b10xx_x0xx, 0b10xx_xx0x, 0b10xx_xxx0 then -- COMPS and (Rd!=pc)
+                salu <- 0b00_0000
+            | 0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                salu <- 0b00_0010
+            end
+         ||
+            case (coreIn as decDPREGSH).Rd of
+            0b1111 then -- (Rd=pc)
+                setFlags <- (#0b0[0..0] @ #((coreIn as decDPREGSH).SetF)[0..0] as 3 bits) -- restore flags
+            else
+                setFlags <- ((coreIn as decDPREGSH).SetF as 3 bits)
+            end
+         ||
+            case (coreIn as decDPREGSH).Rd of
+            0b1111 then -- (Rd=pc)
+                setMode <- ((coreIn as decDPREGSH).SetF as 2 bits) -- maybe restore mode
+            else
+                setMode <- 0b00
+            end
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            case (coreIn as decDPREGSH).Rd of
+            0b1111 then -- (Rd=pc)
+                wpc <- 1
+             ||
+                wpcC <- 1
+            else
+                wpc <- 0
+             ||
+                wpcC <- 0
+            end
+         ||
+            case (#((coreIn as decDPREGSH).Rm) @ #((coreIn as decDPREGSH).Rn) as 8 bits) of
+            0b1111_1111 then -- (Rn=pc/Rm=pc)
+                spc <- 0b11
+            | 0b1111_0xxx, 0b1111_x0xx, 0b1111_xx0x, 0b1111_xxx0 then -- (Rn=pc/Rm!=pc)
+                spc <- 0b10
+            | 0b0xxx_1111, 0bx0xx_1111, 0bxx0x_1111, 0bxxx0_1111 then -- (Rn!=pc/Rm=pc)
+                spc <- 0b01
+            else -- (Rn!=pc/Rm!=pc)
+                spc <- 0b00
+            end
+         ||
+            sab <- 0b001
+         ||
+            -- *****            
+            -- dMemCtrl is not sent in DPREGSH instructions
+            -- *****
+            memOp <- 0 
+         ||
+            wmem <- 0
+            -- *****            
+            -- sdi is not sent in DPREGSH instructions
+            -- *****
+         ||
+            -- *****            
+            -- immediate is not sent in DPREGSH instructions
+            -- *****
+            case (coreIn as decDPREGSH).Rn of
+            0b1111 then -- (Rn=pc)
+                mca <- 0b01 -- pass pc
+            else
+                mca <- 0b00 -- pass Rn 
+            end
+         ||
+            case (coreIn as decDPREGSH).Rm of
+            0b1111 then -- (Rm=pc)
+                mcb <- 0b01 -- pass pc
+            else
+                mcb <- 0b11 -- pass Rm
+            end
+         ||
+            case (#((coreIn as decDPREGSH).Rd) @ #((coreIn as decDPREGSH).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                mcr <- 0b01
+            | 0bxxxx_1111,       -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS
+                continue
+            end
+         ||
+            case (coreIn as decDPREGSH).Rd of
+            0b1111 then -- (Rd=pc)
+                mcpc <- 1
+            else
+                continue
+            end
+         ||
+            case (coreIn as decDPREGSH).Rm of
+            0b1111 then -- (Rm=pc)
+                rc[0] <- 0
+            else
+                rc[0] <- 1
+            end
+         ||
+            case (coreIn as decDPREGSH).Rm of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                ra[0] <- (coreIn as decDPREGSH).Rm
+            end
+         ||
+            case (coreIn as decDPREGSH).Rm of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                rb[0] <- mode
+            end
+         ||
+            case (coreIn as decDPREGSH).Rn of
+            0b1111 then -- (Rn=pc)
+                rc[1] <- 0
+            else
+                rc[1] <- 1
+            end
+         ||
+            case (coreIn as decDPREGSH).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                ra[1] <- (coreIn as decDPREGSH).Rn
+            end
+         ||
+            case (coreIn as decDPREGSH).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                rb[1] <- mode
+            end
+         ||
+            rc[2] <- 1
+         ||
+            ra[2] <- (coreIn as decDPREGSH).Rs
+         ||
+            rb[2] <- mode
+         ||
+            case (#((coreIn as decDPREGSH).Rd) @ #((coreIn as decDPREGSH).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                wc[0] <- 1
+            | 0bxxxx_1111,       -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS and (Rd!=pc)
+                wc[0] <- 0
+            end
+         ||
+            case (#((coreIn as decDPREGSH).Rd) @ #((coreIn as decDPREGSH).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                wa[0] <- (coreIn as decDPREGSH).Rd
+            | 0bxxxx_1111,       -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS and (Rd!=pc)
+                continue
+            end
+         ||
+            wc[1] <- 0
+            -- *****            
+            -- wa[1] is not sent in DPREGSH instructions
+            -- *****
+        end -- coreIn ->!
+    end -- shared decodeDPREGSH
+
+    shared decodeDPIMMSH is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            noshift ->! then
+                bypass <- noshift
+             ||
+                if (not noshift) then
+                    shiftCtrl <- (coreIn as decDPIMMSH).ShType
+                 ||
+                    shamt <- (coreIn as decDPIMMSH).Shamt
+                 ||
+                    mcs <- 0
+                end
+            end -- noshift ->
+         ||
+            -- *****            
+            -- srds is not sent in DPIMMSH instructions
+            -- *****
+            srdm <- 0
+         ||
+            -- *****            
+            -- mulType is not sent in DPIMMSH instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in DPIMMSH instructions
+            -- *****
+         ||
+            aluCtrl <- ((coreIn as decDPIMMSH).Opcode as AluCtrl)
+         ||
+            case (#((coreIn as decDPIMMSH).Rd) @ #((coreIn as decDPIMMSH).Opcode) as 8 bits) of
+            0bxxxx_1111 then -- (Rd=pc)
+                salu <- 0b00_0100
+            | 0b10xx_0xxx, 0b10xx_x0xx, 0b10xx_xx0x, 0b10xx_xxx0 then -- COMPS and (Rd!=pc)
+                salu <- 0b00_0000
+            | 0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                salu <- 0b00_0010
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rd of
+            0b1111 then -- (Rd=pc)
+                setFlags <- (#0b0[0..0] @ #((coreIn as decDPIMMSH).SetF)[0..0] as 3 bits) -- maybe restore flags
+            else
+                setFlags <- ((coreIn as decDPIMMSH).SetF as 3 bits) 
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rd of
+            0b1111 then -- (Rd=pc)
+                setMode <- ((coreIn as decDPIMMSH).SetF as 2 bits) --maybe restore mode
+            else
+                setMode <- 0
+            end
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            case (coreIn as decDPIMMSH).Rd of
+            0b1111 then -- (Rd=pc)
+                wpc <- 1
+             ||
+                wpcC <- 1
+            else
+                wpc <- 0
+             ||
+                wpcC <- 0
+            end
+         ||
+            case (#((coreIn as decDPIMMSH).Rm) @ #((coreIn as decDPIMMSH).Rn) as 8 bits) of
+            0b1111_1111 then -- (Rn=pc/Rm=pc)
+                spc <- 0b11
+            | 0b1111_0xxx, 0b1111_x0xx, 0b1111_xx0x, 0b1111_xxx0 then -- (Rn=pc/Rm!=pc)
+                spc <- 0b10
+            | 0b0xxx_1111, 0bx0xx_1111, 0bxx0x_1111, 0bxxx0_1111 then -- (Rn!=pc/Rm=pc)
+                spc <- 0b01
+            else -- (Rn!=pc/Rm!=pc)
+                spc <- 0b00
+            end
+         ||
+            sab <- 0b001
+         ||
+            -- *****            
+            -- dMemCtrl is not sent in DPIMMSH instructions
+            -- *****
+            memOp <- 0 
+         ||
+            wmem <- 0
+            -- *****            
+            -- sdi is not sent in DPIMMSH instructions
+            -- *****
+         ||
+            -- *****            
+            -- immediate is not sent in DPIMMSH instructions
+            -- *****
+            case (coreIn as decDPIMMSH).Rn of
+            0b1111 then -- (Rn=pc)
+                mca <- 0b01 -- pass pc
+            else
+                mca <- 0b00 -- pass Rn 
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rm of
+            0b1111 then -- (Rm=pc)
+                mcb <- 0b01 -- pass pc
+            else
+                mcb <- 0b11 -- pass Rm
+            end
+         ||
+            case (#((coreIn as decDPIMMSH).Rd) @ #((coreIn as decDPIMMSH).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                mcr <- 0b01
+            | 0bxxxx_1111,       -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS
+                continue
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rd of
+            0b1111 then -- (Rd=pc)
+                mcpc <- 1
+            else
+                continue
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rm of
+            0b1111 then -- (Rm=pc)
+               rc[0] <- 0
+            else
+                rc[0] <- 1
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rm of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                ra[0] <- (coreIn as decDPIMMSH).Rm
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rm of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                rb[0] <- mode
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rn of
+            0b1111 then -- (Rn=pc)
+                rc[1] <- 0
+            else
+                rc[1] <- 1
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                ra[1] <- (coreIn as decDPIMMSH).Rn
+            end
+         ||
+            case (coreIn as decDPIMMSH).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                rb[1] <- mode
+            end
+         ||
+            rc[2] <- 0
+            -- *****            
+            -- ra[2] is not sent in DPIMMSH instructions
+            -- *****
+            -- *****            
+            -- rb[2] is not sent in DPIMMSH instructions
+            -- *****
+         ||
+            case (#((coreIn as decDPIMMSH).Rd) @ #((coreIn as decDPIMMSH).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                wc[0] <- 1
+            | 0bxxxx_1111,       -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS and (Rd!=pc)
+                wc[0] <- 0
+            end
+         ||
+            case (#((coreIn as decDPIMMSH).Rd) @ #((coreIn as decDPIMMSH).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                wa[0] <- (coreIn as decDPIMMSH).Rd
+            | 0bxxxx_1111,       -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS and (Rd!=pc)
+                continue
+            end
+         ||
+            wc[1] <- 0
+            -- *****            
+            -- wa[1] is not sent in DPIMMSH instructions
+            -- *****
+        end -- coreIn ->!
+    end -- shared decodeDPIMMSH
+        
+    shared decodeDPIMMOP is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            noshift ->! then
+                bypass <- noshift
+             ||
+                if (not noshift) then
+                    shiftCtrl <- (0b11 as ShiftType)
+                 ||
+                    shamt <- (#(0 as bit) @ #((coreIn as decDPIMMOP).Rot) as 5 bits)
+                 ||
+                    mcs <- 0
+                end -- if ( not noshift )
+            end -- noshift ->
+            -- *****            
+            -- srds is not sent in DPIMMOP instructions
+            -- *****
+            -- *****            
+            -- srdm is not sent in DPIMMOP instructions
+            -- *****
+         ||
+            -- *****            
+            -- mulType is not sent in DPIMMOP instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in DPIMMOP instructions
+            -- *****
+         ||
+            aluCtrl <- ((coreIn as decDPIMMOP).Opcode as AluCtrl)
+         ||
+            case (#((coreIn as decDPIMMOP).Rd) @ #((coreIn as decDPIMMOP).Opcode) as 8 bits) of
+            0bxxxx_1111 then -- (Rd=pc)
+                salu <- 0b00_0100
+            | 0b10xx_0xxx, 0b10xx_x0xx, 0b10xx_xx0x, 0b10xx_xxx0 then -- COMPS and (Rd!=pc)
+                salu <- 0b00_0000
+            | 0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                salu <- 0b00_0010
+            end
+         ||
+            case (coreIn as decDPIMMOP).Rd of
+            0b1111 then -- (Rd=pc)
+                setFlags <- (#0b0[0..0] @ #((coreIn as decDPIMMOP).SetF)[0..0] as 3 bits) -- maybe restore flags
+            else
+                setFlags <- ((coreIn as decDPIMMOP).SetF as 3 bits) 
+            end
+         ||
+            case (coreIn as decDPIMMOP).Rd of
+            0b1111 then -- (Rd=pc)
+                setMode <- ((coreIn as decDPIMMOP).SetF as 2 bits) -- maybe restore mode
+            else
+                setMode <- 0
+            end
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            case (coreIn as decDPIMMOP).Rd of
+            0b1111 then -- (Rd=pc)
+                wpc <- 1
+             ||
+                wpcC <- 1
+            else
+                wpc <- 0
+             ||
+                wpcC <- 0
+            end
+         ||
+            case (coreIn as decDPIMMOP).Rn of
+            0b1111 then -- (Rn=pc)
+                spc <- 0b10
+            else
+                spc <- 0b00
+            end
+         ||
+            sab <- 0b001
+         ||
+            -- *****            
+            -- dMemCtrl is not sent in DPIMMOP instructions
+            -- *****
+            memOp <- 0 
+         ||
+            wmem <- 0
+            -- *****            
+            -- sdi is not sent in DPIMMOP instructions
+            -- *****
+         ||
+            immediate <- ((coreIn as decDPIMMOP).Imm as Datapath)
+         ||
+            case (coreIn as decDPIMMOP).Rn of
+            0b1111 then -- (Rn=pc)
+                mca <- 0b01 -- pass pc
+            else
+                mca <- 0b00 -- pass Rn 
+            end
+         ||
+            mcb <- 0b00
+         ||
+            case (#((coreIn as decDPIMMOP).Rd) @ #((coreIn as decDPIMMOP).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                mcr <- 0b01
+            | 0bxxxx_1111,         -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS
+                continue
+            end
+         ||
+            case (coreIn as decDPIMMOP).Rd of
+            0b1111 then -- (Rd=pc)
+                mcpc <- 1
+            else
+                continue
+            end
+         ||
+            rc[0] <- 0
+            -- *****            
+            -- ra[0] is not sent in DPIMMOP instructions
+            -- *****
+            -- *****            
+            -- rb[0] is not sent in DPIMMOP instructions
+            -- *****
+         ||
+            case (coreIn as decDPIMMOP).Rn of
+            0b1111 then -- (Rn=pc)
+                rc[1] <- 0
+            else
+                rc[1] <- 1
+            end
+         ||
+            case (coreIn as decDPIMMOP).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                ra[1] <- (coreIn as decDPIMMOP).Rn
+            end
+         ||
+            case (coreIn as decDPIMMOP).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else
+                rb[1] <- mode
+            end
+         ||
+            rc[2] <- 0
+            -- *****            
+            -- ra[2] is not sent in DPIMMOP instructions
+            -- *****
+            -- *****            
+            -- rb[2] is not sent in DPIMMOP instructions
+            -- *****
+         ||
+            case (#((coreIn as decDPIMMOP).Rd) @ #((coreIn as decDPIMMOP).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                wc[0] <- 1
+            | 0bxxxx_1111,       -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS and (Rd!=pc)
+                wc[0] <- 0
+            end
+         ||
+            case (#((coreIn as decDPIMMOP).Rd) @ #((coreIn as decDPIMMOP).Opcode) as 8 bits) of
+            0bx1xx_0xxx, 0bx1xx_x0xx, 0bx1xx_xx0x, 0bx1xx_xxx0,
+                0b0xxx_0xxx, 0b0xxx_x0xx, 0b0xxx_xx0x, 0b0xxx_xxx0 then -- no COMPS and (Rd!=pc)
+                wa[0] <- (coreIn as decDPIMMOP).Rd
+            | 0bxxxx_1111,       -- (Rd=pc)
+                0b10xx_xxxx then -- COMPS and (Rd!=pc)
+                continue
+            end
+         ||
+            wc[1] <- 0
+            -- *****            
+            -- wa[1] is not sent in DPIMMOP instructions
+            -- *****
+        end -- coreIn ->!
+    end -- shared decodeDPIMMOP
+        
+    shared decodeMEMREGOF is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            noshift ->! then
+                bypass <- noshift
+             ||
+                if (not noshift) then
+                    shiftCtrl <- (coreIn as decMEMREGOF).ShType
+                 ||
+                    shamt <- (coreIn as decMEMREGOF).Shamt
+                 ||
+                    mcs <- 0
+                end
+            end -- noshift ->
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                srds <- 0b010
+            | 0b1_xxxx,       -- ldr
+                0b0_1111 then -- str and (Rs=pc)
+                continue
+            end
+         ||
+            case (coreIn as decMEMREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                continue
+            else -- (Rm!=pc)
+                srdm <- 0
+            end
+         ||
+            -- *****            
+            -- mulType is not sent in MEMREGOF instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in MEMREGOF instructions
+            -- *****
+         ||
+            if (coreIn as decMEMREGOF).U then
+                aluCtrl <- ADD
+            else
+                aluCtrl <- SUB
+            end                
+         ||
+            case (#((coreIn as decMEMREGOF).W) @ #((coreIn as decMEMREGOF).P) as 2 bits) of
+            0b0x then   -- post-index/always wb
+                salu <- 0b00_0010
+             ||
+                sMemAddr <- 0b01
+            | 0b10 then -- pre-index/no wb
+                salu <- 0b00_0001
+             ||
+                sMemAddr <- 0b11
+            | 0b11 then -- pre-index/wb
+                salu <- 0b00_0011
+             ||
+                sMemAddr <- 0b11
+            end
+         ||
+            setFlags <- 0
+         ||
+            setMode <- 0
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            case (coreIn as decMEMREGOF).RdRs of
+            0b1111 then -- (Rd=pc)
+                wpc <- (coreIn as decMEMREGOF).L
+             ||
+                wpcC <- (coreIn as decMEMREGOF).L
+            else
+                wpc <- 0
+             ||
+                wpcC <- 0
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).Rm) @ #((coreIn as decMEMREGOF).Rn) as 8 bits) of
+            0b1111_1111 then -- (Rn=pc/Rm=pc)
+                spc <- 0b11
+            | 0b1111_0xxx, 0b1111_x0xx, 0b1111_xx0x, 0b1111_xxx0 then -- (Rn=pc/Rm!=pc)
+                spc <- 0b10
+            | 0b0xxx_1111, 0bx0xx_1111, 0bxx0x_1111, 0bxxx0_1111 then -- (Rn!=pc/Rm=pc)
+                spc <- 0b01
+            else -- (Rn!=pc/Rm!=pc)
+                spc <- 0b00
+            end
+         ||
+            sab <- not (#0[0..0] @ #((coreIn as decMEMREGOF).P) @ #1[0..0] as sabSelect)
+         ||
+            if (coreIn as decMEMREGOF).B then
+                dMemCtrl <- {((coreIn as decMEMREGOF).L as MemRorW), BYTE, (0 as MemLock), (0 as MemSeq)}
+            else
+                dMemCtrl <- {((coreIn as decMEMREGOF).L as MemRorW), WORD, (0 as MemLock), (0 as MemSeq)}
+            end
+         ||
+            memOp <- 1
+         ||
+            wmem <- not (coreIn as decMEMREGOF).L
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                sdi <- (#1[0..0] @ #((coreIn as decMEMREGOF).B) as 4 bits)
+            | 0b1_1111 then                             -- ldr and (Rd=pc)
+                sdi <- (#0[0..0] @ #((coreIn as decMEMREGOF).B) as 4 bits)
+            | 0b0_xxxx then                             -- str
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+             0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                mDiSel <- 0b11
+            else
+                continue
+            end
+         ||
+            -- *****            
+            -- immediate is not sent in MEMREGOF instructions
+            -- *****
+            case (coreIn as decMEMREGOF).Rn of
+            0b1111 then -- (Rn=pc)
+                mca <- 0b01 -- pass pc
+            else
+                mca <- 0b00 -- pass Rn
+            end
+         ||
+            case (coreIn as decMEMREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                mcb <- 0b01 -- pass pc
+            else -- (Rm!=pc)
+                mcb <- 0b11 -- pass Rm
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).W) @ #((coreIn as decMEMREGOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                mcr <- 0b01
+            | 0b10 then   -- pre-index/no wb
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b1_1111 then                                   -- ldr and (Rd=pc)
+                mcpc <- 0
+            | 0b0_xxxx,                                     -- str
+                0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                continue
+            end
+         ||
+            case (coreIn as decMEMREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                rc[0] <- 0
+            else -- (Rm!=pc)
+                rc[0] <- 1
+            end
+         ||
+            case (coreIn as decMEMREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                continue
+            else -- (Rm!=pc)
+                ra[0] <- (coreIn as decMEMREGOF).Rm
+            end
+         ||
+            case (coreIn as decMEMREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                continue
+            else -- (Rm!=pc)
+                rb[0] <- mode
+            end
+         ||
+            case (coreIn as decMEMREGOF).Rn of
+            0b1111 then -- (Rn=pc)
+                rc[1] <- 0
+            else -- (Rn!=pc)
+                rc[1] <- 1
+            end
+         ||
+            case (coreIn as decMEMREGOF).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else -- (Rn!=pc)
+                ra[1] <- (coreIn as decMEMREGOF).Rn
+            end
+         ||
+            case (coreIn as decMEMREGOF).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else -- (Rn!=pc)
+                rb[1] <- mode
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                rc[2] <- 1
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                rc[2] <- 0
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                ra[2] <- (coreIn as decMEMREGOF).RdRs
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                rb[2] <- mode
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).W) @ #((coreIn as decMEMREGOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                wc[0] <- 1
+            | 0b10 then   -- pre-index/no wb
+                wc[0] <- 0
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).W) @ #((coreIn as decMEMREGOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                wa[0] <- (coreIn as decMEMREGOF).Rn
+            | 0b10 then   -- pre-index/no wb
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                wc[1] <- 1
+            | 0b1_1111,                                 -- ldr and (Rd=pc)
+                0b0_xxxx then                           -- str
+                wc[1] <- 0
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                wa[1] <- (coreIn as decMEMREGOF).RdRs
+            | 0b1_1111,                                 -- ldr and (Rd=pc)
+                0b0_xxxx then                           -- str
+                continue
+            end
+        end -- coreIn ->!
+    end -- shared decodeMEMREGOF
+
+    shared decodeMEMIMMOF is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            bypass <- 1
+            -- *****            
+            -- shiftCtrl is not sent in MEMIMMOF instructions
+            -- *****
+            -- *****            
+            -- shamt is not sent in MEMIMMOF instructions
+            -- *****
+            -- *****            
+            -- mcs is not sent in MEMIMMOF instructions
+            -- *****
+         ||
+            case (#((coreIn as decMEMIMMOF).RdRs) @ #((coreIn as decMEMIMMOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                srds <- 0b010
+            | 0b1_xxxx,       -- ldr
+                0b0_1111 then -- str and (Rs=pc)
+                continue
+            end
+            -- *****            
+            -- srdm is not sent in MEMIMMOF instructions
+            -- *****
+         ||
+            -- *****            
+            -- mulType is not sent in MEMIMMOF instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in MEMIMMOF instructions
+            -- *****
+         ||
+            if (coreIn as decMEMIMMOF).U then
+                aluCtrl <- ADD
+            else
+                aluCtrl <- SUB
+            end                
+         ||
+            case (#((coreIn as decMEMIMMOF).W) @ #((coreIn as decMEMIMMOF).P) as 2 bits) of
+            0b0x then   -- post-index/always wb
+                salu <- 0b00_0010
+             ||
+                sMemAddr <- 0b01
+            | 0b10 then -- pre-index/no wb
+                salu <- 0b00_0001
+             ||
+                sMemAddr <- 0b11
+            | 0b11 then -- pre-index/wb
+                salu <- 0b00_0011
+             ||
+                sMemAddr <- 0b11
+            end
+         ||
+            setFlags <- 0
+         ||
+            setMode <- 0
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            case (coreIn as decMEMIMMOF).RdRs of
+            0b1111 then -- (Rd=pc)
+                wpc <- (coreIn as decMEMIMMOF).L
+             ||
+                wpcC <- (coreIn as decMEMIMMOF).L
+            else
+                wpc <- 0
+             ||
+                wpcC <- 0
+            end
+         ||
+            case (coreIn as decMEMIMMOF).Rn of
+            0b1111 then -- (Rm=pc)
+                spc <- 0b10
+            else -- (Rn!=pc)
+                spc <- 0b00
+            end
+         ||
+            sab <- not (#0[0..0] @ #((coreIn as decMEMIMMOF).P) @ #1[0..0] as sabSelect)
+         ||
+            if (coreIn as decMEMIMMOF).B then
+                dMemCtrl <- {((coreIn as decMEMIMMOF).L as MemRorW), BYTE, (0 as MemLock), (0 as MemSeq)}
+            else
+                dMemCtrl <- {((coreIn as decMEMIMMOF).L as MemRorW), WORD, (0 as MemLock), (0 as MemSeq)}
+            end
+         ||
+            memOp <- 1
+         ||
+            wmem <- not (coreIn as decMEMIMMOF).L
+         ||
+            case (#((coreIn as decMEMIMMOF).RdRs) @ #((coreIn as decMEMIMMOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                sdi <- (#1[0..0] @ #((coreIn as decMEMIMMOF).B) as 4 bits)
+            | 0b1_1111 then                             -- ldr and (Rd=pc)
+                sdi <- (#0[0..0] @ #((coreIn as decMEMIMMOF).B) as 4 bits)
+            | 0b0_xxxx then                             -- str
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+             0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                mDiSel <- 0b11
+            else
+                continue
+            end
+         ||
+            immediate <- ((coreIn as decMEMIMMOF).Imm as Datapath)
+         ||
+            case (coreIn as decMEMIMMOF).Rn of
+            0b1111 then -- (Rn=pc)
+                mca <- 0b01 -- pass pc
+            else
+                mca <- 0b00 -- pass Rn
+            end
+         ||
+            mcb <- 0b00
+         ||
+            case (#((coreIn as decMEMIMMOF).W) @ #((coreIn as decMEMIMMOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                mcr <- 0b01
+            | 0b10 then   -- pre-index/no wb
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMIMMOF).RdRs) @ #((coreIn as decMEMIMMOF).L) as 5 bits) of
+            0b1_1111 then                                   -- ldr and (Rd=pc)
+                mcpc <- 0
+            | 0b0_xxxx,                                     -- str
+                0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                continue
+            end
+         ||
+            rc[0] <- 0
+            -- *****            
+            -- ra[0] is not sent in MEMIMMOF instructions
+            -- *****
+            -- *****            
+            -- rb[0] is not sent in MEMIMMOF instructions
+            -- *****
+         ||
+            case (coreIn as decMEMIMMOF).Rn of
+            0b1111 then -- (Rn=pc)
+                rc[1] <- 0
+            else -- (Rn!=pc)
+                rc[1] <- 1
+            end
+         ||
+            case (coreIn as decMEMIMMOF).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else -- (Rn!=pc)
+                ra[1] <- (coreIn as decMEMIMMOF).Rn
+            end
+         ||
+            case (coreIn as decMEMIMMOF).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else -- (Rn!=pc)
+                rb[1] <- mode
+            end
+         ||
+            case (#((coreIn as decMEMIMMOF).RdRs) @ #((coreIn as decMEMIMMOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                rc[2] <- 1
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                rc[2] <- 0
+            end
+         ||
+            case (#((coreIn as decMEMIMMOF).RdRs) @ #((coreIn as decMEMIMMOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                ra[2] <- (coreIn as decMEMIMMOF).RdRs
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMIMMOF).RdRs) @ #((coreIn as decMEMIMMOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                rb[2] <- mode
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMIMMOF).W) @ #((coreIn as decMEMIMMOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                wc[0] <- 1
+            | 0b10 then   -- pre-index/no wb
+                wc[0] <- 0
+            end
+         ||
+            case (#((coreIn as decMEMIMMOF).W) @ #((coreIn as decMEMIMMOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                wa[0] <- (coreIn as decMEMIMMOF).Rn
+            | 0b10 then   -- pre-index/no wb
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMIMMOF).RdRs) @ #((coreIn as decMEMIMMOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                wc[1] <- 1
+            | 0b1_1111,                                 -- ldr and (Rd=pc)
+                0b0_xxxx then                           -- str
+                wc[1] <- 0
+            end
+         ||
+            case (#((coreIn as decMEMIMMOF).RdRs) @ #((coreIn as decMEMIMMOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                wa[1] <- (coreIn as decMEMIMMOF).RdRs
+            | 0b1_1111,                                 -- ldr and (Rd=pc)
+                0b0_xxxx then                           -- str
+                continue
+            end
+        end -- coreIn ->!
+    end -- shared decodeMEMIMMOF
+
+-- half-word and signed byte data transfer
+
+    shared decodeMHSBREGOF is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            bypass <- 1
+            -- *****            
+            -- shiftCtrl is not sent in MHSBREGOF instructions
+            -- *****
+            -- *****            
+            -- shamt is not sent in MHSBREGOF instructions
+            -- *****
+            -- *****            
+            -- mcs is not sent in MHSBREGOF instructions
+            -- *****
+         ||
+            case (#((coreIn as decMHSBREGOF).RdRs) @ #((coreIn as decMHSBREGOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                srds <- 0b010
+            | 0b1_xxxx,       -- ldr
+                0b0_1111 then -- str and (Rs=pc)
+                continue
+            end
+         ||
+            case (coreIn as decMHSBREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                continue
+            else -- (Rm!=pc)
+                srdm <- 0
+            end
+         ||
+            -- *****            
+            -- mulType is not sent in MHSBREGOF instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in MHSBREGOF instructions
+            -- *****
+         ||
+            if (coreIn as decMHSBREGOF).U then
+                aluCtrl <- ADD
+            else
+                aluCtrl <- SUB
+            end                
+         ||
+            case (#((coreIn as decMHSBREGOF).W) @ #((coreIn as decMHSBREGOF).P) as 2 bits) of
+            0b0x then   -- post-index/always wb
+                salu <- 0b00_0010
+             ||
+                sMemAddr <- 0b01
+            | 0b10 then -- pre-index/no wb
+                salu <- 0b00_0001
+             ||
+                sMemAddr <- 0b11
+            | 0b11 then -- pre-index/wb
+                salu <- 0b00_0011
+             ||
+                sMemAddr <- 0b11
+            end
+         ||
+            setFlags <- 0
+         ||
+            setMode <- 0
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            case (coreIn as decMHSBREGOF).RdRs of
+            0b1111 then -- (Rd=pc)
+                wpc <- (coreIn as decMHSBREGOF).L
+             ||
+                wpcC <- (coreIn as decMHSBREGOF).L
+            else
+                wpc <- 0
+             ||
+                wpcC <- 0
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).Rm) @ #((coreIn as decMHSBREGOF).Rn) as 8 bits) of
+            0b1111_1111 then -- (Rn=pc/Rm=pc)
+                spc <- 0b11
+            | 0b1111_0xxx, 0b1111_x0xx, 0b1111_xx0x, 0b1111_xxx0 then -- (Rn=pc/Rm!=pc)
+                spc <- 0b10
+            | 0b0xxx_1111, 0bx0xx_1111, 0bxx0x_1111, 0bxxx0_1111 then -- (Rn!=pc/Rm=pc)
+                spc <- 0b01
+            else -- (Rn!=pc/Rm!=pc)
+                spc <- 0b00
+            end
+         ||
+            sab <- not (#0[0..0] @ #((coreIn as decMHSBREGOF).P) @ #1[0..0] as sabSelect)
+         ||
+            if (coreIn as decMHSBREGOF).H then
+                dMemCtrl <- {((coreIn as decMHSBREGOF).L as MemRorW), HALFWORD, (0 as MemLock), (0 as MemSeq)}
+            else
+                dMemCtrl <- {((coreIn as decMHSBREGOF).L as MemRorW), BYTE, (0 as MemLock), (0 as MemSeq)}
+            end
+         ||
+            memOp <- 1
+         ||
+            wmem <- not (coreIn as decMHSBREGOF).L
+         ||
+            case (#((coreIn as decMHSBREGOF).RdRs) @ #((coreIn as decMHSBREGOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                sdi <- (#1[0..0] @ #(not (coreIn as decMHSBREGOF).H) 
+                                 @ #((coreIn as decMHSBREGOF).H)
+                                 @ #((coreIn as decMHSBREGOF).S) as 4 bits)
+            | 0b1_1111 then                             -- ldr and (Rd=pc)
+                sdi <- (#0[0..0] @ #(not (coreIn as decMHSBREGOF).H) 
+                                 @ #((coreIn as decMHSBREGOF).H)
+                                 @ #((coreIn as decMHSBREGOF).S) as 4 bits)
+            | 0b0_xxxx then                             -- str
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                mDiSel <- 0b11
+            else
+                continue
+            end
+         ||
+            -- *****            
+            -- immediate is not sent in MHSBREGOF instructions
+            -- *****
+            case (coreIn as decMHSBREGOF).Rn of
+            0b1111 then -- (Rn=pc)
+                mca <- 0b01 -- pass pc
+            else
+                mca <- 0b00 -- pass Rn
+            end
+         ||
+            case (coreIn as decMHSBREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                mcb <- 0b01 -- pass pc
+            else -- (Rm!=pc)
+                mcb <- 0b11 -- pass Rm
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).W) @ #((coreIn as decMHSBREGOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                mcr <- 0b01
+            | 0b10 then   -- pre-index/no wb
+                continue
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).RdRs) @ #((coreIn as decMHSBREGOF).L) as 5 bits) of
+            0b1_1111 then                                   -- ldr and (Rd=pc)
+                mcpc <- 0
+            | 0b0_xxxx,                                     -- str
+                0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                continue
+            end
+         ||
+            case (coreIn as decMHSBREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                rc[0] <- 0
+            else -- (Rm!=pc)
+                rc[0] <- 1
+            end
+         ||
+            case (coreIn as decMHSBREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                continue
+            else -- (Rm!=pc)
+                ra[0] <- (coreIn as decMHSBREGOF).Rm
+            end
+         ||
+            case (coreIn as decMHSBREGOF).Rm of
+            0b1111 then -- (Rm=pc)
+                continue
+            else -- (Rm!=pc)
+                rb[0] <- mode
+            end
+         ||
+            case (coreIn as decMHSBREGOF).Rn of
+            0b1111 then -- (Rn=pc)
+                rc[1] <- 0
+            else -- (Rn!=pc)
+                rc[1] <- 1
+            end
+         ||
+            case (coreIn as decMHSBREGOF).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else -- (Rn!=pc)
+                ra[1] <- (coreIn as decMHSBREGOF).Rn
+            end
+         ||
+            case (coreIn as decMHSBREGOF).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else -- (Rn!=pc)
+                rb[1] <- mode
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).RdRs) @ #((coreIn as decMHSBREGOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                rc[2] <- 1
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                rc[2] <- 0
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).RdRs) @ #((coreIn as decMHSBREGOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                ra[2] <- (coreIn as decMHSBREGOF).RdRs
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                continue
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).RdRs) @ #((coreIn as decMHSBREGOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                rb[2] <- mode
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                continue
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).W) @ #((coreIn as decMHSBREGOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                wc[0] <- 1
+            | 0b10 then   -- pre-index/no wb
+                wc[0] <- 0
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).W) @ #((coreIn as decMHSBREGOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                wa[0] <- (coreIn as decMHSBREGOF).Rn
+            | 0b10 then   -- pre-index/no wb
+                continue
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).RdRs) @ #((coreIn as decMHSBREGOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                wc[1] <- 1
+            | 0b1_1111,                                 -- ldr and (Rd=pc)
+                0b0_xxxx then                           -- str
+                wc[1] <- 0
+            end
+         ||
+            case (#((coreIn as decMHSBREGOF).RdRs) @ #((coreIn as decMHSBREGOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                wa[1] <- (coreIn as decMHSBREGOF).RdRs
+            | 0b1_1111,                                 -- ldr and (Rd=pc)
+                0b0_xxxx then                           -- str
+                continue
+            end
+        end -- coreIn ->!
+    end -- shared decodeMHSBREGOF
+
+    shared decodeMHSBIMMOF is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            bypass <- 1
+            -- *****            
+            -- shiftCtrl is not sent in MHSBIMMOF instructions
+            -- *****
+            -- *****            
+            -- shamt is not sent in MHSBIMMOF instructions
+            -- *****
+            -- *****            
+            -- mcs is not sent in MHSBIMMOF instructions
+            -- *****
+         ||
+            case (#((coreIn as decMHSBIMMOF).RdRs) @ #((coreIn as decMHSBIMMOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                srds <- 0b010
+            | 0b1_xxxx,       -- ldr
+                0b0_1111 then -- str and (Rs=pc)
+                continue
+            end
+            -- *****            
+            -- srdm is not sent in MHSBIMMOF instructions
+            -- *****
+         ||
+            -- *****            
+            -- mulType is not sent in MHSBIMMOF instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in MHSBIMMOF instructions
+            -- *****
+         ||
+            if (coreIn as decMHSBIMMOF).U then
+                aluCtrl <- ADD
+            else
+                aluCtrl <- SUB
+            end                
+         ||
+            case (#((coreIn as decMHSBIMMOF).W) @ #((coreIn as decMHSBIMMOF).P) as 2 bits) of
+            0b0x then   -- post-index/always wb
+                salu <- 0b00_0010
+             ||
+                sMemAddr <- 0b01
+            | 0b10 then -- pre-index/no wb
+                salu <- 0b00_0001
+             ||
+                sMemAddr <- 0b11
+            | 0b11 then -- pre-index/wb
+                salu <- 0b00_0011
+             ||
+                sMemAddr <- 0b11
+            end
+         ||
+            setFlags <- 0
+         ||
+            setMode <- 0
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            case (coreIn as decMHSBIMMOF).RdRs of
+            0b1111 then -- (Rd=pc)
+                wpc <- (coreIn as decMHSBIMMOF).L
+             ||
+                wpcC <- (coreIn as decMHSBIMMOF).L
+            else
+                wpc <- 0
+             ||
+                wpcC <- 0
+            end
+         ||
+            case (coreIn as decMHSBIMMOF).Rn of
+            0b1111 then -- (Rm=pc)
+                spc <- 0b10
+            else -- (Rn!=pc)
+                spc <- 0b00
+            end
+         ||
+            sab <- not (#0[0..0] @ #((coreIn as decMHSBIMMOF).P) @ #1[0..0] as sabSelect)
+         ||
+            if (coreIn as decMHSBIMMOF).H then
+                dMemCtrl <- {((coreIn as decMHSBIMMOF).L as MemRorW), HALFWORD, (0 as MemLock), (0 as MemSeq)}
+            else
+                dMemCtrl <- {((coreIn as decMHSBIMMOF).L as MemRorW), BYTE, (0 as MemLock), (0 as MemSeq)}
+            end
+         ||
+            memOp <- 1
+         ||
+            wmem <- not (coreIn as decMHSBIMMOF).L
+         ||
+            case (#((coreIn as decMHSBIMMOF).RdRs) @ #((coreIn as decMHSBIMMOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                sdi <- (#1[0..0] @ #(not (coreIn as decMHSBREGOF).H) 
+                                 @ #((coreIn as decMHSBREGOF).H)
+                                 @ #((coreIn as decMHSBREGOF).S) as 4 bits)
+            | 0b1_1111 then                             -- ldr and (Rd=pc)
+                sdi <- (#0[0..0] @ #(not (coreIn as decMHSBREGOF).H) 
+                                 @ #((coreIn as decMHSBREGOF).H)
+                                 @ #((coreIn as decMHSBREGOF).S) as 4 bits)
+            | 0b0_xxxx then                             -- str
+                continue
+            end
+         ||
+            case (#((coreIn as decMEMREGOF).RdRs) @ #((coreIn as decMEMREGOF).L) as 5 bits) of
+             0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                mDiSel <- 0b11
+            else
+                continue
+            end
+         ||
+            immediate <- (#((coreIn as decMHSBIMMOF).ImmL) @  #((coreIn as decMHSBIMMOF).ImmH) as Datapath)
+         ||
+            case (coreIn as decMHSBIMMOF).Rn of
+            0b1111 then -- (Rn=pc)
+                mca <- 0b01 -- pass pc
+            else
+                mca <- 0b00 -- pass Rn
+            end
+         ||
+            mcb <- 0b00
+         ||
+            case (#((coreIn as decMHSBIMMOF).W) @ #((coreIn as decMHSBIMMOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                mcr <- 0b01
+            | 0b10 then   -- pre-index/no wb
+                continue
+            end
+         ||
+            case (#((coreIn as decMHSBIMMOF).RdRs) @ #((coreIn as decMHSBIMMOF).L) as 5 bits) of
+            0b1_1111 then                                   -- ldr and (Rd=pc)
+                mcpc <- 0
+            | 0b0_xxxx,                                     -- str
+                0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                continue
+            end
+         ||
+            rc[0] <- 0
+            -- *****            
+            -- ra[0] is not sent in MHSBIMMOF instructions
+            -- *****
+            -- *****            
+            -- rb[0] is not sent in MHSBIMMOF instructions
+            -- *****
+         ||
+            case (coreIn as decMHSBIMMOF).Rn of
+            0b1111 then -- (Rn=pc)
+                rc[1] <- 0
+            else -- (Rn!=pc)
+                rc[1] <- 1
+            end
+         ||
+            case (coreIn as decMHSBIMMOF).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else -- (Rn!=pc)
+                ra[1] <- (coreIn as decMHSBIMMOF).Rn
+            end
+         ||
+            case (coreIn as decMHSBIMMOF).Rn of
+            0b1111 then -- (Rn=pc)
+                continue
+            else -- (Rn!=pc)
+                rb[1] <- mode
+            end
+         ||
+            case (#((coreIn as decMHSBIMMOF).RdRs) @ #((coreIn as decMHSBIMMOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                rc[2] <- 1
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                rc[2] <- 0
+            end
+         ||
+            case (#((coreIn as decMHSBIMMOF).RdRs) @ #((coreIn as decMHSBIMMOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                ra[2] <- (coreIn as decMHSBIMMOF).RdRs
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                continue
+            end
+         ||
+            case (#((coreIn as decMHSBIMMOF).RdRs) @ #((coreIn as decMHSBIMMOF).L) as 5 bits) of
+            0b0_0xxx, 0b0_x0xx, 0b0_xx0x, 0b0_xxx0 then -- str and (Rs!=pc)
+                rb[2] <- mode
+            | 0b1_xxxx,                                 -- ldr
+                0b0_1111 then                           -- str and (Rd=pc)
+                continue
+            end
+         ||
+            case (#((coreIn as decMHSBIMMOF).W) @ #((coreIn as decMHSBIMMOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                wc[0] <- 1
+            | 0b10 then   -- pre-index/no wb
+                wc[0] <- 0
+            end
+         ||
+            case (#((coreIn as decMHSBIMMOF).W) @ #((coreIn as decMHSBIMMOF).P) as 2 bits) of
+            0b0x,         -- post-index/always wb
+                0b11 then -- pre-index/wb
+                wa[0] <- (coreIn as decMHSBIMMOF).Rn
+            | 0b10 then   -- pre-index/no wb
+                continue
+            end
+         ||
+            case (#((coreIn as decMHSBIMMOF).RdRs) @ #((coreIn as decMHSBIMMOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                wc[1] <- 1
+            | 0b1_1111,                                 -- ldr and (Rd=pc)
+                0b0_xxxx then                           -- str
+                wc[1] <- 0
+            end
+         ||
+            case (#((coreIn as decMHSBIMMOF).RdRs) @ #((coreIn as decMHSBIMMOF).L) as 5 bits) of
+            0b1_0xxx, 0b1_x0xx, 0b1_xx0x, 0b1_xxx0 then -- ldr and (Rd!=pc)
+                wa[1] <- (coreIn as decMHSBIMMOF).RdRs
+            | 0b1_1111,                                 -- ldr and (Rd=pc)
+                0b0_xxxx then                           -- str
+                continue
+            end
+        end -- coreIn ->!
+    end -- shared decodeMHSBIMMOF
+    
+    shared decodeLDMSTM is
+    local
+        channel  lsmM     : 6 bits
+        channel  rBaseM   : RegNum
+        channel  expectIncI : bit
+        variable isLast   : bit
+        variable stop, twpcC  : bit
+    begin
+        coreIn, mode ->! then
+            lsmM <- (#((coreIn as decLDMSTM).Ctrl) @ #((coreIn as decLDMSTM).RegDesc)[15..15] as 6 bits)
+         ||
+            rBaseM <- (coreIn as decLDMSTM).Rn
+         ||
+            regDesc <- (coreIn as decLDMSTM).RegDesc
+         ||
+            sendLr, colM, ccM, lsmM, rBaseM, regCount ->! then
+                sendLrS <- sendLr
+             ||
+                loop
+                    regNum, last ->! then
+                        colourM <- colM
+                     ||
+                        conCodeM <- ccM
+                     ||
+                        case (#last[0..0] @ #isFirst[0..0] as 2 bits) of
+                        0b00 then   -- interm
+                            sendS <- 0b10
+                        | 0b01 then -- last, not first
+                            sendS <- 0b00
+                        | 0b10 then -- first, not last
+                            sendS <- 0b11
+                        | 0b11 then -- first & last
+                            sendS <- 0b01
+                        end
+                     ||
+                        bypass <- 1
+                        -- *****            
+                        -- shiftCtrl is not sent in LDM/STM instructions
+                        -- *****
+                        -- *****            
+                        -- shamt is not sent in LDM/STM instructions
+                        -- *****
+                        -- *****            
+                        -- mcs is not sent in LDM/STM instructions
+                        -- *****
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[5..5] as 3 bits) of
+                        0b1x1, 0bx1x then
+                            continue
+                        else
+                            srds <- 0b010
+                        end
+                        -- *****            
+                        -- srdm is not sent in LDM/STM instructions
+                        -- *****
+                     ||
+                        domul <- 0
+                     ||
+                        mul2w <- 0
+                     ||
+                        case (#isFirst[0..0] @ #lsmM[3..3] as 2 bits) of
+                        0b00, 0b1x then  -- up or not first
+                            aluCtrl <- ADD
+                        | 0b01 then      -- first of decrement
+                            aluCtrl <- SUB
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[1..1] @ #lsmM[3..4] @ #rBaseM[0..3] as 9 bits) of
+                        0bxxxx_00_0_x1 then     -- dec aft f(l) ls nwb xpc
+                            salu <- 0b01_0000
+                         ||
+                            expectIncI <- 1
+                        | 0bxxxx_00_0_00,       -- dec aft i ls nwb xpc
+                          0bxxxx_10_0_0x,     -- dec bef f+i ls nwb xpc
+                          0bxxxx_11_0_0x,     -- inc bef f+i ls nwb xpc
+                          0bxxxx_00_1_00,     -- dec aft i ls wb xpc
+                          0bxxxx_11_1_0x,     -- inc bef f+i ls wb xpc
+                          0bxxxx_10_1_00 then -- dec bef i ls wb xpc
+                            salu <- 0b00_1001
+                         ||
+                            expectIncI <- 0
+                        | 0bxxxx_00_0_10,       -- dec aft l ls nwb xpc
+                          0bxxxx_10_0_1x,     -- dec bef (f)l ls nwb xpc
+                          0bxxxx_11_0_1x,     -- inc bef (f)l ls nwb xpc
+                          0bxxxx_00_1_10,     -- dec aft l ls wb xpc
+                          0bxxxx_10_1_10 then -- dec bef l ls wb xpc
+                            salu <- 0b00_0001
+                         ||
+                            expectIncI <- 0
+                        | 0bxxxx_01_0_0x,       -- inc aft f+i ls nwb xpc
+                          0bxxxx_01_1_0x then -- inc aft f+i ls wb xpc
+                            salu <- 0b00_1000
+                         ||
+                            expectIncI <- 0
+                        | 0bxxxx_01_0_1x then   -- inc aft (f)l ls nwb xpc
+                            salu <- 0b00_0000
+                         ||
+                            expectIncI <- 0
+                        | 0bxxx0_00_1_x1, 0bxx0x_00_1_x1, 0bx0xx_00_1_x1, 0b0xxx_00_1_x1 then -- dec aft f(l) ls wb npc
+                            salu <- 0b01_0010
+                         ||
+                            expectIncI <- 1
+                        | 0b1111_00_1_x1 then   -- dec aft f(l) ls wb pc
+                            salu <- 0b01_0100
+                         ||
+                            expectIncI <- 1
+                        | 0bxxx0_01_1_1x, 0bxx0x_01_1_1x, 0bx0xx_01_1_1x, 0b0xxx_01_1_1x then   -- inc aft (f)l ls wb npc
+                            salu <- 0b00_0010
+                         ||
+                            expectIncI <- 0
+                        | 0b1111_01_1_1x then   -- inc aft (f)l ls wb pc
+                            salu <- 0b00_0100
+                         ||
+                            expectIncI <- 0
+                        | 0bxxx0_10_1_01, 0bxx0x_10_1_01, 0bx0xx_10_1_01, 0b0xxx_10_1_01 then   -- dec bef f ls wb npc
+                            salu <- 0b00_1011
+                         ||
+                            expectIncI <- 0
+                        | 0b1111_10_1_01 then   -- dec bef f ls wb pc
+                            salu <- 0b00_1101
+                         ||
+                            expectIncI <- 0
+                        | 0bxxx0_10_1_11, 0bxx0x_10_1_11, 0bx0xx_10_1_11, 0b0xxx_10_1_11,       -- dec bef fl ls wb npc
+                            0bxxx0_11_1_1x, 0bxx0x_11_1_1x, 0bx0xx_11_1_1x, 0b0xxx_11_1_1x then -- inc bef (f)l ls wb npc
+                            salu <- 0b00_0011
+                         ||
+                            expectIncI <- 0
+                        | 0b1111_10_1_11,       -- dec bef fl ls wb pc
+                            0b1111_11_1_1x then -- inc bef (f)l ls wb pc
+                            salu <- 0b00_0101
+                         ||
+                            expectIncI <- 0
+                        end
+                     ||
+                        expectIncI ->! then
+                            sendLrC <- (#sendLr @ #expectIncI  as 2 bits)
+                        end
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[2..2] @ #lsmM[5..5] as 4 bits) of
+                        0b1111 then -- ldm pc setFlags
+                            setFlags <- 0b010  -- restore flags
+                        else
+                            setFlags <- 0b000
+                        end
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[2..2] @ #lsmM[5..5] as 4 bits) of
+                        0b1111 then -- ldm pc setFlags
+                            setMode <- 0b01  -- restore mode
+                        else
+                            setMode <- 0b00
+                        end
+                     ||
+                        rwSreg  <- 0
+                     ||
+                        rwSregF <- 0
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[0..1] @ #lsmM[3..4] @ #rBaseM[0..3] as 10 bits) of
+                        0bxxxxxx00xx,      -- s nwb
+                            0bxxx0xx10xx, 0bxx0xxx10xx, 0bx0xxxx10xx, 0b0xxxxx10xx, -- s wb npc
+                            0bxxxxxxxx00,  -- i
+                            0bxxxxxx0x01,  -- f nwb
+                            0bxxx0xxxx01, 0bxx0xxxxx01, 0bx0xxxxxx01, 0b0xxxxxxx01, -- f npc
+                            0bxxxxx1xx01,  -- f inc
+                            0b1111x01010 then -- l s wb pc dec
+                            wpc <- 0b0
+                         ||
+--                            if last then
+                                 twpcC := 0b0
+--                            end
+                        | 0b1111x01xx1,     -- f(l) wb pc dec
+                            0b1111x11x1x then -- l(f) wb pc inc
+                            wpc <- 0b1
+                         ||
+--                            if last then
+                                 twpcC := 0b1
+--                            end
+                        | 0bxxxxxx011x, -- l(f) l nwb
+                            0bxxx0xx111x, 0bxx0xxx111x, 0bx0xxxx111x, 0b0xxxxx111x, -- l(f) l wb npc
+                            0b1111x01110 then  -- l l wb pc dec
+                            wpc <- (#lsmM[5..5] as bit)
+                         ||
+                            if last then
+                                 twpcC := (#lsmM[5..5] as bit)
+                            end
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #rBaseM[0..3] as 5 bits) of
+                        0b0xxx_1, 0bx0xx_1, 0bxx0x_1, 0bxxx0_1 then -- (Rn != pc)
+                            spc <- 0b00
+                        | 0b1111_1 then                          -- (Rn = pc)
+                            spc <- 0b10
+                        else
+                            continue
+                        end
+                     ||
+                        case (#lsmM[3..4] as 2 bits) of
+                        0b00, 0b10, 0b11 then
+                            sab <- 0b001
+                        | 0b01 then
+                            sab <- 0b011
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[3..4] as 4 bits) of
+                        0b0001 then -- first not last
+                            stp <- 0b1
+                        | 0b0011 then -- first and last
+                            stp <- 0b0
+                        | 0b0000, 0b0010, 0b1xxx, 0bx1xx then
+                            continue
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[3..4] as 4 bits) of
+                        0b0001, 0b0011 then -- first not last OR first and last
+                            sMemAddr <- 0b00 -- select incOut0 as memAddr
+                        | 0b01xx then
+                            sMemAddr <- 0b01 -- select aBusD as memAddr 
+                        else
+                            sMemAddr <- 0b11 -- select AluResult0 as memAddr
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[3..4] as 4 bits) of
+                        0b0001 then -- first not last 
+                            mTemp <- 0b00 -- select incOut1 as temp
+                        | 0bxx00, 0bx10x, 0b1x0x then
+                            mTemp <- 0b01 -- select aluresult3 as temp 
+                        else
+                            continue
+                        end
+                     ||
+                        dMemCtrl <- {(#lsmM[0..0] as MemRorW), WORD, (not last as MemLock), (not isFirst as MemSeq)}
+                     ||
+                        memOp <- 1
+                     ||
+                        wmem <- not (#lsmM[0..0] as bit)
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[5..5] as 3 bits) of
+                        0b111 then
+                            sdi <- 0b0000
+                        | 0b01x, 0b110 then
+                            sdi <- 0b0001
+                        | 0bx0x then
+                            continue
+                        end
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[5..5] as 3 bits) of
+                        0b01x, 0b110 then
+                            mDiSel <- 0b11
+                        else
+                            continue
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #lsmM[3..3] as 2 bits) of
+                        0b01 then
+                            immediate <- (#0[0..0] @ #0[0..0] @ #regCount[0..3] as Datapath)
+                        else
+                            immediate <- (4 as Datapath)
+                        end
+                     ||
+                        case (#rBaseM[0..3] @ #isFirst[0..0] as 5 bits) of
+                        0b0xxxx then    -- temp register
+                            mca <- 0b11
+                        | 0b11111 then  -- (Rn = pc) 
+                            mca <- 0b01
+                        | 0b10xxx, 0b1x0xx, 0b1xx0x, 0b1xxx0 then -- (Rn != pc)
+                            mca <- 0b00
+                        end
+                     ||
+                        mcb <- 0b00
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[1..1] @ #lsmM[3..3] @ #rBaseM[0..3] as 8 bits) of
+                        0b0xxx01x1, 0bx0xx01x1, 0bxx0x01x1, 0bxxx001x1,
+                            0b0xxx111x, 0bx0xx111x, 0bxx0x111x, 0bxxx0111x then
+                            mcr <- 0b01 --pass AluResult
+                        else
+                            continue
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[0..1] @ #lsmM[3..3] @ #lsmM[5..5] @ #rBaseM[0..3] as 10 bits) of
+                        0b1111_x_01x_x1, 0b1111_x_11x_1x then
+                            mcpc <- 1
+                        | 0b0xxx_1_xx1_1x, 0bx0xx_1_xx1_1x, 0bxx0x_1_xx1_1x, 0bxxx0_1_xx1_1x then
+                            mcpc <- 0
+                        else
+                            continue
+                        end
+                     ||
+                        rc[0] <- 0b0
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #regNum[0..3] as 6 bits) of
+                        0b111101 then -- never occurs, just to avoid a compiler complaint about writing ra[0]
+                            ra[0] <- 0b1111
+                        else
+                            continue
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #regNum[0..3] as 6 bits) of
+                        0b111101 then -- never occurs, just to avoid a compiler complaint about writing ra[0]
+                            rb[0] <- mode
+                        else
+                            continue
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #rBaseM[0..3] as 5 bits) of
+                        0b0xxx1, 0bx0xx1, 0bxx0x1, 0bxxx01 then
+                            rc[1] <- 1
+                        else
+                            rc[1] <- 0
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #rBaseM[0..3] as 5 bits) of
+                        0b0xxx1, 0bx0xx1, 0bxx0x1, 0bxxx01 then
+                            ra[1] <- rBaseM
+                        else
+                            continue
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #rBaseM[0..3] as 5 bits) of
+                        0b0xxx1, 0bx0xx1, 0bxx0x1, 0bxxx01 then
+                            rb[1] <- mode
+                        else
+                            continue
+                        end
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[5..5] as 3 bits) of
+                        0b1x1, 0bx1x then
+                            rc[2] <- 0
+                        else
+                            rc[2] <- 1
+                        end
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[5..5] as 3 bits) of
+                        0b1x1, 0bx1x then
+                            continue
+                        else
+                            ra[2] <- regNum
+                        end
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[5..5] as 3 bits) of
+                        0b1x1, 0bx1x then
+                            continue
+                        else
+                            rb[2] <- mode
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[1..1] @ #lsmM[3..3] @ #rBaseM[0..3] as 8 bits) of
+                        0b0xxx01x1, 0bx0xx01x1, 0bxx0x01x1, 0bxxx001x1,
+                            0b0xxx111x, 0bx0xx111x, 0bxx0x111x, 0bxxx0111x then
+                            wc[0] <- 0b1
+                        else
+                            wc[0] <- 0b0
+                        end
+                     ||
+                        case (#isFirst[0..0] @ #last[0..0] @ #lsmM[1..1] @ #lsmM[3..3] @ #rBaseM[0..3] as 8 bits) of
+                        0b0xxx01x1, 0bx0xx01x1, 0bxx0x01x1, 0bxxx001x1,
+                            0b0xxx111x, 0bx0xx111x, 0bxx0x111x, 0bxxx0111x then
+                            wa[0] <- rBaseM
+                        else
+                            continue
+                        end
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[5..5] as 3 bits) of
+                        0b1x1, 0bx0x then
+                            wc[1] <- 0
+                        else
+                            wc[1] <- 1
+                        end
+                     ||
+                        case (#last[0..0] @ #lsmM[0..0] @ #lsmM[5..5] as 3 bits) of
+                        0b1x1, 0bx0x then
+                            continue
+                        else
+                            wa[1] <- regNum
+                        end
+                     ||
+                        isLast := last
+                     ||
+                        if isFirst then
+                            stopI -> stop
+                        end -- if isFirst
+                    end -- regNum , last ->
+                while not (isLast or stop) then
+                    isFirst := 0
+                end -- loop
+              ;
+--                if stop then
+--                    wpcC <- 0b0
+--                else
+                    wpcC <- twpcC
+--                end
+            end -- lsmM , rBaseM , regCount ->!
+        end -- coreIn ->!
+    end -- shared decodeLDMSTM
+    
+    shared decodeBRBL is
+    begin
+        sendS <- 0b00
+     ||
+        coreIn, mode ->! then
+            bypass <- 1
+            -- *****            
+            -- shiftCtrl is not sent in BRBL instructions
+            -- *****
+            -- *****            
+            -- shamt is not sent in BRBL instructions
+            -- *****
+            -- *****            
+            -- mcs is not sent in BRBL instructions
+            -- *****
+         ||
+            -- *****            
+            -- srds is not sent in BRBL instructions
+            -- *****
+            -- *****            
+            -- srdm is not sent in BRBL instructions
+            -- *****
+            -- *****            
+            -- mulType is not sent in BRBL instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in BRBL instructions
+            -- *****
+         ||
+            aluCtrl <- ADD
+         ||
+            salu <- 0b00_0100
+         ||
+            setFlags <- 0
+         ||
+            setMode <- 0
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            wpc <- 1
+         ||
+            wpcC <- 1
+         ||
+            spc <- 0b10
+         ||
+            sab <- 0b001
+         ||
+            -- *****            
+            -- dMemCtrl is not sent in BRBL instructions
+            -- *****
+            memOp <- 0 
+         ||
+            wmem <- 0
+            -- *****            
+            -- sdi is not sent in BRBL instructions
+            -- *****
+         ||
+            immediate <- ((#0 @ #0 @ #((coreIn as decBRBL).Offset) as 26 signed bits) as Datapath)
+         ||
+            mca <- 0b01 -- pass pc
+         ||
+            mcb <- 0b00
+         ||
+            if (coreIn as decBRBL).Link then
+                mcr <- 0b00
+            end
+         ||
+            mcpc <- 1
+         ||
+            rc[0] <- 0
+            -- *****            
+            -- ra[0] is not sent in BRBL instructions
+            -- *****
+            -- *****            
+            -- rb[0] is not sent in BRBL instructions
+            -- *****
+         ||
+            rc[1] <- 0
+            -- *****            
+            -- ra[1] is not sent in BRBL instructions
+            -- *****
+            -- *****            
+            -- rb[1] is not sent in BRBL instructions
+            -- *****
+         ||
+            rc[2] <- 0
+            -- *****            
+            -- ra[2] is not sent in BRBL instructions
+            -- *****
+            -- *****            
+            -- rb[2] is not sent in BRBL instructions
+            -- *****
+         ||
+            wc[0] <- (coreIn as decBRBL).Link
+         ||
+            if (coreIn as decBRBL).Link then
+                wa[0] <- (14 as RegNum)
+            end
+         ||
+            wc[1] <- 0
+            -- *****            
+            -- wa[1] is not sent in BRBL instructions
+            -- *****
+        end -- coreIn ->!
+    end -- shared decodeBRBL
+
+    shared decodeSWI is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            bypass <- 1
+            -- *****            
+            -- shiftCtrl is not sent in SWI instructions
+            -- *****
+            -- *****            
+            -- shamt is not sent in SWI instructions
+            -- *****
+            -- *****            
+            -- mcs is not sent in SWI instructions
+            -- *****
+         ||
+            -- *****            
+            -- srds is not sent in SWI instructions
+            -- *****
+            -- *****            
+            -- srdm is not sent in SWI instructions
+            -- *****
+            -- *****            
+            -- mulType is not sent in SWI instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in SWI instructions
+            -- *****
+         ||
+            aluCtrl <- MOV
+         ||
+            salu <- 0b00_0100
+         ||
+            setFlags <- 0b100 -- save flags
+         ||
+            setMode <- 0b10 -- switch to SVC mode and save current mode
+         ||
+            newmode <- {CSVC,PRIVILEGED,0,0,1}
+         ||
+            rwSreg  <- 0
+         ||
+            rwSregF <- 0
+         ||
+            wpc <- 1
+         ||
+            wpcC <- 1
+         ||
+            spc <- 0b10
+         ||
+            sab <- 0b001
+         ||
+            -- *****            
+            -- dMemCtrl is not sent in SWI instructions
+            -- *****
+            memOp <- 0 
+         ||
+            wmem <- 0
+            -- *****            
+            -- sdi is not sent in SWI instructions
+            -- *****
+         ||
+            immediate <- (EXCEPTION_VECTOR_SWI as Datapath)
+         ||
+            mca <- 0b01 -- pass pc
+         ||
+            mcb <- 0b00
+         ||
+            mcr <- 0b00
+         ||
+            mcpc <- 1
+         ||
+            rc[0] <- 0
+            -- *****            
+            -- ra[0] is not sent in SWI instructions
+            -- *****
+            -- *****            
+            -- rb[0] is not sent in SWI instructions
+            -- *****
+         ||
+            rc[1] <- 0
+            -- *****            
+            -- ra[1] is not sent in SWI instructions
+            -- *****
+            -- *****            
+            -- rb[1] is not sent in SWI instructions
+            -- *****
+         ||
+            rc[2] <- 0
+            -- *****            
+            -- ra[2] is not sent in SWI instructions
+            -- *****
+            -- *****            
+            -- rb[2] is not sent in SWI instructions
+            -- *****
+         ||
+            wc[0] <- 1
+         ||
+            wa[0] <- (14 as RegNum)
+         ||
+            wc[1] <- 0
+            -- *****            
+            -- wa[1] is not sent in SWI instructions
+            -- *****
+        end -- coreIn ->!
+    end -- shared decodeSWI
+
+    shared decodeMRS is
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+            -- *****            
+            -- bypass is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- shiftCtrl is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- shamt is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- mcs is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- srds is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- srds is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- srdm is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- mulTypw is not sent in MRS instructions
+            -- *****
+         ||
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- aluCtrl is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- salu is not sent in MRS instructions
+            -- *****
+         ||
+            setFlags <- 0b110
+         ||
+            setMode <- 0b11
+         ||
+            rwSreg  <- (#((coreIn as decMRS).R)[0..0] @ #0b1[0..0] as 3 bits)
+         ||
+            rwSregF  <- (#((coreIn as decMRS).R)[0..0] @ #0b1[0..0] as 3 bits)
+         ||
+            wpc <- 0
+         ||
+            wpcC <- 0
+         ||
+            spc <- 0b00
+            -- *****            
+            -- sab is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- dMemCtrl is not sent in MRS instructions
+            -- *****
+         ||
+            memOp <- 0
+         ||
+            wmem <- 0
+            -- *****            
+            -- sdi is not sent in MRS instructions
+            -- *****
+         ||
+            mDiSel <- 0b00
+            -- *****            
+            -- immediate is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- mca is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- mcb is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- mcr is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- mcpc is not sent in MRS instructions
+            -- *****
+         ||
+            rc[0] <- 0 
+            -- *****            
+            -- ra[0] is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- rb[0] is not sent in MRS instructions
+            -- *****
+         ||
+            rc[1] <- 0 
+            -- *****            
+            -- ra[1] is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- rb[1] is not sent in MRS instructions
+            -- *****
+         ||
+            rc[2] <- 0 
+            -- *****            
+            -- ra[2] is not sent in MRS instructions
+            -- *****
+            -- *****            
+            -- rb[2] is not sent in MRS instructions
+            -- *****
+         ||
+            wc[0] <- 0 
+            -- *****            
+            -- wa[0] is not sent in MRS instructions
+            -- *****
+         ||
+            wc[1] <- 1 -- write  PSR directly to wb[1] 
+         ||
+            wa[1] <- (coreIn as decMRS).Rd -- write PSR to Rd
+        end -- coreIn ->!
+    end -- shared decodeMRS
+
+    shared decodeMSRIMMOP is
+    local
+        channel synthBranch : bit
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            synthBranch <- not((coreIn as decMSRIMMOP).R) and ((coreIn as decMSRIMMOP).cMask)
+         ||
+            noshift ->! then
+                bypass <- noshift
+             ||
+                if (not noshift) then
+                    shiftCtrl <- (0b11 as ShiftType)
+                 ||
+                    shamt <- (#(0 as bit) @ #((coreIn as decMSRIMMOP).Rot) as 5 bits)
+                 ||
+                    mcs <- 0
+                end -- if ( not noshift )
+            end -- noshift ->
+            -- *****            
+            -- srds is not sent in MSRIMMOP instructions
+            -- *****
+            -- *****            
+            -- srdm is not sent in MSRIMMOP instructions
+            -- *****
+         ||
+            -- *****            
+            -- mulType is not sent in MSRIMMOP instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in MSRIMMOP instructions
+            -- *****
+         ||
+            aluCtrl <- MOV
+         ||
+            salu <- 0b10_0000
+         ||
+            setFlags <- 0b011 -- update flags
+         ||
+            setMode <- 0b11
+         ||
+            rwSreg  <- (#((coreIn as decMSRIMMOP).R)[0..0] @ #0b0[0..0] @ #((coreIn as decMSRIMMOP).cMask)[0..0] as 3 bits)
+         ||
+            rwSregF  <- (#((coreIn as decMSRIMMOP).R)[0..0] @ #0b0[0..0] @ #((coreIn as decMSRIMMOP).fMask)[0..0] as 3 bits)
+         ||
+            synthBranch ->! then
+                wpc  <- synthBranch --not((coreIn as decMSRIMMOP).R) and ((coreIn as decMSRIMMOP).cMask)
+             ||
+                wpcC <- synthBranch --not((coreIn as decMSRIMMOP).R) and ((coreIn as decMSRIMMOP).cMask)
+             ||
+                if synthBranch then
+                    mcpc <- 0b11 -- new Pc = dLr (synthesised branch to force change of color)
+                end
+            end --synthBranch ->!
+         ||
+            spc <- 0b10  -- send Pc to A bus (we need a bogus operand)
+         ||
+            sab <- 0b001
+         ||
+            -- *****            
+            -- dMemCtrl is not sent in MSRIMMOP instructions
+            -- *****
+            memOp <- 0 
+         ||
+            wmem <- 0
+            -- *****            
+            -- sdi is not sent in MSRIMMOP instructions
+            -- *****
+         ||
+            immediate <- ((coreIn as decMSRIMMOP).Imm as Datapath)
+         ||
+            mca <- 0b01 -- pass pc (bogus)
+         ||
+            mcb <- 0b00 -- pass immediate
+            -- *****            
+            -- mcr is not sent in MSRIMMSH instructions
+            -- *****
+         ||
+            rc[0] <- 0
+            -- *****            
+            -- ra[0] is not sent in MSRIMMOP instructions
+            -- *****
+            -- *****            
+            -- rb[0] is not sent in MSRIMMOP instructions
+            -- *****
+         ||
+            rc[1] <- 0
+            -- *****            
+            -- ra[1] is not sent in MSRIMMOP instructions
+            -- *****
+            -- *****            
+            -- rb[1] is not sent in MSRIMMOP instructions
+            -- *****
+         ||
+            rc[2] <- 0
+            -- *****            
+            -- ra[2] is not sent in MSRIMMOP instructions
+            -- *****
+            -- *****            
+            -- rb[2] is not sent in MSRIMMOP instructions
+            -- *****
+         ||
+            wc[0] <- 0
+            -- *****            
+            -- wa[0] is not sent in MSRIMMOP instructions
+            -- *****
+         ||
+            wc[1] <- 0
+            -- *****            
+            -- wa[1] is not sent in MSRIMMOP instructions
+            -- *****
+        end -- coreIn ->!
+    end -- shared decodeMSRIMMOP
+
+    shared decodeMSRIMMSH is
+    local
+        channel synthBranch : bit
+    begin
+        coreIn, mode ->! then
+            sendS <- 0b00
+         ||
+            synthBranch <- not((coreIn as decMSRIMMSH).R) and ((coreIn as decMSRIMMSH).cMask)
+         ||
+            noshift ->! then
+                bypass <- noshift -- Always one for MSR reg (never shifts)
+            -- *****            
+            -- shiftCtrl is not sent in MSRIMMSH instructions
+            -- *****
+            -- *****            
+            -- shamt is not sent in MSRIMMSH instructions
+            -- *****
+            -- *****            
+            -- mcs is not sent in MSRIMMSH instructions
+            -- *****
+            end -- noshift ->
+         ||
+            -- *****            
+            -- srds is not sent in DPIMMSH instructions
+            -- *****
+            -- *****            
+            -- mulType is not sent in DPIMMSH instructions
+            -- *****
+            domul <- 0
+         ||
+            mul2w <- 0
+            -- *****            
+            -- mul2res is not sent in DPIMMSH instructions
+            -- *****
+         ||
+            aluCtrl <- MOV
+         ||
+            salu <- 0b10_0000
+         ||
+            setFlags <- 0b011 -- update flags
+         ||
+            setMode <- 0b11
+         ||
+            rwSreg  <- (#((coreIn as decMSRIMMSH).R)[0..0] @ #0b0[0..0] @ #((coreIn as decMSRIMMSH).cMask)[0..0] as 3 bits)
+         ||
+            rwSregF  <- (#((coreIn as decMSRIMMSH).R)[0..0] @ #0b0[0..0] @ #((coreIn as decMSRIMMSH).fMask)[0..0] as 3 bits)
+         ||
+            synthBranch ->! then
+                wpc  <- synthBranch --not((coreIn as decMSRIMMOP).R) and ((coreIn as decMSRIMMOP).cMask)
+             ||
+                wpcC <- synthBranch --not((coreIn as decMSRIMMOP).R) and ((coreIn as decMSRIMMOP).cMask)
+             ||
+                if synthBranch then
+                    mcpc <- 0b11 -- new Pc = dLr (synthesised branch to force change of color)
+                end
+            end --synthBranch ->!
+         ||
+            sab <- 0b001
+         ||
+            -- *****            
+            -- dMemCtrl is not sent in MSRIMMSH instructions
+            -- *****
+            memOp <- 0 
+         ||
+            wmem <- 0
+            -- *****            
+            -- sdi is not sent in MSRIMMSH instructions
+            -- *****
+            -- *****            
+            -- immediate is not sent in DPIMMSH instructions
+            -- *****
+         ||
+            mca <- 0b01 -- pass pc (bogus)
+            -- *****            
+            -- mcr is not sent in MSRIMMSH instructions
+            -- *****
+         ||
+            case (coreIn as decMSRIMMSH).Rm of
+            0b1111 then -- (Rm=pc)
+                rc[0] <- 0
+             ||
+                spc <- 0b11  -- send Pc to B and also to A bus (we need a bogus operand)
+             ||
+                mcb <-0b01   -- pass Pc
+            else
+                rc[0] <- 1   -- read Rm
+             ||
+                spc <- 0b10  -- send Pc to A bus (we need a bogus operand)
+             ||
+                mcb <- 0b11  -- pass Rm
+             ||
+                srdm <- 0    -- steer to B bus
+            end
+         ||
+            case (coreIn as decMSRIMMSH).Rm of
+            0b1111 then -- (Rm=pc)
+                continue
+            else
+                rb[0] <- mode
+            end
+         ||
+            case (coreIn as decMSRIMMSH).Rm of
+            0b1111 then -- (Rm=pc)
+                continue
+            else
+                ra[0] <- (coreIn as decMSRIMMSH).Rm
+            end
+         ||
+            rc[1] <- 0
+            -- *****            
+            -- ra[1] is not sent in MSRIMMSH instructions
+            -- *****
+         ||
+            rc[2] <- 0
+            -- *****            
+            -- ra[2] is not sent in MSRIMMSH instructions
+            -- *****
+         ||
+            wc[0] <- 0
+            -- *****            
+            -- wa[0] is not sent in MSRIMMSH instructions
+            -- *****
+         ||
+            wc[1] <- 0
+            -- *****            
+            -- wa[1] is not sent in MSRIMMSH instructions
+            -- *****
+        end -- coreIn ->!
+    end -- shared decodeMSRIMMSH
+
+    shared passColourAndMode is
+    begin
+        ccS, colS ->! then
+            colourM <- colS
+         ||
+            conCodeM <- ccS
+        end
+     ||
+        sendLr ->! then
+            sendLrS <- sendLr
+          ||
+            sendLrC <- (#sendLr @ #0b0 as 2 bits)
+        end
+    end
+
+begin
+    loop
+        isFirst := 1
+      ;
+        pdecode ->! then --note: pdecode <- (#fInstr[4..7] @ #fInstr[20..24] @ #fInstr[25..27] as DecodeBits)
+            case pdecode of
+            0b000_0xxxx_xxx0, 0b000_x1xxx_xxx0, 
+                0b000_xxxx1_xxx0, 0b000_xxxxx_1xx0 then -- data processing with immediate-specified shift
+                decodeDPIMMSH()
+             ||
+                passColourAndMode()
+            | 0b000_xxxxx_0xx1 then                   -- data processing with register-specified shift
+                decodeDPREGSH()
+             ||
+                passColourAndMode()
+            | 0b000_xxxxx_1001 then -- multiply
+                decodeMUL()
+             ||
+                sendLr ->! then
+                    sendLrS <- sendLr
+                  ||
+                    sendLrC <- (#sendLr @ #0b0 as 2 bits)
+                end
+            | 0b000_xx0xx_1x11, 0b000_xx0xx_11x1 then -- ldrh, ldrsh, ldrsb, strh register-specified offset
+                decodeMHSBREGOF()
+             ||
+                passColourAndMode()
+            | 0b000_xx1xx_1x11, 0b000_xx1xx_11x1 then -- ldrh, ldrsh, ldrsb, strh immediate offset
+                decodeMHSBIMMOF()
+             ||
+                passColourAndMode()
+            | 0b001_0xxxx_xxxx, 0b001_xxx0x_xxxx, 
+                0b001_x1xxx_xxxx, 0b001_xxxx1_xxxx then    -- data processing with immediate operand -- <<excludes>> MSR immediate
+                decodeDPIMMOP()
+             ||
+                passColourAndMode()
+            | 0b010_xxxxx_xxxx then -- ldr/str with immediate offset
+                decodeMEMIMMOF()
+             ||
+                passColourAndMode()
+            | 0b011_xxxxx_xxxx then -- ldr/str with register-specified offset
+                decodeMEMREGOF()
+             ||
+                passColourAndMode()
+            | 0b100_xxxxx_xxxx then -- ldm/stm
+                decodeLDMSTM()
+            | 0b101_xxxxx_xxxx then -- b/bl
+                decodeBRBL()
+             ||
+                passColourAndMode()
+            | 0b11x_xxxxx_xxxx then -- swi
+                decodeSWI()
+             ||
+                passColourAndMode()
+            | 0b000_10x00_0xx0 then -- mrs
+                decodeMRS()
+             ||
+                passColourAndMode()
+            | 0b001_10x10_xxxx then -- msr immediate operand
+                decodeMSRIMMOP()
+             ||
+                passColourAndMode()
+            | 0b000_10x10_0xx0 then -- msr register with immediate shift
+                decodeMSRIMMSH()
+             ||
+                passColourAndMode()
+            end
+        end -- pdecode ->!
+    end -- loop
+end -- procedure decodeCore
+
+procedure nanoDecode
+(
+  -- the fetch i/f:
+  input  fiPc                   : Address;
+  input  fiColour               : Colour;
+  input  fiInstr                : Instruction;
+  input  fiMode                 : psrCtl;
+  
+  -- the execute i/f:
+  input  xdColour              : Colour;
+  input  incI                  : Datapath;
+  output incO                  : Datapath;
+  output dPc                   : Datapath;
+  output dLr                   : Datapath;
+  output dColour               : Colour;
+  output bypass                : bit;
+  output shiftCtrl             : ShiftType;
+  output shamt                 : 5 bits;
+  output aluCtrl               : AluCtrl;
+  output salu                  : AluSelect;
+  output srds                  : rdsSelect;
+  output setFlags              : 3 bits;
+  output setMode               : 2 bits;
+  output newmode               : psrCtl;
+  output rwSreg                : 3 bits;
+  output rwSregF               : 3 bits;
+  output wpc                   : bit;
+  output spc                   : PcSelect;
+  output sab                   : sabSelect;
+  output stp                   : bit;
+  output mMemAddr              : memAddrSelect;
+  output dMemCtrl              : MemCtrl;
+  output memOp                 : bit;
+  output wmem                  : bit;
+  output sdi                   : 4 bits;
+  output cc                    : ConditionCode;  
+  output immediate             : Datapath;
+  output mca                   : aBusSelect;
+  output mcb                   : bBusSelect;
+  output mcr                   : mcrSelect;
+  output mcs                   : bit;
+  output mcpc                  : cPcSelect;
+  output sdLr                  : dLrSelect;
+  output mTemp                 : tempSelect;
+  output mDiSel                : mDiSelect;
+
+  output sendS                 : 2 bits;
+  input  stopI                 : bit;
+  input  stopLsm               : bit;
+
+  -- the register bank i/f:
+--  array READPORTS of output rb : RegBank;
+  array READPORTS of output ra : RegSpec;
+  array READPORTS of output rc : bit;
+  array 2 of output wa         : RegNum;
+  array 2 of output wc         : bit;
+
+  -- multiplier control
+  output mulType               : MulType;
+  output domul                 : bit;
+  output mul2w                 : bit;
+  output mul2res               : bit;
+  -- multiplier data steer control
+  output srdm                  : bit
+)
+-- (* latches = "l:s1" *)
+is
+    channel sendLr, sendLrS   : bit
+    channel sendLrC, sendLrCp  : 2 bits
+    channel incIn    : Datapath
+    channel incOut   : Datapath
+    channel incOp    : Datapath
+    channel selM     : bit
+    channel colS     : Colour
+    channel colourM  : Colour
+    channel ccS      : ConditionCode
+    channel conCodeM : ConditionCode
+    channel colM     : Colour
+    channel ccM      : ConditionCode
+    channel mode     : RegBank
+    channel coreIn   : CoreInstr
+    channel pdecode  : DecodeBits
+    channel noshift  : bit
+    channel regDesc  : RegDesc
+    channel regCount : RegCnt
+    channel regNum   : RegNum
+    channel last     : bit
+    channel fPc      : Address
+    channel fColour  : Colour
+    channel fInstr   : Instruction
+    channel fMode    : psrCtl
+    channel wpcC     : bit
+    variable colour      : Colour
+    variable prevColour  : Colour
+    variable readxColour : bit
+    variable treadxColour : bit
+
+    array READPORTS of channel rrb : RegBank
+    array READPORTS of channel rra : RegNum
+ 
+begin 
+    colour := GREEN
+ ||
+    prevColour := GREEN
+ ||
+    readxColour := 0
+ ||
+    treadxColour := 0
+  ;
+    loop
+        fiColour ->! then
+            if ((colour = fiColour) or (prevColour /= fiColour)) then
+                fColour <- fiColour
+             ||
+                fiPc -> fPc
+             ||
+                fiInstr -> fInstr
+             ||
+                fiMode -> fMode
+             ||
+                prevColour := fiColour
+             ||
+                wpcC ->! then 
+                    if readxColour then
+                        xdColour ->! then
+                            colour := xdColour
+                        end
+                    else
+                        colour := fiColour
+                    end -- if readxColour
+                 ||
+                    treadxColour := wpcC
+                end
+            else
+                fiInstr ->! then
+                    continue
+                end
+             ||
+                fiMode ->! then
+                    continue
+                end
+             ||
+                fiPc ->! then
+                    continue
+                end
+            end -- if (colour = fiColour) 
+        end -- fiColour ... ->!
+      ; 
+        readxColour := treadxColour
+    end -- loop
+ ||
+    loop
+        fMode ->! then
+            mode <- (fMode.mode as RegBank)
+        end -- fMode ->!
+    end -- loop
+ ||
+    loop
+        fInstr ->! then
+            coreIn <- (#fInstr[0..24] as CoreInstr)
+         ||
+            pdecode <- (#fInstr[4..7] @ #fInstr[20..27] as DecodeBits)
+         ||
+            case (#fInstr[4..7] @ #fInstr[25..27] as 7 bits) of
+            0b000_xxx0,         -- data processing with immediate-specified shift, includes MRS
+                0b000_0xx1,     -- data processing with register-specified shift, includes MSR reg
+                0b000_1x11, 0b000_11x1,  -- ldrh, ldrsh, ldrsb, strh
+                0b001_xxxx,     -- data processing with immediate operand, includes MSR immediate
+                0b01x_xxxx,     -- ldr/str
+                0b101_xxxx,     -- b/bl
+                0b11x_xxxx then -- swi
+                fColour -> colS
+             ||
+                ccS <- (#fInstr[28..31] as ConditionCode)
+            | 0b100_xxxx, -- ldm/stm
+              0b000_1001 then   -- multiply
+                fColour -> colM
+             ||
+                ccM <- (#fInstr[28..31] as ConditionCode)
+           end -- case 
+         ||
+            case (#fInstr[4..7]  @ #fInstr[20..21] @ #fInstr[23..27] as 11 bits) of
+            0b001_xxxx_xxxx then     -- data processing with immediate operand -- includes MSR immediate
+                case (#fInstr[8..11] as 4 bits) of
+                0b0000 then
+                    noshift <- 1
+                else
+                    noshift <- 0
+                end
+            | 0b000_0xxx_xxx0, 0b000_x1xx_xxx0, 0b000_xxx1_xxx0, 0b000_xxxx_1xx0,  -- data processing with immediate-specified shift
+                0b000_1010_0xx0,     -- MSR register operand
+                0b011_xxxx_xxxx then -- ldr/str with register-specified offset
+                case (#fInstr[7..11] as 5 bits) of
+                0b00000 then
+                    noshift <- 1
+                else
+                    noshift <- 0
+                end
+            | 0b000_xxxx_0xx1,       -- data processing with register-specified shift
+                0b000_1000_0xx0,     -- MRS (does not use ALU)
+                0b000_xxxx_1xx1,     -- multiply, ldrh, ldrsh, ldrsb, strh
+                0b010_xxxx_xxxx,     -- ldr/str with immediate offset
+                0b100_xxxx_xxxx,     -- ldm/stm
+                0b101_xxxx_xxxx,     -- b/bl
+                0b11x_xxxx_xxxx then -- swi
+                continue
+            end
+         ||
+            case (#fInstr[4..4] @ #fInstr[7..7]  @ #fInstr[20..21] @ #fInstr[23..27] as 9 bits) of
+            0b001_0xxx_x_x, 0b001_xx0x_x_x, 
+                0b001_x1xx_x_x, 0b001_xxx1_x_x,     -- data processing with immediate operand -- <<excludes>> MSR immediate
+                0b000_0xxx_x_0, 0b000_x1xx_x_0, 
+                0b000_xxx1_x_0, 0b000_xxxx_1_0,     -- data processing with immediate-specified shift
+                0b000_xxxx_0_1,                     -- data processing with register-specified shift
+                0b000_1000_0_0,                     -- MRS 
+                0b000_xxxx_1_1,                     -- multiply, ldrh, ldrsh, ldrsb, strh
+                0b01x_xxxx_x_x,                     -- ldr/str
+                0b100_xxxx_x_x,                     -- ldm/stm
+                0b101_0xxx_x_x then                 -- b
+                sendLr <- 0
+            | 0b101_1xxx_x_x,                       -- bl
+                0b11x_xxxx_x_x then                 -- swi
+                sendLr <- 1
+             ||
+                sdLr <- 0b01  -- Steer LR to wb[0]
+            | 0b00110_10_x_x,                       -- MSR immediate operand
+                0b00010_10_0_0 then                 -- MSR register operand
+                if not(#fInstr[22..22] as bit) and (#fInstr[16..16] as bit) then  -- only a write to CPSR.ctl changes proc. mode
+                    sendLr <- 1
+                 ||
+                    sdLr <- 0b10    -- Steer LR to xPc (branch to next instruction to generate a colour change)
+                else
+                    sendLr <- 0 
+                end -- if (#fInstr[22..22] as bit)
+            end -- case
+        end -- fInstr ->!
+    end -- loop
+-- ||
+--    loop
+--        select colourS then
+--            dColour <- colourS
+--        | colourM then
+--            dColour <- colourM
+--        end -- select colourS
+--    end -- loop
+-- ||
+--    loop
+--        select conCodeS then
+--            cc <- conCodeS
+--        | conCodeM then
+--            cc <- conCodeM
+--        end -- select conCodeS
+--    end -- loop
+ ||
+    loop
+        fPc ->! then
+            dPc <- (fPc + 8 as Datapath)
+         ||
+            sendLrS ->! then
+                if sendLrS then                
+                    incOp <- (fPc as Datapath)
+                end -- if sendLr
+            end -- sendLr ->!
+        end -- fPc ->!
+    end -- loop
+ ||
+    loop
+        incIn ->! then
+            incOut <- (incIn + 4 as Datapath)
+        end -- incIn ->!
+    end -- loop
+-- ||
+--    loop
+--        select incOp then
+--            incIn <- incOp
+--         ||
+--            incOut -> dLr
+--       | incI then
+--            incIn <- incI
+--         ||
+--            incOut -> incO
+--        end -- select incOp
+--    end -- loop
+-- ||
+--    pipeReg(2 bits, sendLrC, sendLrCp)
+ ||
+    loop
+    sendLrC ->! then
+        case sendLrC of
+         0b00,      -- not bl, swi or writes to CPSR
+         0b11 then  -- can't happen
+            continue
+        |0b01 then  -- bl, swi or MRS
+            incOp ->! then
+                incIn <- incOp
+         ||
+            incOut -> dLr
+            end
+        |0b10 then -- ldm/stm autoincrement
+            incI ->! then
+                incIn <- incI
+         ||
+            incOut -> incO
+            end
+        end -- case sendLrC
+    end -- sendLrC ->!
+    end
+ ||
+    decodeCore(
+      coreIn, mode, pdecode, sendLr, noshift,
+      colS, colM, ccS, ccM,
+      dColour, cc, wpcC, sendLrC, sendLrS,
+      regDesc, regCount, regNum, last,
+      bypass, shiftCtrl, shamt,
+      aluCtrl, salu, srds,
+      setFlags, setMode, newmode, rwSreg, rwSregF,
+      wpc, spc,
+      sab, stp, 
+      mMemAddr, dMemCtrl, memOp, wmem, sdi,
+      immediate, mca, mcb, mcr, mcs, mcpc, mTemp, mDiSel,
+      sendS, stopI,
+      rrb, rra,
+      rc,
+      wa, wc,
+      mulType, domul, mul2w, mul2res, srdm
+    )
+ ||
+    lsmControl(
+      regDesc, stopLsm, regCount, regNum, last
+    )
+ ||
+    for || i in 0..READPORTS-1 then
+        mapRegister(rrb[i], rra[i], ra[i])
+    end
+end -- procedure nanoDecode

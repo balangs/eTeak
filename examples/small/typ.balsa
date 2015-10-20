@@ -1,0 +1,10 @@
+
+type a is 32 bits
+
+type b is a
+
+type c is enumeration d, e end
+
+type d is c
+
+type e is d

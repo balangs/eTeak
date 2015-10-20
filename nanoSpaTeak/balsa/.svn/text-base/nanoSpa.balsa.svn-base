@@ -1,0 +1,219 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+--  + Harvard core, von Newmann interface
+--  + external interface inherited from SPA:
+--  + memory arbiter between I and D memory interfaces
+--    (memory interface and arbiter taken from SPA)
+--  + dummy coprocessor interface
+--  + dummy irq/fiq interfaces
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--   + no changes made to this module
+
+import [nanoSpaTypes]
+import [nanoSpaHarvard]
+
+procedure memIntArb
+(
+  -- the memory ports: [1] is instruction, [0] is data
+  -- the internal memory interfaces
+  array 2 of input  iAccess    : MemAccess ;    -- bunch of address access stuff
+  array 2 of input  iMode      : MemProcMode ;  -- what processor mode the access was made in
+  array 2 of output iDi        : MemData ;      -- read data
+  array 1 of input  iDo        : MemData ;      -- write data
+  array 2 of output iAbort     : MemAbort ;     -- memory protection abort
+
+  -- the external memory interface
+  array 1 of output oAccess    : MemAccess ;    -- similar to above
+  array 1 of output oIorD      : MemIorD ;      -- 
+  array 1 of output oMode      : MemProcMode ;  -- 
+  array 1 of input  oDi        : MemData ;      --
+  array 1 of output oDo        : MemData ;      -- 
+  array 1 of input  oAbort     : MemAbort       --
+) is
+local
+    type side is MemIorD
+    type locked is enumeration Unlocked, Locked end
+    variable locked : locked
+    variable side : side
+    variable pendingFlag : bit
+    variable pendingAccess : MemAccess
+  
+begin
+    locked := Unlocked
+ || side := INSTRUCTION
+ || pendingFlag := 0
+  ;
+    loop
+        arbitrate iAccess[0] then
+            begin
+                oAccess[0] <- {iAccess[0].RorW, iAccess[0].Address, 
+                  iAccess[0].Size, iAccess[0].Lock, iAccess[0].Seq and side = DATA,
+                  iAccess[0].Colour}
+              ;
+                side := DATA
+            end -- begin
+         || oIorD[0] <- DATA
+         || if iAccess[0].RorW = WRITE then 
+                iDo[0] -> oDo[0]
+            else
+                oDi[0] -> iDi[0]
+            end -- if iAccess [ 0 ] .RorW = WRITE
+         || iMode[0] -> oMode[0]
+         || oAbort[0] -> then
+                if (oAbort[0] or not iAccess[0].Lock) and locked = Locked then
+                    locked := Unlocked
+                | not oAbort[0] and iAccess[0].Lock and locked = Unlocked then
+                    locked := Locked
+                end -- if ( oAbort [ 0 ] or not iAccess [ 0 ] .Lock ) and locked = unlocked
+             || iAbort[0] <- oAbort[0]
+            end -- ] ->
+          ;
+            -- if there was an instruction while we were locked, handle it now
+            if locked = Unlocked and pendingFlag then
+                pendingFlag := 0
+             || oAccess[0] <- {pendingAccess.RorW, pendingAccess.Address, 
+                  pendingAccess.Size, pendingAccess.Lock, 0, -- can't be seq
+                  pendingAccess.Colour}
+             || side := INSTRUCTION
+             || oIorD[0] <- INSTRUCTION
+             || if pendingAccess.RorW = READ then 
+                    oDi[0] -> iDi[1]
+                end -- if pendingAccess.RorW = READ
+             || iMode[1] -> oMode[0]
+             || oAbort[0] -> iAbort[1]
+            end -- if locked = Unlocked and pendingFlag
+            
+        | iAccess[1] then
+            if locked = Locked then
+                pendingAccess := iAccess[1]
+             || pendingFlag := 1
+            else
+                begin
+                    oAccess[0] <- {iAccess[1].RorW, iAccess[1].Address, 
+                      iAccess[1].Size, iAccess[1].Lock, iAccess[1].Seq and side = INSTRUCTION,
+                      iAccess[1].Colour}
+                  ;
+                    side := INSTRUCTION
+                end -- begin
+             || oIorD[0] <- INSTRUCTION
+             || if iAccess[1].RorW = READ then 
+                    oDi[0] -> iDi[1]
+                end -- if iAccess [ 1 ] .RorW = READ
+             || iMode[1] -> oMode[0]
+             || oAbort[0] -> iAbort[1]
+            end -- if locked = Locked
+        end -- arbitrate iAccess [ 0 ]
+    end -- loop
+end -- procedure memIntArb
+
+procedure coproIrqFiq
+(
+  -- the coprocessor interface
+  output cpId             : cpNum;           -- which copro the decode is for
+  output cpInst           : cpInstrGroup;    -- the instruction the copros might execute + some stuff
+  input  cpCapableP       : cpCapable;       -- whether the instruction can be executed
+  output cpId2            : cpNum;           -- which copro the execute is for
+  output cpExec           : cpExecGroup;     -- instruction to execute or flush
+  output cpRegisterSpa2cp : cpRegister;      -- register data to the copros
+  input  cpRegisterCp2spa : cpRegister;      -- register data from the copros
+  input  cpMemAccessLastP : cpLastMemAccess; -- current copro memory transfer is the last?
+  
+  -- the interrupt system
+  input  irq : bit ; -- normal interrupt
+  input  fiq : bit   -- fast interrupt
+) is
+local
+    variable doIt : bit
+begin
+    doIt := 0
+  ;
+    if doIt then
+        loop
+            cpId <- 0
+         ||
+            cpInst <- (0 as cpInstrGroup)
+         ||
+            cpCapableP -> then
+                continue
+            end -- cpCapableP ->
+        end -- loop
+    end -- if doIt
+ ||
+    if doIt then
+        loop
+            cpId2 <- 0
+         ||
+            cpExec <- (0 as cpExecGroup)
+         ||
+            cpRegisterSpa2cp <- 0
+         ||
+            cpRegisterCp2spa -> then
+                continue
+            end -- cpRegisterCp2spa ->
+         ||
+            cpMemAccessLastP -> then
+                continue
+            end -- cpMemAccessLastP ->
+        end -- loop
+    end -- if doIt
+ ||
+    loop
+        select irq then
+            continue
+        end -- select irq
+    end -- loop
+ ||
+    loop
+        select fiq then
+            continue
+        end -- select fiq
+    end -- loop
+end -- procedure CoproIrqFiq
+
+
+procedure _spa_V5T
+(
+  -- the memory i/f:
+  array 1 of output memAccess    : MemAccess;
+  array 1 of output memIorD      : MemIorD;
+  array 1 of output memMode      : MemProcMode;
+  array 1 of input  memDi        : MemData;
+  array 1 of output memDo        : MemData;
+  array 1 of input  memAbort     : MemAbort;
+  
+  -- the coprocessor i/f:
+  output cpId             : cpNum;           -- which copro the decode is for
+  output cpInst           : cpInstrGroup;    -- the instruction the copros might execute + some stuff
+  input  cpCapableP       : cpCapable;       -- whether the instruction can be executed
+  output cpId2            : cpNum;           -- which copro the execute is for
+  output cpExec           : cpExecGroup;     -- instruction to execute or flush
+  output cpRegisterSpa2cp : cpRegister;      -- register data to the copros
+  input  cpRegisterCp2spa : cpRegister;      -- register data from the copros
+  input  cpMemAccessLastP : cpLastMemAccess; -- current copro memory transfer is the last?
+  
+  -- the interrupt system
+  input  irq : bit; -- normal interrupt
+  input  fiq : bit  -- fast interrupt
+) is
+local
+    array 2 of channel ememAccess    : MemAccess 
+    array 2 of channel ememMode      : MemProcMode 
+    array 2 of channel ememDi        : MemData 
+    array 1 of channel ememDo        : MemData 
+    array 2 of channel ememAbort     : MemAbort 
+begin
+    memIntArb(
+      ememAccess, ememMode, ememDi, ememDo, ememAbort,
+      memAccess, memIorD, memMode, memDi, memDo, memAbort
+    )
+ || nanoSpaHarvard(
+      ememAccess, ememMode, ememDi, ememDo, ememAbort
+    )
+ || coproIrqFiq(
+      cpId, cpInst, cpCapableP, cpId2, cpExec,
+      cpRegisterSpa2cp, cpRegisterCp2spa, cpMemAccessLastP,
+      irq, fiq
+    )
+end -- procedure _spa_V5T

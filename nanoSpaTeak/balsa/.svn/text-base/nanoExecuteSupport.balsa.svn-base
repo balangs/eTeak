@@ -1,0 +1,1334 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+-- execute support modules
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--  + Full multiply support
+--  + New decoder without merges
+--  + Kill box merged with mux3 befor port rwb[0]
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+
+
+import [balsa.types.basic]
+import [nanoSpaTypes]
+import [pipelineRegister]
+
+-- memDiReg stores memory data
+procedure memDiReg
+(
+  input  diIn  : MemData;
+  output diOut : MemData
+) is
+local
+    variable reg : MemData
+begin
+    loop
+        diIn -> reg
+      ;
+        diOut <- reg
+    end -- loop
+end -- procedure memDiReg
+
+procedure fork
+(
+  parameter DataType : type;  
+  input  i    : DataType;
+  output o0   : DataType;
+  output o1   : DataType
+) is
+begin
+    loop
+        i ->! then
+            o0 <- i
+         ||
+            o1 <- i
+        end -- i ->
+    end -- loop
+end -- procedure fork
+
+procedure fork_Datapath is fork(Datapath)
+
+-- mux2 implements a multiplexer with 2 inputs
+procedure mux2
+(
+  parameter DataType : type;  
+  input  a    : DataType;
+  input  b    : DataType;
+  input  ctrl : bit;
+  output o    : DataType
+) is
+begin
+    loop
+        ctrl ->! then
+            if ctrl then
+                a -> o
+            else
+                b -> o
+            end -- if ctrl
+        end -- ctrl ->
+    end -- loop
+end -- procedure mux2
+
+
+
+procedure mux2_5bits is mux2(5 bits)
+--procedure mux2_Address  is mux2(Address)
+
+-- mux2_pc implements a multiplexer with 2 inputs
+-- with an additional input control to kill output
+procedure mux2_pc
+(
+  input  a    : Datapath;
+  input  b    : Datapath;
+  input  ctrl : cPcSelect;
+  input  kill : bit;
+  output o    : Datapath
+) is
+begin
+    loop
+        ctrl, kill ->! then
+            case (#ctrl[0..0] @ #kill[0..0] as 2 bits) of
+            0b00 then
+                b -> o
+            | 0b01 then
+                a -> o
+            | 0b10 then
+                continue
+            | 0b11 then
+                a ->! then
+                    continue
+                end -- a ->
+            end -- case ( # ctrl [ 0 ..0 ] # kill [ 0 ..0 ] as 2 bits )
+        end -- ctrl ->
+    end -- loop
+end -- procedure mux2_pc
+
+-- mux3 implements a data multiplexer with 3 inputs
+procedure mux3
+(
+  parameter DataType : type;  
+  parameter CtrlType : type;  
+  input  a    : DataType;
+  input  b    : DataType;
+  input  c    : DataType;
+  input  ctrl : CtrlType;
+  output o    : DataType
+) is
+begin
+    loop
+        ctrl ->! then
+            case (#ctrl as 2 bits) of 
+            0b00 then
+                a -> o
+            | 0b01 then
+                b -> o
+            | 0b11 then
+                c -> o
+            else
+                continue
+            end -- case ctrl
+        end -- ctrl ->
+    end -- loop
+end -- procedure mux3
+
+procedure mux3_aBus is mux3(Datapath, aBusSelect)
+procedure mux3_bBus is mux3(Datapath, bBusSelect)
+procedure mux3_memAddr is mux3(MemAddress, memAddrSelect)
+-- procedure mux3_Datapath is mux3(Datapath, mcrSelect)
+
+-- mux3_Data implements a multiplexer with 3 inputs
+-- with an additional input control to kill output
+procedure mux3_Data
+(
+  parameter DataType : type;  
+  parameter CtrlType : type;  
+  input  a    : DataType;
+  input  b    : DataType;
+  input  c    : DataType;
+  input  ctrl : CtrlType;
+  input  kill : bit;
+  output o    : DataType
+) is
+begin
+    loop
+        ctrl,kill ->! then
+            case (#ctrl[0..1] @ #kill[0..0] as 3 bits) of 
+            0b000 then
+                a -> o
+            | 0b001 then
+                b -> o
+            | 0b011 then
+                c -> o
+            |0b100 then
+                a ->! then
+                    continue
+                end
+            | 0b101 then
+                b ->! then
+                    continue
+                end
+            | 0b111 then
+                c ->! then
+                    continue
+                end
+            else
+                continue
+            end -- case ctrl
+        end -- ctrl ->
+    end -- loop
+end -- procedure mux3_Data
+
+procedure mux3_Datapath is mux3_Data(Datapath, mcrSelect)
+procedure mux3_Temp is mux3_Data(Datapath, tempSelect)
+
+-- kmux3_Data implements a multiplexer with 3 inputs
+-- with an additional input control to kill control
+procedure kmux3_Data
+(
+  parameter DataType : type;  
+  parameter CtrlType : type;  
+  input  a    : DataType;
+  input  b    : DataType;
+  input  c    : DataType;
+  input  ctrl : CtrlType;
+  input  kill : bit;
+  output o    : DataType
+) is
+begin
+    loop
+        ctrl, kill ->! then
+            case (#ctrl[0..1] @ #kill[0..0] as 3 bits) of 
+            0b000 then
+                a -> o
+            | 0b001 then
+                b -> o
+            | 0b011 then
+                c -> o
+            else
+                continue
+            end -- case ctrl
+        end -- ctrl ->
+    end -- loop
+end -- procedure mux3_Data
+
+procedure kmux3_Di1 is kmux3_Data(Datapath, mDiSelect)
+
+
+procedure mux3_xPc
+(
+  input  a    : Datapath;  -- prekilled input, do not read if kill is active
+  input  b    : Datapath;
+  input  c    : Datapath;
+  input  ctrl : cPcSelect;
+  input  kill : bit;
+  output o    : Datapath
+) is
+begin
+    loop
+        ctrl,kill ->! then
+            case (#ctrl[0..sizeof cPcSelect - 1 ] @ #kill[0..0] as 3 bits) of 
+            0b000 then
+                a -> o
+            | 0b001 then
+                b -> o
+            | 0b011 then
+                c -> o
+--            |0b100 then
+--                    continue
+            | 0b101 then
+                b ->! then
+                    continue
+                end
+            | 0b111 then
+                c ->! then
+                    continue
+                end
+            else
+                continue
+            end -- case ctrl
+        end -- ctrl ->
+    end -- loop
+end -- procedure mux3_xPc
+
+-- merge2 implements an uncontrolled multiplexer with 2 me inputs
+--procedure merge2
+--(
+--  parameter DataType : type;  
+--  input  a    : DataType;
+--  input  b    : DataType;
+--  output o    : DataType
+--) is
+--begin
+--    loop
+--        select a then
+--            o <- a
+--        | b then
+--            o <- b
+--        end -- select a
+--    end -- loop
+--end -- procedure merge2
+
+--procedure merge2_Datapath  is merge2(Datapath)
+
+-- merge3 implements an uncontrolled multiplexer with 3 me inputs
+--procedure merge3
+--(
+--  parameter DataType : type;  
+--  input  a    : DataType;
+--  input  b    : DataType;
+--  input  c    : DataType;
+--  output o    : DataType
+--) is
+--begin
+--    loop
+--        select a then
+--            o <- a
+--        | b then
+--            o <- b
+--        | c then
+--            o <- c
+--        end -- select a
+--    end -- loop
+--end -- procedure merge3
+
+--procedure merge3_Datapath  is merge3(Datapath)
+
+-- steerDi steers memory data to 1 of 2 outputs
+procedure steerDi
+(
+  input  a    : MemData;
+  input  ctrl : 4 bits;
+  input  sel  : 2 bits;
+  output o0   : Datapath;
+  output o1   : Datapath
+)
+-- (* latches = "l:s1" *)
+is
+begin
+    loop
+        ctrl, a, sel ->! then
+            case ctrl of
+            0b0000 then    -- word to Pc
+                case sel of
+                 0b00 then
+                    o0 <- a
+                |0b01 then
+                    o0 <- (#a[8..31] @ #a[0..7] as Datapath) 
+                |0b10 then
+                    o0 <- (#a[16..31] @ #a[0..15] as Datapath) 
+                |0b11 then
+                    o0 <- (#a[24..31] @ #a[0..23] as Datapath)
+                end 
+            | 0b0010 then -- unsigned byte to Pc
+                    o0 <- ((a as array 4 of byte)[sel] as Datapath)
+            | 0b01x0 then    -- unsigned halfword to Pc
+                    o0 <- ((a as array 2 of HalfWord)[(#sel[1..1] as bit)] as Datapath)
+            | 0b10x0 then -- signed byte to Pc
+                    o0 <- (((a as array 4 of signedByte)[sel] as signedDatapath) as Datapath)
+            | 0b11x0 then    -- signed halfword to Pc
+                    o0 <- (((a as array 2 of signedHalfWord)[(#sel[1..1] as bit)] as signedDatapath) as Datapath)
+            else
+                continue
+            end -- case ctrl
+         ||
+            case ctrl of
+             0b0001 then  -- word to wb
+                case sel of
+                 0b00 then
+                    o1 <- a
+                |0b01 then
+                    o1 <- (#a[8..31] @ #a[0..7] as Datapath) 
+                |0b10 then
+                    o1 <- (#a[16..31] @ #a[0..15] as Datapath) 
+                |0b11 then
+                    o1 <- (#a[24..31] @ #a[0..23] as Datapath)
+                end 
+            | 0b0011 then -- unsigned byte to wb
+                    o1 <- ((a as array 4 of byte)[sel] as Datapath)
+            | 0b01x1 then  -- unsigned halfword to wb
+                    o1 <- ((a as array 2 of HalfWord)[(#sel[1..1] as bit)] as Datapath)
+            | 0b10x1 then -- signed byte to wb
+                    o1 <- (((a as array 4 of signedByte)[sel] as signedDatapath) as Datapath)
+            | 0b11x1 then  -- signed halfword to wb
+                    o1 <- (((a as array 2 of signedHalfWord)[(#sel[1..1] as bit)] as signedDatapath) as Datapath)
+            else
+                continue
+            end -- case ctrl
+        end -- ctrl ->
+    end -- loop
+end -- procedure steerDi
+
+-- steerAlu selectively multicasts the output of the ALU to 3 outputs
+procedure steerAlu
+(
+  input  a    : Datapath;
+  input  ctrl : AluSelect;
+  output o0   : Datapath;
+  output o1   : Datapath;
+  output o2   : Datapath;
+  output o3   : Datapath;
+  output o4   : Datapath;
+  output o5   : Datapath
+
+) is
+begin
+    loop
+        ctrl ->! then
+            a ->! then
+                if (#ctrl[0..0] as bit) then
+                    o0 <- a
+                end -- if # ctrl [ 0 ..0 ]
+             ||            
+                if (#ctrl[1..1] as bit) then
+                    o1 <- a
+                end -- if # ctrl [ 1 ..1 ]
+             ||
+                if (#ctrl[2..2] as bit) then
+                    o2 <- a
+                end -- if # ctrl [ 2 ..2 ]
+             ||
+                if (#ctrl[3..3] as bit) then
+                    o3 <- a
+                end -- if ( # ctrl [ 3 ..3 ] as bit )
+             ||
+                if (#ctrl[4..4] as bit) then
+                    o4 <- a
+                end -- if ( # ctrl [ 4 ..4 ] as bit )
+             ||
+                if (#ctrl[5..5] as bit) then
+                    o5 <- a
+                end -- if ( # ctrl [ 5 ..5 ] as bit )
+            end -- a ->
+        end -- ctrl ->
+    end -- loop
+end -- procedure steerAlu
+
+-- steerPc selectively multicasts the pc to 2 outputs
+procedure steerPc
+(
+  input  a    : Datapath;
+  input  ctrl : PcSelect;
+  output o0   : Datapath;
+  output o1   : Datapath
+) 
+-- (* latches = "l:s1" *)
+is
+begin
+    loop
+        ctrl ->! then
+            a ->! then
+                if (#ctrl[0..0] as bit) then
+                    o0 <- a
+                end -- if # ctrl [ 0 ..0 ]
+             ||            
+                if (#ctrl[1..1] as bit) then
+                    o1 <- a
+                end -- if # ctrl [ 1 ..1 ]
+            end -- a ->
+        end -- ctrl ->
+    end -- loop
+end -- procedure steerPc
+
+procedure steerdLr
+(
+  input  a    : Datapath;
+  input  ctrl : dLrSelect;
+  output o0   : Datapath;
+  output o1   : Datapath
+) is
+begin
+    loop
+        ctrl ->! then
+            a ->! then
+                if (#ctrl[0..0] as bit) then
+                    o0 <- a
+                end -- if # ctrl [ 0 ..0 ]
+             ||            
+                if (#ctrl[1..1] as bit) then
+                    o1 <- a
+                end -- if # ctrl [ 1 ..1 ]
+            end -- a ->
+        end -- ctrl ->
+    end -- loop
+end -- procedure steerPc
+
+-- steerPc selectively multicasts the multiplier Hi result to 2 outputs or kills it
+procedure steerMulpH
+(
+  input  a    : Datapath;
+  input  ctrl : mpHSelect;
+  output o0   : Datapath;
+  output o1   : Datapath
+) is
+begin
+    loop
+        ctrl ->! then
+            a ->! then
+                if (#ctrl[0..0] as bit) then
+                    o0 <- a
+                end -- if # ctrl [ 0 ..0 ]
+             ||            
+                if (#ctrl[1..1] as bit) then
+                    o1 <- a
+                end -- if # ctrl [ 1 ..1 ]
+            end -- a ->
+        end -- ctrl ->
+    end -- loop
+end -- procedure steerPc
+
+-- steerRdm selectively steers Rm to 1 of 2 outputs
+procedure steerRdm
+(
+  input  a    : Datapath;
+  input  ctrl : bit;
+  output o0   : Datapath;
+  output o1   : Datapath
+) is
+begin
+    loop
+        ctrl ->! then
+            a ->! then
+                if ctrl then
+                    o1 <- a
+                else
+                    o0 <- a 
+                end -- if ctrl
+            end -- a ->
+        end -- ctrl ->
+    end -- loop
+end -- procedure steerRds
+
+
+-- steerRds selectively steers Rs/Rd to 1 of 3 outputs
+procedure steerRds
+(
+  input  a    : Datapath;
+  input  ctrl : rdsSelect;
+  output o0   : 5 bits;
+  output o1   : Datapath;
+  output o2   : Datapath
+) is
+begin
+    loop
+        ctrl ->! then
+            a ->! then
+                if (#ctrl[0..0] as bit) then
+                    o0 <- (a as 5 bits)
+                end -- if # ctrl [ 0 ..0 ]
+             ||            
+                if (#ctrl[1..1] as bit) then
+                    o1 <- a
+                end -- if # ctrl [ 1 ..1 ]
+             ||            
+                if (#ctrl[2..2] as bit) then
+                    o2 <- a
+                end -- if ctrl [ 2..2 ]
+            end -- a ->
+        end -- ctrl ->
+    end -- loop
+end -- procedure steerRds
+
+procedure bankSel
+(
+  -- inputs
+  input  rcI   : bit;
+  input  rNumI : RegNum;
+  input  pMode : 3 bits;
+  
+  -- outputs
+  output rcO   : bit;
+  output rNumO : RegNum;
+  output rBk   : RegBank
+) is
+begin
+    loop
+        rcI, pMode ->! then
+            rcO <- rcI
+         ||
+            if rcI then
+                rNumI ->! then
+                    rBk <- (pMode as RegBank)
+                 ||
+                    rNumO <- rNumI
+                end -- rNumI ->
+            end -- if rcI
+        end -- rcI , pMode ->
+    end -- loop
+end -- procedure bankSel
+
+procedure bankSelStop
+(
+  -- inputs
+  input  krn   : 2 bits;
+  input  rNumI : RegNum;
+  input  pMode : 3 bits;
+  
+  -- outputs
+  output rNumO : RegNum;
+  output rBk   : RegBank
+) is
+begin
+    loop
+        krn, pMode ->! then
+            case krn of
+            0b0x then      -- no regNum sent
+                continue
+            | 0b10 then    -- regNum sent, no stop
+                rNumI ->! then
+                    rBk <- (pMode as RegBank)
+                 ||
+                    rNumO <- rNumI
+                end -- rNumI ->
+            | 0b11 then    -- regNum sent, stop!
+                rNumI ->! then
+                    continue
+                end -- rNumI ->
+            end
+        end -- krn , pMode ->
+    end -- loop
+end -- procedure bankSelStop
+  
+-- selForkSteer selectively forks an input to 1 or 2 outputs or steers to a third output
+procedure selForkSteer
+(
+  parameter DataType : type;  
+  input  a    : DataType;
+  input  ctrl : sabSelect;
+  output o0   : DataType;
+  output o1   : DataType;
+  output o2   : DataType
+) is
+begin
+    loop
+        ctrl ->! then
+            a ->! then
+                if (#ctrl[0..0] as bit) then
+                    o0 <- a 
+                end -- if # ctrl [ 0 ..0 ]
+             ||            
+                if (#ctrl[1..1] as bit) then
+                    o1 <- a
+                end -- if # ctrl [ 1 ..1 ]
+             ||            
+                if (#ctrl[2..2] as bit) then
+                    o2 <- a
+                end -- if ctrl [ 2..2 ]
+            end -- a ->
+        end -- ctrl ->
+    end -- loop
+end -- procedure selForkSteer
+
+procedure selForkSteer_Datapath is selForkSteer(Datapath)
+
+-- selFork selectively forks an input to 1 or 2 outputs
+procedure selFork
+(
+  parameter DataType : type;  
+  input  a    : DataType;
+  input  ctrl : bit;
+  output o0   : DataType;
+  output o1   : DataType
+) is
+begin
+    loop
+        ctrl ->! then
+            a ->! then
+                o0 <- a
+             ||
+                if ctrl then
+                    o1 <- a
+                end -- if ctrl
+            end -- a ->
+        end -- ctrl ->
+    end -- loop
+end -- procedure selFork
+
+procedure selFork_Datapath is selFork(Datapath)
+
+-- selStop selectively passes or stops a signal
+procedure selStop
+(
+  parameter DataType : type;  
+  input  a    : DataType;
+  input  ctrl : bit;
+  output o    : DataType
+) is
+begin
+    loop
+        ctrl, a ->! then
+            if ctrl then
+                continue
+            else
+                o <- a
+            end -- if ctrl
+        end -- ctrl , a ->
+    end -- loop
+end -- procedure selStop
+
+procedure selStop_MemCtrl is selStop(MemCtrl)
+procedure selStop_Datapath is selStop(Datapath)
+procedure selStop_Address is selStop(Address)
+procedure selStop_RegNum is selStop(RegNum)
+
+procedure modeUpd
+( -- the mode I/F
+  input kill        : bit;
+  input newPSR      : Datapath;
+  input cCtl        : psrCtl;
+  input cFlags      : Flags;
+  output control    : psrCtl;
+  output flags      : Flags;
+  output psrValue   : Datapath
+) is
+local
+    type tcodedMode is record
+        mode : 3 bits;
+        priv : bit
+    end
+    channel codedMode   : tcodedMode
+    channel uncodedMode : procMode 
+
+begin
+    loop -- encode PSR for MRS instruction
+        cCtl, cFlags ->! then
+            case (#cCtl[0..3] as 4 bits) of 
+            0b0000 then
+                uncodedMode <- USR
+            | 0b1000 then 
+                uncodedMode <- SYS
+            | 0bx001 then 
+                uncodedMode <- FIQ
+            | 0bx010 then 
+                uncodedMode <- IRQ
+            | 0bx100 then 
+                uncodedMode <- SVC
+            | 0bx101 then 
+                uncodedMode <- ABT
+            | 0bx110 then 
+                uncodedMode <- UND
+            | 0bxx11 then  --should not happen
+                continue
+            end -- case currentPSRCtl
+          ||
+            uncodedMode ->! then
+                psrValue <- (#uncodedMode[0..4] @ #cCtl[4..6] @ #(0b0 as 20 bits)[0..19] @ #cFlags[0..3] as Datapath)
+            end -- uncodedMode ->!
+        end -- cCtl, cFlags ->!
+    end -- loop
+ ||
+    loop -- MSR instruction 
+        kill, newPSR ->! then
+            if kill then
+                continue
+            else
+                case (#newPSR[0..4] as procMode) of
+                USR then
+                    codedMode <- {CUSR,0}
+                | SYS then
+                    codedMode <- {CSYS,1}
+                | FIQ then
+                    codedMode <- {CFIQ,1}
+                | IRQ then
+                    codedMode <- {CIRQ,1}
+                | SVC then
+                    codedMode <- {CSVC,1}
+                | ABT then
+                    codedMode <- {CABT,1}
+                | UND then
+                    codedMode <- {CUND,1}
+                 else
+                    codedMode <- {CUSR,0}
+--                    continue  -- should not happen
+                end -- case newPSR
+             ||
+                flags <- (#newPSR[28..31] as Flags)
+             ||
+                codedMode ->! then
+                    control <- (#codedMode[0..3] @ #newPSR[5..7] as psrCtl)
+                end -- codedMode ->!
+            end -- if kill
+        end -- kill ->!
+    end -- loop
+end -- module updMode
+
+-- mode implements the processor mode state
+procedure mode
+( -- the ExecuteControl I/F
+  input  cfm            : bit;
+  input  smrm           : 2 bits;
+  input  rwSreg         : 3 bits;
+  input  sMemMode       : bit;
+  input  newmode        : psrCtl;
+  -- the fetch I/F
+  output xMode          : psrCtl;
+  -- the flags I/F
+  output fMode          : 3 bits;
+  -- the MRS/MSR I/F
+  input  newvalue       : psrCtl;
+  output currentPSRCtl  : psrCtl;
+  -- the memory I/F
+  output memMode        : MemProcMode;
+  -- the reg bank I/F
+  --array READPORTS of output modeR : 3 bits;
+  array 2         of output modeW : 3 bits
+) is
+local
+    variable cmode      : MemProcMode
+    variable smode      : MemProcMode
+    variable tsmode     : MemProcMode
+    variable upd        : bit
+    variable cpsr,tcpsr : psrCtl  -- the spa-coded CPSR (control)
+    variable spsr       : array 1..6 of psrCtl -- the various SPSRs (control)
+    variable tspsr      : psrCtl
+
+begin
+    cmode  := PRIVILEGED
+ ||
+    smode  := USER
+ ||
+    tsmode := USER
+ ||
+    cpsr   := {CSVC,PRIVILEGED,0,1,1} -- T,F,I = 0,1,1 (ARM mode, FIQ disabled, IRQ disabled)
+ ||
+    tcpsr  := {CSVC,PRIVILEGED,0,1,1} -- T,F,I = 0,1,1 (ARM mode, FIQ disabled, IRQ disabled)
+ ||
+    tspsr  := {CSVC,USER,0,1,1}  -- do we actually need to initialise this?
+  ;
+    loop
+    --    for || i in 0..READPORTS-1 then
+    --        modeR[i] <- cpsr.mode
+    --    end -- for || i in 0 ..READPORTS 1
+    -- ||
+        modeW[1] <- cpsr.mode
+     ||
+        sMemMode ->! then
+            if sMemMode then
+                memMode <- cpsr.priv
+            end -- if sMemMode
+        end -- sMemMode ->
+     ||
+        smrm, cfm, rwSreg ->! then
+            case smrm of
+            0b00 then -- no change in mode 
+                modeW[0] <- cpsr.mode
+             ||
+                fMode <- cpsr.mode
+             ||
+                if cfm then 
+                    xMode <- cpsr
+                end
+            | 0b01 then -- restore mode
+                modeW[0] <- cpsr.mode
+             ||
+                tcpsr := spsr[cpsr.mode]
+             ||
+                if (spsr[cpsr.mode]).mode /= CUSR then
+                    tspsr := spsr[(spsr[cpsr.mode]).mode]
+                end
+             ||
+                fMode <- cpsr.mode
+             ||
+                if cfm then 
+                    xMode <- spsr[cpsr.mode]
+                end
+            | 0b10 then -- switch to new mode, save current (due to an exception)
+                tspsr := cpsr                   -- save mode
+             ||
+                newmode ->! then
+                    modeW[0] <- newmode.mode    -- use new mode in writeback (to save DLR)
+                 ||
+                    tcpsr := newmode            -- update mode
+                 ||
+                    fMode <- newmode.mode
+                 ||
+                    if cfm then                 -- counterflow mode
+                        xMode <- newmode
+                    end
+                end --newmode ->!
+            | 0b11 then -- MSR or MRS instruction
+                fMode <- cpsr.mode
+             ||
+                -- rwSreg[2] = Enable write to ctl field; rwSreg[1] = write/read; rwSreg[0] = SPSR/CPSR
+                case (#rwSreg[0..2] @ #(cpsr.priv as bit)[0..0] as 4 bits) of
+                0b1100 then -- MSR (write to CPSR control in privileged mode)
+                    newvalue ->! then
+                        tcpsr := newvalue
+                     ||
+                        if cfm then 
+                            xMode   <- newvalue
+                        end
+                    end -- newvalue ->!
+                | 0b0x00 then -- MSR (attempt to write to CPSR in user mode)
+                    newvalue ->! then
+                        continue
+                     ||
+                        if cfm then 
+                           xMode <- cpsr
+                        end
+                    end -- newvalue ->!
+                | 0b1000 then -- MSR (write to CPSR in privileged mode, but not to control bits)
+                    newvalue ->! then
+                        continue
+                     ||
+                        if cfm then 
+                           xMode <- cpsr
+                        end
+                    end -- newvalue ->!
+                | 0bx101 then -- MSR (write to SPSR ctl -- user or privileged)
+                    newvalue ->! then
+                        tspsr := newvalue
+                     ||
+                        if cfm then 
+                           xMode <- cpsr
+                        end
+                    end -- newvalue ->!
+                | 0bx001 then -- MSR (write to SPSR, but not to ctl bits)
+                    newvalue ->! then
+                        continue
+                     ||
+                        if cfm then 
+                           xMode <- cpsr
+                        end
+                    end -- newvalue ->!
+                | 0bxx10 then -- MRS (read CPSR)
+                    currentPSRCtl <- cpsr
+                 ||
+                    if cfm then 
+                        xMode <- cpsr
+                    end
+                | 0bxx11 then -- MRS (read SPSR)
+                    currentPSRCtl <- spsr[cpsr.mode]
+                 ||
+                    if cfm then 
+                        xMode <- cpsr
+                    end
+                end -- case sreg,read
+             ||
+                modeW[0] <- cpsr.mode
+            end -- case rm,sm
+--         ||
+--            updMode := (#rm[0..0] @ #sm[0..0] as 2 bits)
+        end -- rm,sm,cfm ->!
+      ; -- update modes from temporary
+        cpsr := tcpsr
+     || -- do not write to non-existent spsr[CUSER|CSYS] registers
+        if tcpsr.mode /= CUSR then -- note: CUSR = CSYS
+            spsr[tcpsr.mode] := tspsr 
+        end
+    end -- loop
+end -- procedure mode
+
+-- flags implements the flag storage
+procedure flags
+(
+  input  mulflags  : 2 bits;
+  input  mZ        : bit;
+  input  mN        : bit;
+
+  input  uf        : 3 bits;
+  input  aluFlags  : Flags;
+
+  input  fMode     : 3 bits;
+  input  rwSreg    : 3 bits;
+
+  input  psrFlags  : Flags;
+
+  output cFlags    : Flags;
+  output curFlags  : Flags;
+  output aFlags    : Flags;
+  output fi        : bit
+) is
+local
+    variable SPSRf : array 0..6 of Flags
+    variable flags, nextFlags : Flags
+    variable upd, Z : bit
+begin
+    loop
+        cFlags <- flags
+     ||
+        uf, mulflags, fMode, rwSreg ->! then
+            case (#mulflags[0..1] @ #rwSreg[1..1] as 3 bits) of
+            0b00x then -- no MRS, no multiply or 2nd mult cycle: allow ALU to control flags
+                aFlags <- flags
+              ||
+                fi <- flags.C
+            else      -- MRS & 1st cycle of multiply don't use ALU 
+                continue
+            end
+         ||
+            case mulflags of
+            0b00 then 
+                case uf of
+                0b000 then -- no update, but read from ALU
+                    upd := 0
+                 ||
+                    aluFlags ->! then
+                        continue
+                    end
+                | 0b001 then  -- update from ALU
+                    aluFlags -> nextFlags
+                 ||
+                    upd := 1
+                | 0b010 then  -- restore from SPSR
+                    nextFlags := SPSRf[fMode]
+                 ||
+                    upd := 1
+                 ||
+                    aluFlags ->! then
+                        continue
+                    end
+                | 0b011 then  -- MSR instruction
+                    case rwSreg of
+                    0b1x0 then -- MSR (write to CPSR)
+                        psrFlags -> nextFlags
+                     ||
+                        upd := 1
+                    | 0b1x1 then -- MSR (write to SPSR)
+                        psrFlags -> SPSRf[fMode]
+                     ||
+                        upd := 0
+                    | 0b0xx then -- MSR (write to CPSR or SPSR, but not to the flags)
+                        psrFlags ->! then 
+                            continue
+                        end
+                     ||
+                        upd := 0
+                    end
+                 ||
+                    aluFlags ->! then
+                        continue
+                    end
+                | 0b100 then -- swi, save to SPSRS
+                    SPSRf[fMode] := flags
+                 ||
+                    upd := 0
+                 ||
+                    aluFlags ->! then
+                        continue
+                    end
+                | 0b101 then -- swi stopped
+                    aluFlags ->! then
+                        continue
+                    end
+                | 0b110 then -- MRS
+                    case rwSreg of
+                    0bxx0 then -- MRS (read CPSR)
+                        curFlags <- flags
+                     ||
+                        upd := 0
+                    | 0bxx1 then -- MRS (read SPSR)
+                        curFlags <- SPSRf[fMode]
+                     ||
+                        upd := 0
+                    end -- case rwSreg
+                | 0b111 then -- MRS stopped
+                    continue
+                end -- case uf
+            | 0b01 then -- 2nd cycle of xMLAL merge multiply Z flag with ALU Z flag
+                aluFlags ->! then
+                        nextFlags := {flags.V, flags.C, Z and aluFlags.Z, aluFlags.N}
+                end -- aluFlags ->!
+              ||
+                 upd := (#uf[0] as bit)
+            | 0b10 then --MUL, MLA set Z and N
+                mZ, mN ->! then
+                    nextFlags := {flags.V, flags.C, mZ, mN}
+                end -- mZ, mN
+              ||
+                 upd := (#uf[0] as bit)
+            | 0b11 then -- 1st cycle of xMLAL, save Z flag
+                mZ, mN ->! then
+                    Z := mZ
+                end -- mZ, mN
+              ||
+                 upd := 0
+            end -- case mulflags
+        end -- uf, mulflags ->!
+      ;
+        if upd then
+            flags := nextFlags
+        end -- if upd
+    end -- loop
+end -- procedure flags
+
+-- colour implements the colour storage
+procedure colour
+(
+  input  upd  : bit;
+  input  cfC  : bit;
+  output co0  : Colour;
+  output co1  : Colour;
+  output co2  : Colour
+) is
+local
+    variable colour, nextColour : Colour
+    function colourInv = (not (colour as bit) as Colour)
+begin
+    colour := GREEN
+ ||
+    nextColour := GREEN
+  ;
+    loop
+        co0 <- colour
+     ||
+        cfC, upd ->! then
+            if upd then
+                co1 <- colourInv()
+             ||
+                co2 <- colourInv()
+             ||
+                nextColour := colourInv()
+            else
+                if cfC then
+                    co2 <- colour
+                end
+            end -- if upd
+        end -- upd ->
+      ;
+        colour := nextColour
+    end -- loop
+end -- procedure colour
+
+
+-- kmux2 implements a multiplexer with 2 inputs
+-- both inputs must be present, one will be killed
+procedure kmux2
+(
+  parameter DataType : type;  
+  input  a    : DataType;
+  input  b    : DataType;
+  input  ctrl : bit;
+  output o    : DataType
+) is
+begin
+    loop
+        ctrl ->! then
+            if ctrl then
+                a -> o
+             ||
+                b ->! then
+                    continue
+                end -- b ->! 
+            else
+                b -> o
+             ||
+                a ->! then
+                    continue
+                end -- a ->!
+            end -- if ctrl
+        end -- ctrl ->
+    end -- loop
+end -- procedure kmux2
+
+--procedure kmux2
+--(
+--  parameter DataType : type;  
+--  input  a    : DataType;
+--  input  b    : DataType;
+--  input  ctrl : bit;
+--  output o    : DataType
+--) is
+--local
+--    array 0..7 of sync n
+--begin
+--    loop
+--        ctrl ->! then
+--            if ctrl then
+--                syncTail(n[0])
+--             ||
+--                for || i in 0..6 then
+--                    seqDelay(n[i],n[i+1])
+--                end
+--             ||
+--                syncTail(n[7])
+--             ;
+--                a -> o
+--             ||
+--                b ->! then
+--                    continue
+--                end -- b ->! 
+--            else
+--                b -> o
+--             ||
+--                a ->! then
+--                    continue
+--                end -- a ->!
+--            end -- if ctrl
+--        end -- ctrl ->
+--    end -- loop
+--end -- procedure kmux2
+
+
+
+procedure memAccess
+(
+  -- the internal data i/f  
+  input  memAddressIn : Address;
+  input  memCtrlIn    : MemCtrl;
+  input  memDoRd      : Datapath;
+  input  memMd        : MemProcMode;
+  output memDi0       : Datapath;
+  output memDi1       : Datapath;
+  -- the control control i/f
+  input  sdiK         : 4 bits;
+  input  kma          : bit;
+  input  kmc          : bit;
+  input  kmd          : bit;
+  -- the memory i/f  
+  output memAccess    : MemAccess;
+  output memMode      : MemProcMode;
+  output memDo        : Datapath;
+  input  memDi        : Datapath;
+  input  memAbort     : MemAbort
+) is
+local
+    channel memAddress : Address
+    channel memCtrl    : MemCtrl
+    channel memDiIn    : Datapath
+    channel memDoIn    : Datapath
+    channel byteSel    : 2 bits
+begin
+    selStop_Datapath(
+      memDoRd, kmd, memDoIn
+    )
+ ||
+    selStop_Address(
+      memAddressIn, kma, memAddress
+    )
+ ||
+    selStop_MemCtrl(
+      memCtrlIn, kmc, memCtrl
+    )
+ ||
+    memDiReg(
+      memDi, memDiIn
+    )
+ ||
+    steerDi(
+      memDiIn,
+      sdiK, byteSel,
+      memDi0, memDi1
+    )
+ ||
+    loop
+        memAddress, memCtrl ->! then
+            memAccess <- {memCtrl.RorW, memAddress, memCtrl.Size, memCtrl.Lock, memCtrl.Seq, GREEN}
+         ||
+            memMd -> memMode
+         ||
+            memAbort ->! then
+                continue
+            end -- memAbort ->
+         ||
+            case (#(memCtrl.Size)[1..1] @ #(memCtrl.RorW)[0..0] as 2 bits) of
+            0b00 then -- strb
+                memDoIn ->! then
+                    memDo <- (#memDoIn[0..7] @ #memDoIn[0..7] @ #memDoIn[0..7] @ #memDoIn[0..7] as Datapath)
+                end -- memDoIn ->
+            | 0b01 then -- str
+                memDoIn -> memDo
+            | 0b1x then -- ldrb
+                byteSel <- (#memAddress[0..1] as 2 bits)
+            --| 0b11 then -- ldr
+            --    continue
+            end -- case ( # memCtrl.Size [ 0 ..0 ] # memCtrl.RorW [ 0 ..0 ] as 2 bits )
+        end -- memAddress , memCtrl ->
+    end -- loop
+end -- procedure memAccess
+
+procedure mapRegister
+(
+  input bank : RegBank;
+  input reg  : RegNum;
+  output ra  : RegSpec
+) is
+begin
+    loop
+        bank, reg ->! then
+            case (#reg @ #bank as 7 bits) of
+             0b111_xxxx, 0b011_xxxx, 0bxxx_1111, -- can't happen
+             0bxxx_0xxx,  -- unbanked r0-r7
+             0bxx0_10xx, 0bxx0_1x00,
+             0bx1x_10xx, 0bx1x_1x00,
+             0b1xx_10xx, 0b1xx_1x00, -- unbanked r8-r12 in all but FIQ mode (CFIQ = 0b001)
+             0b000_xxxx then -- USR and SVC mode registers r0-r14 (r15) 
+                ra <- (#reg @ #0b0[0..0] as RegSpec) -- => reg_bank[0..15]
+            | 0b001_1xx0, 0b001_1x0x, 0b001_10xx then -- FIQ r8-r14 => reg_bank[24..28]
+                ra <- (#reg @ #0b1[0..0] as RegSpec) 
+            | 0b10x_1101, 0b10x_1110 then -- SVC & ABT r13-r14 => reg_bank[17,18,21,22]
+                ra <- (#reg[0..1] @ #bank as RegSpec)
+            | 0b010_1101 then -- IRQ r13
+                ra <- 0b10011 -- reg_bank[19]
+            | 0b010_1110 then -- IRQ r14
+                ra <- 0b10100 -- reg_bank[20]
+            | 0b110_1101 then -- UND r13
+                ra <- 0b10111 -- reg_bank[23]
+            | 0b110_1110 then -- UND r14
+                ra <- 0b11111 -- reg_bank[31]
+            end -- case
+        end -- bank, reg ->!
+    end -- loop
+end -- procedure mapRegister
+
+-- regWriteBack multiplexes the 2 writes to the register bank.
+-- regBank has a single write port so writes must be sequenced.
+procedure regWriteBack
+(
+  array 2 of input pmd  : 3 bits;
+  array 2 of input raIn : RegNum;
+  array 2 of input rd   : Datapath;
+  array 2 of input kra  : 2 bits;
+  array 2 of input krc  : bit;
+--  array 2 of sync  krc;
+--  output ob  : RegBank;
+  output oa  : RegSpec;
+  output oc  : 2 bits;
+  output od  : Datapath
+) is
+local
+    array 2 of channel rb : RegBank
+    array 2 of channel ra : RegNum
+    array 2 of channel mra : RegSpec
+begin
+    for || i in 0..1 then
+        bankSelStop(
+          kra[i], raIn[i], pmd[i],
+          ra[i], rb[i]
+        )
+    end -- for || i in 0 ..2
+ ||
+    for || i in 0..1 then
+        mapRegister(rb[i], ra[i], mra[i])
+    end
+ ||
+    loop
+        krc[0], krc[1] ->! then
+            [
+                if krc[0] then
+                    mra[0] -> oa
+                end -- if krc[0]
+              ;
+                if krc[1] then
+                    mra[1] -> oa
+                end -- if krc[1]
+            ]   
+          ||
+            [
+                if krc[0] then
+                    rd[0] -> od
+                end
+              ;
+                if krc[1] then
+                    rd[1] -> od
+                end
+            ]
+          ||
+            oc <- (#(krc[0]) @ #(krc[1]) as 2 bits)
+        end -- krc[0], krc[1] ->!
+    end -- loop
+end -- procedure regWriteBack

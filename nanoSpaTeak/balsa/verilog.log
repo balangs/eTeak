@@ -1,0 +1,11 @@
+GPLCVER_2.12a of 05/16/07 (Linux-elf).
+Copyright (c) 1991-2007 Pragmatic C Software Corp.
+  All Rights reserved.  Licensed under the GNU General Public License (GPL).
+  See the 'COPYING' file for details.  NO WARRANTY provided.
+Today is Mon Aug  6 11:58:21 2012.
+** ERROR** [700] cannot open Verilog input file /tmp/teak_tmp/nanoSpaTeak/balsa/test-spaHarvardT.v - skipped
+Compiling source file "/home/tomsw/share/teak/runtime/verilog/monitors.v"
+Compiling source file "/home/tomsw/share/teak/runtime/verilog/runtime.v"
+  Unable to begin simulation.
+  There were 1 error(s), 0 warning(s), and 1 inform(s).
+End of GPLCVER_2.12a at Mon Aug  6 11:58:21 2012 (elapsed 0.0 seconds).

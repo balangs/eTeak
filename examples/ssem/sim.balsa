@@ -1,0 +1,81 @@
+import [balsa.sim.memory]
+import [balsa.sim.string]
+import [balsa.sim.fileio]
+import [balsa.sim.sim]
+
+import [ssem]
+
+constant addr_width = 5
+constant data_width = 32
+constant MemSize = 2 ^ addr_width
+  
+type AddrWidth is addr_width bits
+type DataWidth is data_width bits
+
+procedure load_mem (
+  input fname : String ;
+  output addr_bus : AddrWidth ;
+  output data_bus : DataWidth ;
+  output rNw : bit
+) is
+  variable file : File
+  variable num : DataWidth
+  variable addr : AddrWidth
+begin
+  fname -> then
+    print "loading memory from: ", fname;
+    file := FileOpen(fname, read);
+    loop while  FileEOF(file) /= 1 then
+      num := NumberFromString(DataWidth, FileReadLine(file) ,16);
+      addr_bus <- addr || data_bus <- num || rNw <- 0;
+      addr := (addr + 1 as AddrWidth);
+      print addr
+    end  -- loop
+  end -- fname ->
+end -- end
+
+
+procedure dump_mem (
+  output addr_bus : AddrWidth ;
+  input data_bus : DataWidth ;
+  output rNw : bit
+) is
+  variable data : DataWidth
+  variable addr : AddrWidth
+begin
+  print "dumping memory";
+  addr := 0;
+  loop
+    addr_bus <- addr || data_bus -> data || rNw <- 1;
+    print "<0x", NumberToString (AddrWidth, addr, 16, 0, 1) , "> 0x", 
+    NumberToString (DataWidth, data, 16, 0 ,1) ;
+    addr := (addr + 1 as AddrWidth)
+  while addr /= 0
+  end -- loop
+end -- end
+
+procedure top_level is
+  variable mem : BalsaMemory
+  channel addr_bus : AddrWidth
+  channel read_bus : DataWidth
+  channel write_bus : DataWidth
+  channel rNw : bit
+  channel hlt : token
+  channel mem_c : BalsaMemory
+  channel prog_c : String
+begin
+  mem := BalsaMemoryNew ();
+  mem_c <- mem ||
+  BalsaMemory ( {addr_width , data_width},
+  	mem_c,
+    addr_bus, 
+    rNw,
+    write_bus, read_bus) ||
+  begin
+  	prog_c <- "gcd.raw" ||
+    load_mem(prog_c, addr_bus, write_bus, rNw); 
+    SSEM(addr_bus,rNw,  read_bus, write_bus, hlt) || hlt -> then continue end;
+    dump_mem(addr_bus, read_bus, rNw);
+    sink BalsaSimulationStop ()
+  end -- begin
+end -- end

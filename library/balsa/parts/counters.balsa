@@ -1,0 +1,29 @@
+import [balsa.types.basic]
+
+-- Repeat: handshake on `o' `count' times
+procedure Repeat (
+	parameter count : cardinal;
+	sync o ) is
+begin
+	if count = 0 then
+		print error, "Repeat count must not be 0"	
+	|  count = 1 then
+		sync o
+	|  count = 2 then
+		sync o ; sync o
+	else
+		local
+			shared doNext is begin
+				Repeat (count / 2, o)
+			end
+		begin
+			if (count as bit) then
+				sync o
+			end ;
+			doNext () ; doNext ()
+		end
+	end
+end
+
+-- Dup: repeat twice
+procedure Dup is Repeat (2)

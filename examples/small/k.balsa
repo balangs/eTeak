@@ -1,0 +1,9 @@
+procedure A (
+	input a, b, c : array 1 of 8 bits;
+	output o : array 3 of 8 bits
+) is
+begin
+	a, b, c -> then
+		o <- a @ b @ c
+	end
+end

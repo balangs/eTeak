@@ -1,0 +1,243 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [nanoSpaHarvard]
+import [balsa.sim.sim]
+import [balsa.sim.fileio]
+import [balsa.sim.string]
+import [balsa.sim.memory]
+
+constant iodebug = true
+
+-- RepackAddress : turn a byte-orientated address into a word one
+function RepackAddress (a : 32 bits) = (#a[31..2] as 32 bits)
+
+-- function Hex (w : 32 bits) = NumberToString (32 bits, w, 16, 4, 1)
+function Hex (w : 32 bits) = StringDowncase (NumberToString (32 bits, w, 16, 0, 1))
+function HexByte (w : 8 bits) = NumberToString (8 bits, w, 16, 0, 1)
+
+function Time =
+	FitStringToWidth (BalsaSimulationTime (), 10, right) + " "
+
+procedure FillMemoryFromFile (
+	parameter params : BalsaMemoryParams;
+	input filename : String;
+	input memory : BalsaMemory
+) is
+	variable file : File
+	-- variable line : String
+	variable line : StringTokenTail
+	variable a : params.addressWidth bits
+	variable d : params.dataWidth bits
+	variable aString, dString : String
+
+	constant hasAddresses = 0
+begin
+	a := 0;
+	filename, memory -> then
+		file := FileOpen (filename, read);
+		loop
+		while not FileEOF (file) then
+			line.tail := FileReadLine (file);
+			if hasAddresses then
+				print "ADDR";
+				line := StringGetToken (line.tail);
+				a := NumberFromString (params.addressWidth bits, line.token, 16)
+			end;
+			aString := NumberToString (params.addressWidth bits, a, 16, 4, 1);
+
+			if (a as 2 bits) /= 0 then
+				print "Unaligned write to address: ", aString, " not allowing"
+			else
+				line := StringGetToken (line.tail);
+				dString := line.token;
+
+				if not StringEqual (SubString (dString, 0, 1), "-") and
+					not StringEqual (SubString (dString, 0, 1), ".") then
+					d := NumberFromString (params.dataWidth bits, dString, 16);
+
+					sink BalsaMemoryWrite (params, memory, RepackAddress (a), d);
+					-- print "M[", aString, "] := ", NumberToString (params.dataWidth bits, d, 16, 4, 1)
+					continue
+				end
+			end;
+			if not hasAddresses then
+				a := (a + 4 as params.addressWidth bits)
+			end
+		end
+	end
+end
+
+procedure MemOp (
+	parameter memoryParams : BalsaMemoryParams;
+	input memory : BalsaMemory;
+	input name : String;
+	input access : MemAccess;
+	input mode : MemProcMode;
+	output di : MemData;
+	input do : MemData;
+	output abort : MemAbort
+) is
+	variable message : String
+	variable d : MemData
+	variable a : 32 bits
+	variable postString, kString, aString, dString : String
+	variable dirString, typeString, modeString : String
+	variable aToPrint, dToPrint : MemData
+
+	type wordBytes is array 4 of byte
+	type wordHWords is array 2 of 16 bits
+
+	variable count : 16 bits
+	variable doW : bit
+
+	variable stop : bit
+begin
+	memory, name -> then
+		message := "" || stop := 0 || count := 0;
+		loop
+		while count < 20000 then
+			begin if iodebug then postString := "" end;
+			access, mode -> then
+				-- FIXME, fixup for address value probs.
+				-- a := #(access.Address)[15..0] @ (0 as array 16 of bit) as 32 bits;
+				case mode of
+					USER then modeString := "u"
+				|	PRIVILEGED then modeString := "p"
+				end ||
+				a := access.Address;
+				if false and a /= access.Address then
+					print name, "Address problem with 0x", Hex (access.Address), ", using 0x", Hex(a)
+				end;
+				if iodebug then aToPrint := a end;
+				if RepackAddress (a) /= RepackAddress (0xFFFF_FFFF) then
+					d := BalsaMemoryRead (memoryParams, memory, RepackAddress (a))
+				end;
+				-- print "Read ", NumberToString (32 bits, a, 16, 4, 1), " ", NumberToString (32 bits, d, 16, 4, 1);
+				case access.RorW of
+					READ then
+					if iodebug then dirString := "r" end ||
+					case access.Size of
+						BYTE then
+						if iodebug then typeString := "b" end;
+						local
+							channel byteC : byte
+						begin
+							-- (d as wordBytes)[0] := (d as wordBytes)[(a as 2 bits)];
+							-- (d as wordBytes)[1] := (d as wordBytes)[0] ||
+							-- (d as wordBytes)[2] := (d as wordBytes)[0] ||
+							-- (d as wordBytes)[3] := (d as wordBytes)[0]
+							case (a as 2 bits) of
+								0 then d := (d and 0x0000_00FF) or 0xAAAA_AA00
+							|	1 then d := (d and 0x0000_FF00) or 0xAAAA_00AA
+							|	2 then d := (d and 0x00FF_0000) or 0xAA00_AAAA
+							|	3 then d := (d and 0xFF00_0000) or 0x00AA_AAAA
+							end
+						end
+					|	HALFWORD then
+						if iodebug then typeString := "h" end;
+						case (a as bit) of
+							0 then d := (d and 0x0000_FFFF) or 0xAAAA_0000
+						|	1 then d := (d and 0xFFFF_0000) or 0x0000_AAAA
+						end
+					| 	WORD then
+						if iodebug then typeString := "w" end
+					end;
+					if iodebug then dToPrint := d end;
+					di <- d
+				|	WRITE then
+					do -> then
+						doW := false ||
+						if iodebug then dirString := "w" end;
+						if a = 0xFFFF_FFFF (-- 0xFFFF --) then
+							if iodebug then
+								kString := "CW";
+								local variable char : String begin
+									if (do as byte) < 32 or (do as byte) > 127 then
+										char := "<" + HexByte ((do as byte)) + ">"
+									else char := Chr ((do as byte))
+									end;
+									message := message + char;
+									postString := " '" + char + "' '" + message + "'"
+								end;
+								if do = 0x0A then message := "" end
+							else
+								print StringToPrintable (Chr ((do as byte)))
+							end
+						else
+							if a = 0xFFFF_FFFE or (a = 0x1300_0000 and (do as 8 bits) = 0x4) then
+								stop := 1
+							else
+								case access.Size of
+									BYTE then
+									if iodebug then typeString := "b" end ||
+									doW := true ||
+									case (#a[0..1] as 2 bits) of
+										0 then (d as wordBytes)[0] := (do as 8 bits)
+									|	1 then (d as wordBytes)[1] := (do as 8 bits)
+									|	2 then (d as wordBytes)[2] := (do as 8 bits)
+									|	3 then (d as wordBytes)[3] := (do as 8 bits)
+									end
+								|	HALFWORD then
+									if iodebug then typeString := "h" end ||
+									doW := true ||
+									case #a[0] of
+										0 then (d as wordHWords)[0] := (do as 16 bits)
+									|	1 then (d as wordHWords)[1] := (do as 16 bits)
+									end
+								|	WORD then
+									if iodebug then typeString := "w" end ||
+									doW := true || d := do
+								end
+							end
+						end;
+						if iodebug then dToPrint := do end;
+						if doW then sink BalsaMemoryWrite (memoryParams, memory, RepackAddress (a), d) end
+					end
+				end;
+				-- if iodebug then print Time (), " MEM ", name, " ", kString, " ", aString, ": ", dString, postString end;
+				if iodebug then print name, " 0x", Hex (aToPrint), ": ", dirString, " ", 
+					modeString, " ", typeString, " 0x", Hex (dToPrint), postString end;
+				if stop then sink BalsaSimulationStop () end
+			end ||
+			abort <- 0 ||
+			count := (count + 1 as 16 bits)
+		end
+	end
+	end
+end
+
+procedure test is
+	variable memory : BalsaMemory
+	constant memoryParams = {32, 32} : BalsaMemoryParams
+	array 2 of channel memoryC : BalsaMemory
+	array 2 of channel memName : String
+
+	array 2 of channel access : MemAccess
+	array 2 of channel mode : MemProcMode
+	array 2 of channel di : MemData
+	array 2 of channel do : MemData
+	array 2 of channel abort : MemAbort
+begin
+	print "*** Started nanoSpa";
+	memory := BalsaMemoryNew ();
+	local
+		channel filenameC : String
+		channel memoryC : BalsaMemory
+	begin
+		filenameC <- BalsaGetCommandLineArg ("file") ||
+		memoryC <- memory ||
+		FillMemoryFromFile (memoryParams, filenameC, memoryC)
+	end;
+	nanoSpaHarvard (access, mode, di, do[0..0], abort) ||
+	memoryC[0] <- memory || memName[0] <- "d_A" ||
+	MemOp (memoryParams, memoryC[0], memName[0], access[0], mode[0], di[0], do[0], abort[0]) ||
+	memoryC[1] <- memory || memName[1] <- "i_A" ||
+	MemOp (memoryParams, memoryC[1], memName[1], access[1], mode[1], di[1], do[1], abort[1]) ||
+	loop
+		do[1] <- (0 as MemData)
+	end
+end

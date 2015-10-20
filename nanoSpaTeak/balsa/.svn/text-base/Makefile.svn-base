@@ -1,0 +1,81 @@
+### nanoSpa Makefile
+### v1.0 25/07/2006 -lap
+
+### Must use a Bourne shell
+SHELL = /bin/sh
+
+### Programs
+BALSAC = balsa-c
+BALSANETLIST = balsa-netlist
+BREEZELINK = breeze-link
+BREEZESIM = breeze-sim
+BREEZESIMCTRL = breeze-sim-ctrl
+GTKWAVE = gtkwave
+MAKE = make
+RM = rm -f
+
+### Options
+BALSAIMPORTPATH =
+BALSACOPTS = -c warn-multicast
+BALSACOPTS_COMPLETE = -b $(BALSAIMPORTPATH) $(BALSACOPTS)
+BALSANETLISTOPTS = -b $(BALSAIMPORTPATH)  -d -s -g -i helper 
+BREEZELINKOPTS = 
+
+### Suffix rules
+.SUFFIXES: .balsa .breeze .v
+
+.balsa.breeze:
+	$(BALSAC) $(BALSACOPTS_COMPLETE) $*
+
+all: nanoSpaTypes.breeze nanoFetch.breeze nanoLSMcontrol.breeze nanoDecode.breeze nanoRegBank.breeze nanoAlu.breeze nanoShifter.breeze nanoExecute.breeze nanoSpaHarvard.breeze nanoSpa.breeze
+
+.breeze.v:
+	$(BALSANETLIST) $(BALSANETLISTOPTS) $*
+
+
+### Balsa rules
+nanoFetch.breeze: nanoSpaTypes.breeze
+nanoMultSupport.breeze: nanoSpaTypes.breeze
+nanoMBoothR3rolled.breeze: nanoSpaTypes.breeze
+nanoMBoothR3unrolled.breeze: nanoSpaTypes.breeze
+nanoMultiplier.breeze: nanoSpaTypes.breeze nanoExecuteSupport.breeze nanoMultSupport.breeze nanoMBoothR3rolled.breeze nanoMBoothR3unrolled.breeze 
+nanoLSMcontrol.breeze: nanoSpaTypes.breeze
+nanoDecode.breeze: nanoSpaTypes.breeze nanoLSMcontrol.breeze nanoExecuteSupport.breeze
+nanoRegBank.breeze: nanoSpaTypes.breeze
+nanoExecuteControl.breeze: nanoSpaTypes.breeze
+nanoExecuteSupport.breeze: nanoSpaTypes.breeze pipelineRegister.breeze
+nanoAlu.breeze: nanoSpaTypes.breeze
+nanoShifter.breeze: nanoSpaTypes.breeze
+nanoExecute.breeze: nanoSpaTypes.breeze nanoExecuteControl.breeze nanoExecuteSupport.breeze nanoAlu.breeze nanoShifter.breeze nanoMultiplier.breeze
+nanoSpaHarvard.breeze: nanoSpaTypes.breeze nanoFetch.breeze nanoDecode.breeze nanoRegBank.breeze nanoExecute.breeze pipelineRegister.breeze
+nanoSpaHarvard_deparameterised.breeze: nanoSpaTypes.breeze nanoSpaHarvard.breeze
+nanoSpa.breeze: nanoSpaTypes.breeze nanoSpaHarvard.breeze
+verilog: nanoSpaHarvard_deparameterised.v
+cost: nanoSpaTypes.breeze nanoFetch.breeze nanoDecode.breeze nanoRegBank.breeze nanoAlu.breeze nanoExecute.breeze nanoSpaHarvard.breeze nanoSpa.breeze
+	breeze-cost nanoSpaypes.breeze
+	breeze-cost nanoFetch.breeze
+	breeze-cost nanoDecode.breeze
+	breeze-cost nanoRegBank.breeze
+	breeze-cost nanoExecuteControl.breeze
+	breeze-cost nanoExecuteSupport.breeze
+	breeze-cost nanoAlu.breeze
+	breeze-cost nanoShifter.breeze
+	breeze-cost nanoExecute.breeze
+	breeze-cost pipelineRegister.breeze
+	breeze-cost nanoSpaHarvard.breeze
+	breeze-cost nanoSpa.breeze
+
+help:
+	@echo 'Target                 Meaning'
+	@echo '---------------------- ------------------------------------------------------------------------------------'
+	@echo 'clean                  Remove all auto-generated files'
+	@echo 'cost                   Estimate Breeze block costs'
+	@echo 'suffix rule .breeze    Compile Balsa to Breeze'
+	@echo 'tidy                   Remove auto-generated files (except test harnesses)'
+	@echo
+
+tidy:
+	$(RM) nanoSpaTypes.breeze nanoFetch.breeze nanoLSMcontrol.breeze nanoDecode.breeze nanoRegBank.breeze nanoExecuteControl.breeze nanoExecuteSupport.breeze nanoAlu.breeze nanoShifter.breeze nanoExecute.breeze pipelineRegister.breeze nanoSpaHarvard.breeze nanoSpa.breeze nanoSpaHarvard_deparameterised.breeze nanoMultSupport.breeze nanoMultiplier.breeze nanoMBoothR3rolled.breeze nanoMBoothR3unrolled.breeze
+	$(RM) nanoSpaHarvard.v nanoSpa.v nanoSpaHarvard_deparameterised.v
+
+clean: tidy

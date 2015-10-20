@@ -1,0 +1,64 @@
+***
+sync keyword replaced everywhere by use of new 'token' type defined in [teak.builtin].
+Two definitions at the top level:
+
+type token is 0 bits
+constant token = 0 as token
+
+(added to a new file: [teak.builtin], to replace [balsa.types.builtin])
+
+token is an identifier which can be masked rather than a keyword.
+
+Replacements:
+
+In port list:            sync a, b, c => input/output a, b, c : token
+Channel decl.:           sync a, b, c => channel a, b, c : token
+'output' sync cmd.:      sync a       => a <- token
+'input' sync cmd.:       sync a       => a -> then continue end
+'input' select on sync:  select a ... => select a ...
+
+***
+Strings not considered stateful in teak simulator.  The builtin function TokenFromString cannot work.
+Replaced with StringGetToken
+***
+Removed print decl.
+***
+Enclosed channels can include arrayed channel expressions that don't resolve to single channels.  All
+channels will be selected.  For example:
+
+array 4 of array 2 of channel i : 8 bits
+...
+i -> then (-- All of i[0][0], i[0][1], i[1][0], i[1][1], i[2][0], i[2][1], i[3][0], i[3][1] are enclosing --) end
+i[1] -> then (-- All of i[1][0], i[1][1] " " --) end
+***
+Multidimensional array and arrayed types are possible:
+
+array 4 of array 3 of ...
+***
+Removed multiple guards and 'also' command on While
+***
+Removed 'new' types
+***
+Changed rule on use of bare enum element names with type expection.  Local bindings now take precedence.
+This:
+	local
+		variable A : ... -- type doesn't have to be E to match, you'll get an error though
+
+		type E is enumeration A, B end
+		variable e : E
+	begin
+		e := A -- uses variable A
+		e := E'A -- can explicitly qualify
+	end
+This makes binding easier and also closes up a whole where it wasn't previously easy to be explicit about
+a choice
+***
+Added ':' operator to allow any expression to have its type checked.  This replaces explicit syntax for
+type checking in all the places where the two forms would be syntactically identical viz. constant and
+function declaration.  Also removed the need for the enclosing brackets around 'as' cast operations.  The
+combination of the two changes gives a nice new form:
+
+	(expr : formerType as newType)
+
+for a cautious cast.  Note that 'as' and ':' have such low precendences that parentheses are usual needed
+within expressions anyway.

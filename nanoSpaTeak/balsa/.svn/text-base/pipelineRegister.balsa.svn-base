@@ -1,0 +1,79 @@
+-- attempt at Balsa synthesisable, very simple Amulet
+--  pipeline register
+--  + parameterised by data type
+--
+--  v1.0 25/07/2006 -lap
+--  v1.1 21/04/2007 -lap/ltaraz
+--    Changelog:
+--  + Full multiply support (parameterised BoothR3 unrolled/"rolled" styles)
+--  + New modular decoder without merges
+--
+--  v1.2 23/08/2007 -lt
+--  + MRS & MSR support
+--  + Half word ldr/str support (test me!)
+--  + Support for all modes
+
+import [nanoSpaTypes]
+
+procedure pipeReg
+(
+  parameter DataType : type;
+  input  i : DataType;
+  output o : DataType
+) is
+local
+    variable reg : DataType
+begin
+    loop
+        i -> reg
+      ;
+        o <- reg
+    end -- loop
+end -- procedure pipeReg
+
+procedure pipeReg_Datapath is pipeReg(Datapath)
+procedure pipeReg_Address is pipeReg(Address)
+procedure pipeReg_AluCtrl is pipeReg(AluCtrl)
+procedure pipeReg_AluSelect is pipeReg(AluSelect)
+procedure pipeReg_Colour is pipeReg(Colour)
+procedure pipeReg_Instruction is pipeReg(Instruction)
+procedure pipeReg_ShiftType is pipeReg(ShiftType)
+procedure pipeReg_MemCtrl is pipeReg(MemCtrl)
+procedure pipeReg_bit is pipeReg(bit)
+procedure pipeReg_2bits is pipeReg(2 bits)
+procedure pipeReg_3bits is pipeReg(3 bits)
+procedure pipeReg_4bits is pipeReg(4 bits)
+procedure pipeReg_5bits is pipeReg(5 bits)
+procedure pipeReg_aBusSelect is pipeReg(aBusSelect)
+procedure pipeReg_bBusSelect is pipeReg(bBusSelect)
+procedure pipeReg_PcSelect is pipeReg(PcSelect)
+procedure pipeReg_dLrSelect is pipeReg(dLrSelect)
+procedure pipeReg_memAddrSelect is pipeReg(memAddrSelect)
+procedure pipeReg_tempSelect is pipeReg(tempSelect)
+procedure pipeReg_mDiSelect is pipeReg(mDiSelect)
+
+procedure pipeReg_mcrSelect is pipeReg(mcrSelect)
+procedure pipeReg_sabSelect is pipeReg(sabSelect)
+procedure pipeReg_rdsSelect is pipeReg(rdsSelect)
+procedure pipeReg_cPcSelect is pipeReg(cPcSelect)
+
+procedure pipeReg_ConditionCode is pipeReg(ConditionCode)
+procedure pipeReg_RegBank is pipeReg(RegBank)
+procedure pipeReg_RegNum is pipeReg(RegNum)
+procedure pipeReg_RegSpec is pipeReg(RegSpec)
+procedure pipeReg_mulType is pipeReg(MulType)
+procedure pipeReg_mode is pipeReg(psrCtl)
+
+(--procedure pipeReg_Sync
+(
+  sync i;
+  sync o
+) is
+begin
+    loop
+        sync i
+      ;
+        sync o
+    end -- loop
+end -- procedure pipeReg_Sync
+--)

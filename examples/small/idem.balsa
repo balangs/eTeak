@@ -1,0 +1,7 @@
+import [balsa.sim.memory]
+import [balsa.sim.memory]
+
+procedure a is
+begin
+	continue
+end

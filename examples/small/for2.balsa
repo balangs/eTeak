@@ -1,0 +1,15 @@
+import [balsa.types.basic]
+
+procedure a (
+	parameter n : cardinal
+) is
+begin
+	for ; i in 0..n then
+		print i
+	end
+end
+
+procedure b is
+begin
+	a (10)
+end

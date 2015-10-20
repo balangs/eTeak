@@ -1,0 +1,11 @@
+procedure a (
+	input i1, i2 : 8 bits;
+	output o : 8 bits
+) is
+begin
+	loop
+		i1, i2 -> then
+			o <- (i1 + i2 as 8 bits)
+		end
+	end
+end

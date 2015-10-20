@@ -1,0 +1,80 @@
+import [balsa.sim.sim]
+import [ssem]
+
+constant simpleTest = false
+
+type SSEM32Inst is record
+  LineNo : 5 bits;
+  CRTNo : 8 bits;
+  Func : SSEMFunc
+over 32 bits
+
+function AdjustInst (i : 32 bits) = SSEMInst {(i as SSEM32Inst).LineNo, (i as SSEM32Inst).Func}
+
+procedure top is
+  variable M : array 32 of Word
+  channel a : LineAddress
+  channel rd : Word
+  channel wd : Word
+  channel rNw : bit
+  channel hlt : token
+begin
+	if simpleTest then
+		loop a -> then print "A" end end ||
+		loop rd <- 0; print "READ" end ||
+		loop wd -> then print "WRITE" end end ||
+		loop rNw -> then print "RNW" end end ||
+		loop hlt -> then print "HLT" end end ||
+		SSEM (a, rNw, rd, wd, hlt)
+	else
+		begin
+			M[0] := AdjustInst (0x0000_0000) ||
+			M[1] := AdjustInst (0x0000_4012) ||
+			M[2] := AdjustInst (0x0000_6010) ||
+			M[3] := AdjustInst (0x0000_4010) ||
+			M[4] := AdjustInst (0x0000_8011) ||
+			M[5] := AdjustInst (0x0000_6010) ||
+			M[6] := AdjustInst (0x0000_C000) ||
+			M[7] := AdjustInst (0x0000_0014) ||
+			M[8] := AdjustInst (0x0000_4010) ||
+			M[9] := AdjustInst (0x0000_6011) ||
+			M[10] := AdjustInst (0x0000_0000) ||
+			M[11] := AdjustInst (0x0000_6012) ||
+			M[12] := AdjustInst (0x0000_8013) ||
+			M[13] := AdjustInst (0x0000_C000) ||
+			M[14] := AdjustInst (0x0000_0000) ||
+			M[15] := AdjustInst (0x0000_E000) ||
+			M[16] := AdjustInst (0x0100_0000) ||
+			M[17] := AdjustInst (0x0000_000C) ||
+			M[18] := AdjustInst (0x0000_0008) ||
+			M[19] := AdjustInst (0x0000_0001) ||
+			M[20] := AdjustInst (0x0000_000A) ||
+			M[21] := AdjustInst (0x0000_0000) ||
+			M[22] := AdjustInst (0x0000_0000) ||
+			M[23] := AdjustInst (0x0000_0000) ||
+			M[24] := AdjustInst (0x0000_0000) ||
+			M[25] := AdjustInst (0x0000_0000) ||
+			M[26] := AdjustInst (0x0000_0000) ||
+			M[27] := AdjustInst (0x0000_0000) ||
+			M[28] := AdjustInst (0x0000_0000) ||
+			M[29] := AdjustInst (0x0000_0000) ||
+			M[30] := AdjustInst (0x0000_0000) ||
+			M[31] := AdjustInst (0x0000_0000)
+		end;
+		loop
+			a, rNw -> then
+				if rNw then
+					print "READ ", a || rd <- M[a]
+				else
+					wd -> then
+						print "WRITE ", a, " ", wd || M[a] := wd
+					end
+				end
+			end
+		end ||
+		loop
+			SSEM (a, rNw, rd, wd, hlt) ||
+			hlt -> then print "HALT" end
+		end
+	end
+end

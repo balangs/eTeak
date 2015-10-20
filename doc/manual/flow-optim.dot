@@ -1,0 +1,50 @@
+digraph "teak"
+{
+	graph [ size="8,10" ]
+	node [ shape="ellipse" ]
+
+	subgraph cluster_key
+	{
+		graph [ label="key" ]
+		Process [ label="{Process|Command line|Source code location}", shape="record" ]
+		Format [ label="Format\n:: Source code type" ]
+		InFile [ lable="Input file", shape="none" ]
+		OutFile [ lable="Output file", shape="none" ]
+		Process -> Format
+		Format -> Process
+		Process -> OutFile
+		InFile -> Process
+	}
+
+	Network [ label="Teak network\n:: [Part Network]" ]
+	TopLevelNetwork [ label="Top level Teak network\n:: [Part Network]" ]
+	OptimisedNetwork [ label="Optimised Teak network\n:: [Part Network]" ]
+	FinalNetwork [ label="Final Teak network\n:: [Part Network]" ]
+
+	subgraph topOptim
+	{
+		Network -> TopLevelNetwork /* bypass */
+		Network -> TopLevel
+		TopLevel [ label="{Top level optim.|-t (or --top-level) \<procedure\>|NetParts.uniquifyPart \>\>= Optim.removeGo}", shape="record" ]
+		TopLevel -> TopLevelNetwork
+	}
+
+	subgraph optim
+	{
+		TopLevelNetwork -> OptimisedNetwork /* bypass */
+		TopLevelNetwork -> Optim
+		Rules -> Optim
+		Optim [ label="{Optimise|-O (or --optimise)|Optim.applyOptims}", shape="record" ]
+		Rules [ label="Optimisation Rules\n\<file\>.rules", shape="none" ]
+		Optim -> OptimisedNetwork
+	}
+
+	subgraph latch
+	{
+		OptimisedNetwork -> FinalNetwork /* bypass */
+		OptimisedNetwork -> LatchInsert
+		LatchInsert [ label="{Latching|-L (or --latch)|Latch.nwInsertLatches}", shape="record" ]
+		LatchInsert -> FinalNetwork
+	}
+
+}

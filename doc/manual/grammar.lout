@@ -1,0 +1,200 @@
+@LP
+Lexical:
+@LP
+@Code {<digit> ::= `0'...`9'}
+@LP
+@Code {<letter> ::= `a'...`z' "|" `A'...`Z'}
+@LP
+@Code {<identifier> ::= ( <letter> "|" `_' ) ( ( <letter> "|" <digit> "|" `_' ) )*}
+@LP
+@Code {<label> ::= <identifier> `:'}
+@LP
+@Code {<literal> ::= `1'...`9' ( ( <digit> "|" `_' ) )*
+"|" `0' ( `0'...`7' "|" `_' )*
+"|" ( `0b' "|" `0B' ) ( `0' "|" `1' "|" `_' "|" `x' "|" `X' "|" `?' )+
+"|" ( `0x' "|" `0X' ) ( `0'...`9' "|" `a'...`f' "|" `A'...`F' "|" `_' "|" `x' "|" `X' "|" `?' )+
+"|" `?'}
+@LP
+@Code {<string_char> ::= ( <letter> "|" <digit> "|" ` ' "|" `!' "|" `"#"'
+"|" `$' "|" `%' "|" `"&"' "|" `"'"' "|" `(' "|" `)' "|" `*' "|" `+' "|" `,' "|" `-'
+"|" `.' "|" `"/"' "|" `:' "|" `;' "|" `<' "|" `=' "|" `>' "|" `?' "|" `@' "|" `['
+"|" `]' "|" `^' "|" `_' "|" "`" "|" `{' "|" `"|"' "|" `}' "|" `~' )}
+@LP
+@Code {<string> ::= `"\""' ( <string_char> )* `"\""'}
+@LP
+Non terminals:
+@LP
+@Code {<file> ::= ( `import' `[' <dotted_path> `]' )* <outer_declarations>}
+@LP
+@Code {<dotted_path> ::= <identifier> ( `.' <identifier> )*}
+@LP
+@Code {<outer_declarations> ::= ( <outer_declaration> )*}
+@LP
+@Code {<outer_declaration> ::= `type' <identifier> `is' <type_declaration>
+"|" `constant' <identifier> `=' <expression>
+"|" `procedure' <identifier> ( <attributes> )? `is' <identifier> ( `(' <procedure_formals> `)' )?
+"|" `procedure' <identifier> ( `(' <procedure_formals> `)' )? `is'
+  ( `local' )? <inner_declarations> ( <block_body> "|" <loop_command> )
+"|" `function' <identifier> ( `(' <function_formals> `)' )? `=' <expression>
+"|" `function' <identifier> ( `(' <builtin_function_formals> `)' )? `is' `builtin' `:' <type>
+"|" `if' <expression> `then' <outer_declarations>
+  ( `"|"' <expression> `then' <outer_declarations> )*
+  ( `else' <outer_declarations> )?
+  `end'}
+@LP
+@Code {<type_declaration> ::= <type>
+"|" `record' <identifiers> `:' <type>
+  ( `;' <identifiers> `:' <type> )*
+  ( `end' "|" ( `over' <type> ) )
+"|" `enumeration' <identifier> ( `=' <expression> )?
+  ( `,' <identifier> ( `=' <expression> )? )*
+  ( `end' "|" ( `over' <type> ) )
+"|" `builtin'}
+@LP
+@Code {<identifiers> ::= <identifier> ( `;' <identifier> )*}
+@LP
+@Code {<type> ::= <identifier>
+"|" <expression> ( `signed' )? `bits'
+"|" `array' <range> `of' <type>}
+@LP
+@Code {<function_formals> ::= <identifiers> `:' <type> ( `;' <identifiers> `:' <type> )*}
+@LP
+@Code {<builtin_function_formals> ::= <formal_parameters>
+"|" <function_formals>
+"|" <formal_parameters> `;' <function_formals>}
+@LP
+@Code {<procedure_formals> ::= <formal_parameters>
+"|" <formal_ports>
+"|" <formal_parameters> `;' <formal_ports>}
+@LP
+@Code {<formal_parameters> ::= `parameter' <identifiers> `:' <type>
+  ( `;' `parameter' <identifiers> `:' <type> )*}
+@LP
+@Code {<formal_ports> ::= <formal_port> ( `;' <formal_port> )*}
+@LP
+@Code {<channel_array> ::= ( `array' <range> `of' )*}
+@LP
+@Code {<formal_port> ::= <channel_array> ( `input' "|" `output' ) <identifiers> `:' <type>
+"|" <channel_array> `sync' <identifiers>
+"|" `if' <expression> `then' <formal_ports>
+  ( `"|"' <expression> `then' <formal_ports> )*
+  ( `else' <formal_ports> )?
+  `end'}
+@LP
+@Code {<range> ::= <expression>
+"|" <expression> `..' <expression>
+"|" `over' <type>}
+@LP
+@Code {<inner_declarations> ::= ( <inner_declaration> )*}
+@LP
+@Code {<inner_declaration> ::= <outer_declaration>
+"|" `variable' <identifiers> `:' <type> .
+"|" <channel_array> `channel' <identifiers> `:' <type>
+"|" <channel_array> `sync' <identifiers>
+"|" `shared' <identifier> `is' ( `local' )? <inner_declarations>
+  ( <block_body> "|" <loop_command> )
+"|" `if' <expression> `then' <inner_declarations>
+  ( `"|"' <expression> `then' <inner_declarations> )*
+  ( `else' <inner_declarations> )?
+  `end'}
+@LP
+@Code {<expression> ::= <identifier>
+"|" <literal>
+"|" <string>
+"|" ( <identifier> )? `{' <expressions> `}'
+"|" <identifier> "'" <identifier>
+"|" <unary_operator> <expression>
+"|" `sizeof' <identifier>
+"|" <expression> <binary_operator> <expression>
+"|" <expression> `.' <identifier>
+"|" <expression> `[' <range> `]'
+"|" <expression> `as' <type>
+"|" <expression> `:' <type>
+"|" `"#"' <expression>
+"|" `(' <expression> `)'
+"|" <identifier> `(' ( <expressions> )? `)'}
+@LP
+@Code {<attribute> ::= <identifier> ( `=' <expression> )?}
+@Code {<attributes> ::= `(*' ( <attribute> ( `,' <attribute> )* )? `*)'}
+@LP
+@Code {<expressions> ::= <expression> ( `,' <expression> )*}
+@LP
+@Code {<unary_operator> ::= ( `-' "|" `+' "|" `not' "|" `log' "|" `"#"' )}
+@LP
+@Code {<binary_operator> ::= ( `+' "|" `-' "|" `*' "|" `"/"' "|" `%' "|" `^' "|" `='
+"|" `"/"=' "|" `<' "|" `>' "|" `<=' "|" `>='
+"|" `and' "|" `or' "|" `xor' "|" `"@"' )}
+@LP
+@Code {<command> ::=
+"|" <label> <command>
+"|" `continue'
+"|" <channel> `->' <lvalue>
+"|" <channel> `->' <channel>
+"|" <channels> `->' `then' <command> `end'
+"|" <channel> `<-' <expression>
+"|" `sync' <channel>
+"|" <lvalue> `:=' <expression>
+"|" <block>
+"|" <command> `;' <command>
+"|" <command> `"|""|"' <command>
+"|" <loop_command>
+"|" `if' <guards> ( `else' <command> )? `end'
+"|" `case' <expression> `of' <case_guard>
+  ( `"|"' <case_guard> )*
+  ( `else' <command> )?
+  `end'
+"|" `for' ( `"|""|"' "|" `;' ) <identifier> `in' <range> `then' <command> `end'
+"|" `select' <channel_guard> ( `"|"' <channel_guard> )* `end'
+"|" `arbitrate' <channel_guard> `"|"' <channel_guard> `end'
+"|" `print' <expressions>
+"|" <identifier> `(' ( <procedure_actuals> )? `)'}
+@LP
+@Code {<loop_command> ::= `loop' ( <command> )? ( `while' <expression> ( `then' <command> )? )? `end'}
+@LP
+@Code {<channels> ::= <channel> ( `,' <channel> )*}
+@LP
+@Code {<channel> ::= <identifier>
+"|" <identifier> `[' <expression> `]'}
+@LP
+@Code {<lvalue> ::= <identifier>
+"|" <lvalue> `.' <identifier>
+"|" <lvalue> `[' <expression> `]'}
+@LP
+@Code {<block> ::= ( `local' <inner_declarations> )? <block_body>
+"|" `[' <command> `]'}
+@LP
+@Code {<block_body> ::= `begin' <command> `end'}
+@LP
+@Code {<guards> ::= <expression> `then' <command>
+  ( `"|"' <expression> `then' <command> )*}
+@LP
+@Code {<case_guard> ::= <case_matches> `then' <command>
+"|" `for' <identifier> `in' <case_matches> `then' <command>}
+@LP
+@Code {<case_match> ::= <expression>
+"|" <expression> `..' <expression>}
+@LP
+@Code {<case_matches> ::= <case_match> ( `,' <case_match> )*}
+@LP
+@Code {<channel_guard> ::= <channels> `then' <command>
+  ( `"|"' <channels> `then' <command> )*}
+@LP
+@Code {<procedure_actuals> ::= <actual_parameters>
+"|" <actual_channels>
+"|" <actual_parameters> `,' <actual_channels>}
+@LP
+@Code {<actual_parameters> ::= <actual_parameter> ( `,' <actual_parameter> )*}
+@LP
+@Code {<actual_parameter> ::= <expression>
+"|" ( `type' )? <type>}
+@LP
+@Code {<actual_channels> ::= <actual_channel> ( `,' <actual_channel> )*}
+@LP
+@Code {<actual_channel> ::= <identifier>
+"|" <actual_channel> `[' <range> `]'
+"|" `<-' <expression>
+"|" `->' <lvalue>
+"|" <block>
+"|" `{' <actual_channel> ( `,' <actual_channel> )* `}'
+"|" <actual_channel> `@' <actual_channel>}
+@LP

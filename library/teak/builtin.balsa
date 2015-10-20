@@ -1,0 +1,22 @@
+
+-- token: single-valued type and value
+type token is 0 bits
+constant token = 0 as token -- change to 0 : token when 0 gets type 0 bits
+
+-- bit: guard type
+type bit is 1 bits
+
+-- String, StringAppend : these are defined here as the compiler depends on them
+--	The function String creates a string object from its parameter
+type String is builtin
+function String (parameter string : String) is builtin : String
+function StringAppend (str1, str2 : String) is builtin : String
+
+-- ToString : function which can convert a value of (nearly) any type to a default
+--	formatted string, used within the compiler to implement runtime printing
+function ToString (parameter X : type; value : X) is builtin : String
+
+-- tWriteMessage : as WriteMessage but with 0 bits return
+function tWriteMessage (str : String) is builtin : token
+
+constant __compiler__ = "teak"

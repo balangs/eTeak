@@ -1,0 +1,42 @@
+hello:
+
+3387200 no optimisations
+3073800 -O -q no-trim-vars:no-move-forks-tos:fo
+3061350 -O -q no-trim-vars:no-move-forks-tos:tv:fo (with equal width/zero offset restriction on tvn)
+3011050 -O -q no-replacedhard (* with mutex delay)
+3005300 -O -q no-trim-vars:no-move-forks-tos
+2977100 -O -q no-trim-vars:no-move-forks-tos:tv:fo
+2967800 -O -q no-trim-vars:no-move-forks-tos:no-initial-loop:no-rmerges:tv:fo:vjv:il
+2944350 -O -q no-trim-vars:no-move-forks-tos:tv:fo:vjv
+2944350 -O -q no-trim-vars:no-move-forks-tos:no-initial-loop:tv:fo:vjv:il
+2944350 -O -q no-replacedhard:tv:fo:vjv:il
+2932750 -O
+
+2942300 -O -q ffmm -r diamond.rules
+2942300 -O -q no-remove-rmerges:ffmm -r diamond.rules
+2916050 -O -q no-remove-rmerges:no-ffmm -r diamond.rules
+2913900 -O -q no-ffmm -r diamond.rules
+
+(with sep. remove-rmerges opts)
+2916050 -O -q no-ffmm:no-remove-rmerges -r diamond.rules
+2913900 -O -q no-ffmm:no-remove-crmerges -r diamond.rules
+
+1694550 Balsa
+
+hellounrolled:
+
+? -O -q ffmm -r diamond.rules
+? -O -q no-remove-rmerges:ffmm -r diamond.rules
+? -O -q no-remove-rmerges:no-ffmm -r diamond.rules
+2676000 -O -q no-ffmm -r diamond.rules
+1617000 Balsa
+
+dhry:
+
+37984650 -O -q svrr --latches s4
+32165000 -O -q svrr --latches s3
+26528000 -O -q svrr --latches s2
+20903000 -O -q svrr --latches s1
+20875650 -O -q (non-rOffset==0-requiring) svrr --latches s1 (1324 fetches)
+ 7826000 Balsa (1000 fetches)
+

@@ -1,0 +1,374 @@
+-- Radix-3 Booth's multiplier for nanoSpa / aviSpa
+--    Unrolled Radix-3 Booth's algorithm (6 iteration cycles)
+--
+-- v1.0 20/04/2007 -ltaraz
+--
+import [balsa.types.basic]
+import [nanoSpaTypes]
+
+procedure nanoMBoothR3unrolled
+( 
+  input cin  : Datapath_2;
+  input res  : Datapath_2;
+ 
+  input cin2  : Datapath_2;
+  input res2  : Datapath_2;
+
+  input a    : Datapath_2;
+  input b    : Datapath_3;
+  input c    : Datapath_2;
+  input mlength : bit;
+  input macc : bit;
+
+  output load : bit;
+  input  done : bit;
+
+  output opA : Datapath_2;
+  output opB : Datapath_2;
+  output cs  : Datapath_2;
+
+  output opA2 : Datapath_2;
+  output opB2 : Datapath_2;
+  output cs2  : Datapath_2;
+
+  output raA  : Datapath;
+  output raB  : Datapath;
+  output rac0 : bit;
+  input  raS  : Datapath;
+  input  racN : bit;
+ 
+  output pH : Datapath;
+  output pL : Datapath;
+  output z  : bit;
+  output n  : bit
+
+) is
+local
+    channel c0 : bit
+    channel sout : Datapath_2
+    channel csout: Datapath_2
+    channel sout2 : Datapath_2
+    channel csout2: Datapath_2
+    channel c02 : bit
+
+    variable ctrl : 4 bits
+    variable  vpl  : Datapath
+    variable  vph  : Datapath
+    variable va  : Datapath_2
+    variable v2a : Datapath_2
+    variable v3a : Datapath_2
+    variable v4a : Datapath_2
+    variable nva  : Datapath_2
+    variable nv2a : Datapath_2
+    variable nv3a : Datapath_2
+    variable nv4a : Datapath_2
+
+    variable crh  : Datapath_2
+    variable crl  : Datapath_3
+    variable rh  : Datapath_2
+    variable rl  : Datapath_3
+    variable rhp : Datapath_2
+    variable crhp : Datapath_2
+    variable crlp : Datapath_3
+    variable rlp : Datapath_3
+
+    variable go : bit
+    variable cLH : bit
+    variable cLH2 : bit
+
+    variable vmlength : bit
+    variable vmacc    : bit
+    variable vZ : bit
+    variable vN : bit
+
+    variable ctrl2 : 4 bits
+    variable  vpl2  : Datapath
+    variable crh2  : Datapath_2
+    variable crl2  : Datapath_3
+    variable rh2  : Datapath_2
+    variable rl2  : Datapath_3
+    variable rhp2 : Datapath_2
+    variable crhp2 : Datapath_2
+    variable crlp2 : Datapath_3
+    variable rlp2 : Datapath_3
+
+
+begin
+    loop --main
+        a,b,c,mlength, macc ->! then
+            vmlength := mlength
+          ||
+            vmacc := macc
+          ||
+            va  := a
+          ||
+            v2a := (#0b0[0..0] @ #a[0 .. xlength-2] as Datapath_2)
+          ||
+            v4a :=  (#(0b00 as 2 bits)[0..1] @ #a[0 .. xlength-3] as Datapath_2)
+            -- calculate 3A= 2A + A
+          ||
+            raA <- (#a[1 .. length] as Datapath)  -- a without b0
+          ||
+            raB <- (a as Datapath) -- 2a without b0
+          ||
+            rac0<- 0
+          ||
+            raS,racN ->! then
+                 v3a := (#a[0..0] @#raS[0..length-1] @ #racN[0..0] @ #a[length..length]  as Datapath_2)
+            end
+          ||
+            rlp := b 
+          ||
+            rhp := c
+          ||
+            ctrl:= (#b[0..3] as 4 bits)
+          ||
+            crhp := (0b0 as Datapath_2)
+          ||
+            crlp := (0b0 as Datapath_3)
+          ||
+            rlp2 := (((#b[3 .. xlength] as xlength-2 signed bits) as sDatapath_3) as Datapath_3)
+          ||
+            rhp2 := (0 as Datapath_2)
+          ||
+            ctrl2:= (#b[3..6] as 4 bits)
+          ||
+            crhp2 := (0b0 as Datapath_2)
+          ||
+            crlp2 := (0b0 as Datapath_3)
+        end -- a,b,c,mlength -> 
+      ;
+        nva := not va
+      ||
+        nv2a := not v2a
+      ||
+        nv3a := not v3a
+      ||
+        nv4a := not v4a
+      ||
+        load <- 1  
+      ;	
+        
+        loop --iterate
+            opA <- rhp
+          ||
+            cs  <- crhp
+          ||
+            res -> sout
+          ||
+            cin -> csout
+          ||
+            c0 <- (#ctrl[3..3] as bit)
+          ||
+            case ctrl of
+            0b0001,0b0010 then --sout <- (rhp + va as Datapath_2)
+                opB <- va
+            | 0b0011,0b0100 then --  sout <- (rhp + v2a as Datapath_2)
+                opB <- v2a
+            | 0b101,0b0110 then --  sout <- (rhp +  v3a  as Datapath_2)
+                opB <- v3a
+            | 0b0111 then --  sout <- (rhp + v4a as Datapath_2)
+                opB <- v4a
+            | 0b1000 then --  sout <- (rhp + nv4a + 1 as Datapath_2)
+                opB <- nv4a
+            | 0b1001,0b1010 then --  sout <- (rhp + nv3a + 1 as Datapath_2)
+                opB <- nv3a
+            | 0b1011,0b1100 then --  sout <- (rhp + nv2a + 1 as Datapath_2)
+                opB <- nv2a
+            | 0b1101,0b1110 then --  sout <- (rhp + nva + 1 as Datapath_2)
+                opB <- nva
+            else
+                opB <- (((ctrl as 4 signed bits) as sDatapath_2) as Datapath_2)
+            end
+	        -- shifter:
+          ||
+            sout,csout,c0 ->! then --shift 2 times (rh arithmetic, but rl logic)
+                crh := csout
+              ||
+                crl := (#crlp[6..xlength] @ #c0[0..0] @ #csout[0..4] as Datapath_3)
+              ||
+                rh := (((#sout[6..xlength-1] as xlength-6 signed bits) as sizeof Datapath_2 signed bits) as Datapath_2)
+              ||
+                rl := (#rlp[6..xlength] @ #sout[0..5] as Datapath_3)
+            end -- sout ->
+
+          ||
+            opA2 <- rhp2
+          ||
+            cs2  <- crhp2
+          ||
+            res2 -> sout2
+          ||
+            cin2 -> csout2
+          ||
+            c02 <- (#ctrl2[3..3] as bit)
+          ||
+            case ctrl2 of
+            0b0001,0b0010 then --sout <- (rhp + va as Datapath_2)
+                opB2 <- va
+            | 0b0011,0b0100 then --  sout <- (rhp + v2a as Datapath_2)
+                opB2 <- v2a
+            | 0b101,0b0110 then --  sout <- (rhp +  v3a  as Datapath_2)
+                opB2 <- v3a
+            | 0b0111 then --  sout <- (rhp + v4a as Datapath_2)
+                opB2 <- v4a
+            | 0b1000 then --  sout <- (rhp + nv4a + 1 as Datapath_2)
+                opB2 <- nv4a
+            | 0b1001,0b1010 then --  sout <- (rhp + nv3a + 1 as Datapath_2)
+                opB2 <- nv3a
+            | 0b1011,0b1100 then --  sout <- (rhp + nv2a + 1 as Datapath_2)
+                opB2 <- nv2a
+            | 0b1101,0b1110 then --  sout <- (rhp + nva + 1 as Datapath_2)
+                opB2 <- nva
+            else
+                opB2 <- (((ctrl2 as 4 signed bits) as sDatapath_2) as Datapath_2)
+            end
+ 	        -- shifter 2:
+          ||
+            sout2,csout2,c02 ->! then --shift 2 times (rh arithmetic, but rl logic)
+                crh2 := csout2
+              ||
+                crl2 := (#crlp2[6..xlength] @ #c02[0..0] @ #csout2[0..4] as Datapath_3)
+              ||
+                rh2 := (((#sout2[6..xlength-1] as xlength-6 signed bits) as sDatapath_2) as Datapath_2)
+              ||
+                rl2 := (#rlp2[6..xlength] @ #sout2[0..5] as Datapath_3)
+            end -- sout2 ->
+          ||
+            done ->! then
+               go := done 	       
+            end  -- done ->
+        while go then -- while counter /= (length/2 + 1 as tbits bits)
+            crhp := (((#crh[5..xlength-1] as xlength-5 signed bits) as sDatapath_2) as Datapath_2)
+          ||
+            crlp := crl
+          ||
+            rhp  := rh
+          ||
+            rlp  := rl
+          ||
+            ctrl := (#rl[0..3] as 4 bits)
+          ||
+            crhp2 := (((#crh2[5..xlength-1] as xlength-5 signed bits) as sizeof Datapath_2 signed bits) as Datapath_2)
+          ||
+            crlp2 := crl2
+          ||
+            rhp2  := rh2
+          ||
+            rlp2  := rl2
+          ||
+            ctrl2 := (#rl2[0..3] as 4 bits)
+          ||
+            load <- 0 
+        end --loop iterate
+
+       ; --first adjust: sL + cL + sL2<<3 ; sH + cH + sH2<<3
+
+         opA <- (#rl[0..length-1] as Datapath_2)                                     -- sL -| 3 |--sout
+      ||
+        opB <- (#crl[0..length-1] as Datapath_2)                                    -- cL -| : |
+      ||
+        cs <-  (#(0b000 as 3 bits)[0..2] @ #rl2[0..length-4] as Datapath_2)         -- sL2-| 2 |--csout
+      ||
+        res -> sout
+      ||
+        cin -> csout
+      ||
+        opA2 <- (#rl[length..xlength] @ #rh[0..length-5] as Datapath_2)         -- sH -| 3 |--sout2
+      ||
+        opB2 <- (#crh[1..length] as Datapath_2)                                 -- cH -| : |
+      ||
+        cs2  <- (#rl2[length-3..xlength] @ #rh2[0..length-8] as Datapath_2)     -- sH2-| 2 |--csout2
+      ||
+        res2 -> sout2
+      ||
+        cin2 -> csout2
+         -- pipe
+      ||sout,csout ->! then
+            crhp  := sout
+          ||
+            crhp2 := csout
+         end -- sout,csout (1)->
+      ||sout2,csout2 ->! then
+            rhp  := sout2
+          ||
+            rhp2 := csout2
+         end -- sout2,csout2 (1)->
+       ; -- second adjust
+        opA <-  crhp                                                            -- sout -| 3 |--sout
+      ||
+        opB <-  (#0b0[0..0] @ #crhp2[0..length-2] as Datapath_2) --align carry  -- csout-| : |
+      ||
+        cs <-  (#(0b000 as 3 bits)[0..2] @ #crl2[0..length-4] as Datapath_2)    -- cL2  -| 2 |--csout
+      ||
+        res -> sout
+      ||
+        cin -> csout
+      ||
+        opA2 <-  rhp                                                            -- sout2 -| 3 |--sout
+      ||
+        opB2 <-  (#crhp2[length-1..length-1] @ #rhp2[0..length-2] as Datapath_2) --align carry  -- csout2-| : |
+      ||
+        cs2 <-  (#crl2[length-3..xlength] @ #crh2[5..length-3] as Datapath_2)   -- cH2   -| 2 |--csout      ||res2 -> sout2
+      ||
+        res2 -> sout2
+      ||
+        cin2 -> csout2
+          -- pipe
+      ||
+        sout2,csout2 ->! then
+            rh  := sout2
+          ||
+            crh := (csout2 as Datapath_2)
+        end -- sout2,csout2 (2)->
+      ||sout,csout ->! then
+            raA <- (sout as Datapath)
+          ||
+            raB <- (#0b0[0..0] @ #csout[0..length-2] as Datapath)
+          ||
+            rac0 <- 0 
+          ||
+            cLH := (#csout[length-1..length-1] as bit)
+          ||
+            raS,racN ->! then 
+                vpl:= raS --(#raS[0..length-1] as Datapath)
+              ||
+                go := racN --xor (#csout[length-1..length-1] as bit) -- (#raS[length..length] as bit) -- save carry
+              ||
+                vN := (#raS[31..31] as bit)
+              ||
+                vZ := (raS = 0 as bit)  
+            end -- raS, racN (L)->
+        end -- sout,csout (2)->
+      ;
+        if vmlength then 
+            raA <- (rh as Datapath) 
+          ||
+            raB <- (#cLH[0..0] @ #crh[0..length-2]  as Datapath)
+          ||
+            rac0 <- go 
+          ||
+            raS,racN ->! then 
+               vph := raS --(#raS[0..length-1] as Datapath)
+            end -- raS, racN (H)->
+          ; 
+            pH <- vph 
+          ||
+            pL <- vpl
+          ||
+            if vmacc then 
+                z <- vZ
+            else
+                z  <- (vph = 0 as bit) and vZ
+            end
+          ||
+            n  <- (#vph[31]as bit)
+        else
+            pL <- vpl
+          ||
+            z   <- vZ
+          ||
+            n   <- vN
+        end -- if vmlength
+    end --loop main
+end 
