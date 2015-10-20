@@ -1,0 +1,7 @@
+
+procedure a is
+	array 4 of array 3 of channel c : 1 bits
+	channel z : 1 bits
+begin
+	continue
+end

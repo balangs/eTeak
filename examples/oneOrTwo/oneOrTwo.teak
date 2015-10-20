@@ -1,0 +1,39 @@
+-- Teak output file
+Part 
+{
+  networkName = "oneOrTwo",
+  networkPorts = 
+  [
+    NetworkPort "c" Input 1 (Just (InstanceAccess (Ref 5))),
+    NetworkPort "o" Output 8 (Just (InstanceAccess (Ref 6)))
+  ],
+  networkBody = (Network
+  {
+    networkLinkCount = 39,
+    networkCompCount = 27,
+    networkLinks = 
+    [
+      NetworkLink L23 8 (HalfBuffer 0),
+      NetworkLink L39 1 (HalfBuffer 0)
+    ],
+    networkLinkUsage = [
+      (23,NetworkLinkUsage (LinkAccess (InstanceAccess (Ref 6)) [0,0]) (LinkComp C27 [1])),
+      (39,NetworkLinkUsage (LinkComp C27 [0]) (LinkAccess (InstanceAccess (Ref 5)) [0,0]))],
+    networkComps = [
+      TeakComp C27 (TeakO [
+          (1,TeakOConstant 8 2),
+          (2,TeakOConstant 8 1),
+          (3,TeakOMux [[Imp 0 0],[Imp 1 0]] [(0,0+:1),(1,0+:8),(2,0+:8)])]) [One L39,One L23] NoPos],
+    networkAccesses = 
+    [
+      Access (InstanceAccess (Ref 5)) [PortLinkAccess Passive L39],
+      Access (InstanceAccess (Ref 6)) [PortLinkAccess Active L23]
+    ],
+    networkProperties = [
+      NetworkPosArray (PosArray (array (1,3) [
+        (1,PosFile "/usr/local/share/teak/library/teak/builtin.balsa" (ImportPath ["teak","builtin"])),
+        (2,PosFile "/home/mahdi/Desktop/teak/examples/oneOrTwo/oneOrTwo.balsa" (ImportFile "/home/mahdi/Desktop/teak/examples/oneOrTwo/oneOrTwo.balsa")),
+        (3,PosLabel (Pos 2 1 1) "oneOrTwo")])),
+      NetworkAttrs []]
+  })
+}

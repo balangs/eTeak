@@ -1,0 +1,14 @@
+-- BalsaSimulationTime : get the current simulation time as a string.
+--	This function must be provided genuinely builtin by any simulation system
+function BalsaSimulationTime is builtin : String
+
+-- BalsaSimulationStop : stop the current simulation
+function BalsaSimulationStop is builtin : bit
+
+-- BalsaGetCommandLineArg : get the value of a keyed command line argument 
+-- from the simulator based on the key
+--  This function must be provided genuinely builtin by any simulation system
+function BalsaGetCommandLineArg (key : String) is builtin : String
+
+-- ForwardValuePrintMessage : print a port activity message
+function ForwardValuePrintMessage (parameter portName : String; value : String) is builtin : String

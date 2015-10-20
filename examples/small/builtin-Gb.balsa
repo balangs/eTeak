@@ -1,0 +1,7 @@
+
+import [balsa.sim.string]
+
+procedure s is
+begin
+	print StringLength ("Hello")
+end

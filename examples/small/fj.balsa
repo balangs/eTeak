@@ -1,0 +1,15 @@
+import [balsa.types.token]
+
+procedure fj -- (
+(--
+	input s : 2 bits;
+	output o1 : 0 bits;
+	output o2 : 0 bits
+	--)
+-- ) is
+is
+	channel c1, c2 : token
+begin
+	[ c1 <- token || c2 <- token ] ||
+	[ c1, c2 -> then continue end ]
+end

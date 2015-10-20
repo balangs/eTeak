@@ -1,0 +1,13 @@
+procedure a (
+	input b, c : 4 bits;
+	input d, e : 8 bits
+) is
+begin
+	loop
+		arbitrate b, c then
+			print "B ", b, "C ", c
+		| d, e then
+			print "D ", d, "E ", e
+		end
+	end
+end

@@ -1,0 +1,17 @@
+function Expr is builtin : bit 
+
+procedure ChanOutputAccess (input go : bit; output done : token) is
+loop
+	 go -> then done <- token end
+end
+
+procedure OutputCmd (input go : token; output done : token) is
+	channel v : bit
+begin
+	loop
+		go -> then
+			v <- Expr ()
+		end
+	end ||
+	ChanOutputAccess (v, done)
+end

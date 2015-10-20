@@ -1,0 +1,63 @@
+type u4 is 4 bits
+type s4 is 8 signed bits
+
+type u8 is 8 bits
+type s8 is 8 signed bits
+
+function s4 (i : u4) = i as s4
+function s8 (i : u8) = i as s8
+function u4 (i : s4) = i as u4
+function u8 (i : s8) = i as u8
+
+procedure compare (
+	input i : u4;
+	input j : u8;
+	output eq, ne, lt, gt, ge, le, hi, hs, ls, lo : bit
+) is
+begin
+	loop
+		i, j -> then
+			eq <- i = j ||
+			ne <- i /= j ||
+			lt <- s4 (i) < s8 (j) ||
+			gt <- s4 (i) > s8 (j) ||
+			le <- s4 (i) <= s8 (j) ||
+			ge <- s4 (i) >= s8 (j) ||
+			lo <- i < j ||
+			hi <- i > j ||
+			ls <- i <= j ||
+			hs <- i >= j
+		end
+	end
+end
+
+procedure unary (
+	input i : u8;
+	output onot, neg : u8
+) is
+begin
+	loop
+		i -> then
+			onot <- not i ||
+			neg <- u8 ( - s8 (i))
+		end
+	end
+end
+
+procedure binary (
+	input i : u4;
+	input j : u8;
+	output oand, oor, oxor, oadd, osub : u8
+) is
+	function ext (i : u4) = i as u8
+begin
+	loop
+		i, j -> then
+			oand <- ext (i) and j ||
+			oor <- ext (i) or j ||
+			oxor <- ext (i) xor j ||
+			oadd <- (i + j) as u8 ||
+			osub <- (i - j) as u8
+		end
+	end
+end

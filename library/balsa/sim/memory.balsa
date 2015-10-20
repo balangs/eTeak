@@ -1,0 +1,48 @@
+import [balsa.types.basic]
+
+type BalsaMemory is builtin
+
+-- BalsaMemoryParams : parameters bundle, can add others
+type BalsaMemoryParams is record
+	addressWidth, dataWidth : cardinal
+end
+
+-- BalsaMemoryNew : make a new memory object, this is separate from the procedure
+--	BalsaMemory so we can, for example have a dump-memory routine external to that
+--	procedure.  You could can BalsaMemory with: BalsaMemory (16, 32, <- BalsaMemoryNew (), ...)
+function BalsaMemoryNew is builtin : BalsaMemory
+
+-- BalsaMemory{Read,Write} : simple access functions
+function BalsaMemoryRead (parameter params : BalsaMemoryParams;
+	memory : BalsaMemory; address : params.addressWidth bits) is builtin : params.dataWidth bits
+function BalsaMemoryWrite (parameter params : BalsaMemoryParams;
+	memory : BalsaMemory; address : params.addressWidth bits; data : params.dataWidth bits) is builtin : BalsaMemory
+
+-- BalsaMemory : a single read port memory component, reads a BalsaMemory
+--	object as it is initialised and then waits for an incoming address and
+--	rNw indication
+procedure BalsaMemory (
+	parameter params : BalsaMemoryParams;
+	input memory : BalsaMemory;
+	input address : params.addressWidth bits;
+	input rNw : bit;
+	input write : params.dataWidth bits;
+	output read : params.dataWidth bits
+) is
+	variable memory_v : BalsaMemory
+begin
+	memory -> memory_v;
+	loop
+		address, rNw -> then
+			if rNw then -- read
+				read <- BalsaMemoryRead (params, memory_v, address)
+			else -- write
+				write -> then 
+					sink BalsaMemoryWrite (params, memory_v, address, write)
+				end
+			end
+		end
+	end
+end
+
+-- procedure B1632 is BalsaMemory ({16, 32})

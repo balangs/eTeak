@@ -1,0 +1,59 @@
+type a is enumeration B, C, D, E end
+type b is array 4 of 8 bits
+
+constant a = 10 + 20
+constant a1 = 200 + 1
+constant b = 10 * 20
+constant c = 10 ^ 20
+constant d = 10 - 20
+constant e = 16 and 20
+constant f = 16 or 20
+constant g = 16 xor 20
+constant h = 10 /= 20
+constant i = 10 = 20
+constant j = 10 <= 20
+constant k = 10 < 20
+constant l = 10 >= 20
+constant m = 10 > 20
+constant n = 24 % 10
+constant o = 24 / 10
+
+constant p = a'B
+constant q = B : a
+constant r = C : a
+
+constant s = q = r
+constant t = q /= r
+constant u = q <= r
+constant v = q < r
+constant w = q >= r
+constant x = q > r
+
+constant xa = q > D
+constant y = {1, 2, 3, 4} : b
+constant z = b {1, 2, 3, 4}
+
+constant aa = ({1, 2, 3, 4} : b) : b
+
+constant ab = y = z
+
+constant ac0 = y[0]
+constant ac2 = y[2]
+constant ai = y[0..1]
+
+constant ad = log 10
+
+constant ae = not 10
+constant af = - 10
+
+constant ag = sizeof 8 bits 
+constant ah = sizeof b
+
+type c is array a'B .. D of 4 bits
+
+constant aj = c {1, 2, 3}
+
+constant ak = aj[B..C]
+
+type d is array -100 .. 100 of 4 bits -- FIXME, wrong index type
+

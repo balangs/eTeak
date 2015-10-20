@@ -1,0 +1,13 @@
+
+type word is 8 bits
+
+procedure buffer (
+	input i : 8 bits;
+	output o : 8 bits
+) is
+	variable v : 8 bits
+begin
+	loop
+		i -> v; o <- v ; o <- v
+	end
+end

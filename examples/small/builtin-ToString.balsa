@@ -1,0 +1,19 @@
+-- Test toString
+
+import [balsa.sim.string]
+
+procedure top is
+	type twoStrings is record a, b : String end
+	type array2_8bit is array 0..1 of 8 bits
+	type array2_String is array 0..1 of String
+	type mixed is record a : 8 bits; b : String end
+begin
+	print "A String";
+	print ToString (String, "Hello world");
+	print ToString (array2_8bit, {10, 20});
+	print ToString (array2_String, {"first", "second"});
+	print ToString (mixed, {10, "second"});
+	print ToString (8 signed bits, -5);
+	print ToString (8 bits, 5);
+	continue
+end

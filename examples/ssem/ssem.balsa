@@ -1,0 +1,95 @@
+-- SSEM description modified from Async 2002 Balsa demo
+-- AB & DAE 1 May 2004
+
+import [balsa.types.basic]
+constant debug = true
+
+type word is 32 bits
+type LineAddress is 5 bits
+type CRTAddress is 8 bits
+
+-- SSEM function types
+type SSEMFunc is enumeration
+  JMP, JRP,         -- Abs. and rel. jumps
+  LDN, STO,         -- Load negative and store
+  SUB, SUB_alt,     -- Two encodings for subtract
+  TEST, STOP        -- Skip and stop ;)
+end
+
+-- Complete instruction encoding
+type SSEMInst is record
+  LineNo : LineAddress;
+  CRTNo : CRTAddress;
+  Func : SSEMFunc
+over word
+
+-- SSEM: Top level
+procedure SSEM (
+  -- Memory interface, MemA,MemRNW,MemR,MemW
+  output MemA : LineAddress;
+  output MemRNW : bit;
+  input MemR : word;
+  output MemW : word ;
+  -- Signal halt state
+  output halted : token
+) is
+  
+  variable ACC, ACC_slave : word
+  variable IR : word
+  variable PC, PC_step : LineAddress
+  variable MDR : word
+  variable Stopped : bit
+  
+  -- Extract an address from a word
+  function ExtractAddress (wordVal : word) = (wordVal as SSEMInst).LineNo
+  
+  shared WriteExtractedAddress is begin MemA <- ExtractAddress (IR) end
+  
+  -- Memory operations, shared procedures
+  shared MemoryWrite is begin MemRNW <- 0 || WriteExtractedAddress () || MemW <- ACC_slave end
+  
+  shared MemoryRead is begin MemRNW <- 1 || WriteExtractedAddress () || MemR -> MDR end
+  
+  -- Fetch an instruction IR := M[PC]
+  procedure InstructionFetch is begin MemRNW <- 1 || MemA <- PC || MemR -> IR end
+  
+  shared ZeroACC is begin ACC := 0 end
+  shared ZeroPC is begin PC := 0 end
+  shared SUB is begin MemoryRead (); ACC_slave := (ACC - MDR as word) end
+  
+  -- Modify the programme counter PC
+  shared IncrementPC is begin PC := (PC + PC_step as LineAddress) end
+  shared AddMDRToPC is begin PC_step := ExtractAddress (MDR); IncrementPC () end
+  
+  procedure DecodeAndExecuteInstruction is
+  begin
+(--
+    if debug then
+      print "Executing Instruction: ",  (IR as SSEMInst).Func
+    end ;
+--)
+    case (IR as SSEMInst).Func of
+      JMP then MemoryRead (); ZeroPC (); AddMDRToPC ()
+    | JRP then MemoryRead (); AddMDRToPC ()
+    | LDN then ZeroACC (); SUB ()
+    | STO then MemoryWrite ()
+    | SUB .. SUB_alt then SUB ()
+    | TEST then 
+      if #ACC [31] -- -ve?
+      then IncrementPC () end  -- PC_step should already be 1
+    | STOP then Stopped := 1
+    end ;
+    ACC := ACC_slave
+  end
+begin
+  ZeroACC () || ZeroPC () ||
+  Stopped := 0; -- reset initialisation
+  loop while not Stopped then
+    PC_step := 1;
+    IncrementPC ();
+    InstructionFetch ();
+    DecodeAndExecuteInstruction ()
+  end ; -- loop
+  halted <- token
+  -- halt -- STOP instruction effect
+end

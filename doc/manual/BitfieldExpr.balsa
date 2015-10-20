@@ -1,0 +1,8 @@
+function Expr is builtin : 2 bits
+
+procedure BitfieldExpr (input go : token; output done : bit) is
+loop
+	go -> then
+		show: done <- Expr () as bit
+	end
+end

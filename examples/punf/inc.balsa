@@ -1,0 +1,5 @@
+procedure top is
+	variable v : 8 bits
+loop
+	v := v + 1 as 8 bits
+end

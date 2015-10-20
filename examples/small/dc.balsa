@@ -1,0 +1,9 @@
+
+procedure a is
+	variable v : 8 bits
+begin
+	v := ?;
+	v := (? as 8 bits);
+	v := (? : 8 bits as 8 bits); -- cast issue, FIXME
+	v := (4 : 8 bits as 8 bits)
+end

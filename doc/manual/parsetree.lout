@@ -1,0 +1,201 @@
+@LP
+@Code {data ParSeq = Par "|" Seq}
+@LP
+@Code {data Direction = Input "|" Output}
+@LP
+@Code {data CheckMode = Explicit "|" Inserted "|" Transient}
+@LP
+@Code {data SimpleBinding = SimpleBinding "{" simpleBindingName :: String, simpleBindingValue :: Integer "}"}
+@LP
+@Code {data Attr = ExprAttr String Expr}
+@LP
+@Code {data Interval =
+    IntervalE Pos Expr Expr
+  "|" IntervalOver Pos Type
+  "|" Interval "{" intervalRange :: (Integer, Integer), intervalType :: Type "}"}
+@LP
+@Code {data Sense = Passive "|" Active}
+@LP
+@Code {data Namespace = OtherNamespace "|" TypeNamespace "|" ProcNamespace "|" PosNamespace}
+@LP
+@Code {data BindingValue value => Binding value = Binding "{"
+  bindingIndex :: Int,
+  bindingName :: String,
+  bindingNamespace :: Namespace,
+  bindingCompleteness :: Completeness,
+  bindingValue :: value "}"}
+@LP
+@Code {data BindingValue value => Context value =
+    EmptyContext
+  "|" Context "{"
+      contextVisibleNameRange :: (Int, Int),
+      contextBindings :: Array Int (Binding value) "}"}
+@LP
+@Code {data Ref =
+    Ref Int
+  "|" IndexRef Ref Integer}
+@LP
+@Code {data Decl =
+    NoDecl "{" declPos :: Pos "}"
+  "|" PosDecl "{" declPos :: Pos "}"
+  "|" ExprDecl "{" declPos :: Pos, declExpr :: Expr "}"
+  "|" ChanExprDecl "{" declPos :: Pos, declChan :: Chan "}"
+  "|" ProcDecl "{" declPos :: Pos, declFormals :: Context Decl, declAttrs :: [Attr], declCmd :: Cmd "}"
+  "|" ProcAliasDecl "{" declPos :: Pos, declCallable :: Callable, declFormals :: Context Decl,
+      declActuals :: [ProcActual] "}"
+  "|" FuncDecl "{" declPos :: Pos, declFormals :: Context Decl, declExpr :: Expr "}"
+  "|" BuiltinFuncDecl "{" declPos :: Pos, declFormals :: Context Decl, declType :: Type "}"
+  "|" VarDecl "{" declPos :: Pos, declType :: Type "}"
+  "|" ParamDecl "{" declPos :: Pos, declIsParam :: Bool, declType :: Type "}"
+  "|" TypeParamDecl "{" declPos :: Pos "}"
+  "|" ChanDecl "{" declPos :: Pos, declType :: Type "}"
+  "|" PortDecl "{" declPos :: Pos, declDirection :: Direction, declType :: Type "}"
+  "|" OpenChanDecl "{" declPos :: Pos, declRef :: Ref, declType :: Type "}"
+  "|" OpenChanDeclE "{" declPos :: Pos, declRef :: Ref, declExprs :: [[(Expr, Expr)]] "}"
+  "|" FlatArrayedDecl "{" declPos :: Pos, declInterval :: Interval, declArray :: Array Integer Decl "}"
+  "|" AliasDecl "{" declPos :: Pos, declRef :: Ref, declType :: Type "}"
+  "|" SharedDecl "{" declPos :: Pos, declFormals :: Context Decl, declCmd :: Cmd "}"
+  "|" TypeDecl "{" declPos :: Pos, declTypeBody :: TypeBody "}"
+  "|" ArrayedDecl "{" declPos :: Pos, declInterval :: Interval, declSubDecl :: Decl "}"
+  "|" CaseDecl "{" declPos :: Pos, declCaseExpr :: Expr, declCaseGuards :: [CaseDeclGuard], declCaseElse :: Decl "}"
+  "|" DeferDecl "{" declPos :: Pos, declCompleteness :: Completeness, declDecl :: Decl "}"}
+@LP
+@Code {data CaseDeclGuard =
+    CaseDeclGuard Pos [CaseMatch] Decl
+  "|" ListCaseDeclGuard [CaseDeclGuard]}
+@LP
+@Code {data RecordElem = RecordElem Pos String Type}
+@LP
+@Code {data TypeBody =
+    AliasType Pos Type
+  "|" RecordType Pos [RecordElem] Type
+  "|" EnumType Pos (Context Decl) Type}
+  
+@Code {data Type =
+    NoType
+  "|" NameType Pos String
+  "|" NumType Pos Expr Bool
+  "|" ArrayType Interval Type
+  "|" BuiltinType String
+  -- Final types
+  "|" Type Ref
+  "|" Bits Int
+  "|" SignedBits Int
+  "|" StructRecordType String [RecordElem] Type
+  "|" StructEnumType String [SimpleBinding] Type
+  "|" StructArrayType Interval Type}
+@LP
+@Code {data Lvalue =
+    CastLvalue Pos Type Lvalue
+  "|" TypeCheckLvalue Pos CheckMode Type Lvalue
+  "|" NameLvalue Pos String
+  "|" RecElemLvalue Pos Lvalue String
+  "|" SmashLvalue Pos Lvalue
+  "|" IndexLvalue Pos Lvalue Expr
+  "|" SliceLvalue Pos Lvalue Expr Expr
+  --
+  "|" BitfieldLvalue Pos Type (Slice Int) Lvalue
+  "|" CaseLvalue Pos Expr [[Implicant]] [Lvalue]
+  --
+  "|" VarWrite Pos Type (Slice Int) Ref}
+@LP
+@Code {data Chan =
+    NameChan Pos String
+  "|" IndexChan Pos Chan Expr
+  "|" SliceChan Pos Chan Expr Expr
+  "|" PartialArrayedChan Pos Ref
+  "|" FlatArrayedChan Pos Interval [Chan]
+  "|" CheckChan Pos Decl Chan
+  "|" Chan Pos Ref}
+@LP
+@Code {data Callable =
+    Callable Ref
+  "|" NameCallable Pos String}
+@LP
+@Code {data Value =
+    IntValue Integer
+  "|" ImpValue Implicant
+  "|" StringValue String
+  "|" DontCareValue}
+@LP
+@Code {data BinOp = BinMul "|" BinDiv "|" BinMod "|" BinPow
+  "|" BinAdd "|" BinSub
+  "|" BinAnd "|" BinOr "|" BinXor
+  "|" BinLT "|" BinGT "|" BinLE "|" BinGE "|" BinNE "|" BinEQ}
+@LP
+@Code {data UnOp = UnNot "|" UnNeg "|" UnLog "|" UnSmash}
+@LP
+@Code {data Expr =
+    NameExpr Pos String
+  "|" BinExpr Pos Type BinOp Expr Expr
+  "|" IndexExpr Pos Expr Expr
+  "|" SliceExpr Pos Expr Expr Expr
+  "|" RecElemExpr Pos Expr String
+  "|" UnExpr Pos Type UnOp Expr
+  "|" CastExpr Pos Type Expr
+  "|" TypeCheckExpr Pos CheckMode Type Expr
+  "|" ConstCheckExpr Pos Expr
+  "|" ArrayElemTypeCheckExpr Pos Type Expr
+  "|" CallExpr Pos Callable (Context Decl) [FuncActual]
+  "|" BuiltinCallExpr Pos String [FuncActual] [Expr] Type
+  "|" ConsExpr Pos Type Type [Expr]
+  "|" AppendExpr Pos Type Expr Expr
+  "|" EnumElemExpr Pos Type String
+  "|" SizeofExpr Pos Type
+  --
+  "|" BitfieldExpr Pos Type (Slice Int) Expr
+  "|" ExtendExpr Pos Type Int Bool Expr
+  "|" CaseExpr Pos Expr [[Implicant]] [Expr]
+  --
+  "|" ValueExpr Pos Type Value
+  "|" VarRead Pos Type (Slice Int) Ref
+  "|" OpenChanRead Pos Type (Slice Int) Ref
+  "|" PartialArrayedRead Pos Ref
+  "|" MaybeTypeExpr Pos Ref
+  "|" MaybeOtherExpr Pos Ref
+  "|" Expr Pos Ref}
+@LP
+@Code {data CaseMatch =
+    ExprCaseMatch Pos Expr
+  "|" RangeCaseMatch Pos Expr Expr
+  "|" ImpCaseMatches Pos [Implicant]}
+@LP
+@Code {data CaseCmdGuard =
+    CaseCmdGuard Pos [CaseMatch] Cmd
+  "|" ForCaseCmdGuard Pos String [CaseMatch] (Context Decl) Cmd
+  "|" ListCaseCmdGuard [CaseCmdGuard]}
+@LP
+@Code {data ChanGuard = ChanGuard Pos [Chan] (Context Decl) Cmd}
+@LP
+@Code {data Cmd =
+    NoCmd
+  "|" LabelCmd Pos String Cmd
+  "|" SeqCmd Pos [Cmd]
+  "|" ParCmd Pos [Cmd]
+  "|" BlockCmd Pos (Context Decl) Cmd
+  "|" EncInputCmd Pos ChanGuard
+  "|" InputCmd Pos Chan Lvalue
+  "|" OutputCmd Pos Chan Expr
+  "|" SelectCmd Pos Bool [ChanGuard]
+  "|" AssignCmd Pos Lvalue Expr
+  "|" SinkCmd Pos Expr
+  "|" CaseCmdE Pos Expr [CaseCmdGuard] Cmd
+  "|" CaseCmd Pos Expr [[Implicant]] [Cmd]
+  "|" CallCmd Pos Callable (Context Decl) [ProcActual]
+  "|" InstanceCallCmd Pos Callable [Chan]
+  "|" SharedCallCmd Pos Callable
+  "|" PrintCmd Pos [Expr]
+  "|" ForCmd Pos ParSeq Interval (Context Decl) Cmd
+  "|" LoopCmd Pos Cmd
+  "|" WhileCmd Pos Cmd Expr Cmd
+  "|" DeferCmd Completeness Cmd}
+@LP
+@Code {data FuncActual =
+    TypeFuncActual "{" funcActualType :: Type "}"
+  "|" ExprFuncActual "{" funcActualIsParameter :: Bool, funcActualExpr :: Expr "}"}
+@LP
+@Code {data ProcActual =
+    TypeProcActual "{" procActualType :: Type "}"
+  "|" ExprProcActual "{" procActualExpr :: Expr "}"
+  "|" ChanProcActual "{" procActualChan :: Chan "}"
+  "}"}

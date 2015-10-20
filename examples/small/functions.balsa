@@ -1,0 +1,9 @@
+
+function add1 (a : 8 bits) = a + 1
+
+procedure a is
+	variable v : 8 bits
+begin
+	sink add1 (10);
+	sink add1 (v)
+end

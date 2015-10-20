@@ -1,0 +1,17 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [balsa.types.basic]
+
+procedure buffer (
+	parameter t : type;
+	input i : t;
+	output o : t
+) is
+	variable v : t
+begin
+	loop i -> v; o <- v end
+end

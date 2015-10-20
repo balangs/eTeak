@@ -1,0 +1,8 @@
+procedure a (
+	array 2 of input i : 1 bits;
+	output o : 2 bits
+) is
+	type a2 is array 2 of bit
+begin	
+	i -> then o <- a2 {i[0], i[1]} as 2 bits end
+end

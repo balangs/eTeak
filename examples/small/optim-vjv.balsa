@@ -1,0 +1,17 @@
+procedure vjv (
+	input v1, v2, v3 : 8 bits;
+	output o : array 3 of 8 bits
+)
+(* optim="offoptims:all" *)
+is
+begin
+	loop
+		v1 -> then
+			v2 -> then
+				v3 -> then
+					o <- {v1, v2, v3}
+				end
+			end
+		end
+	end
+end

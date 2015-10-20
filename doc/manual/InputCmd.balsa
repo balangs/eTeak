@@ -1,0 +1,13 @@
+procedure Lvalue (input go : bit; output done : token) is loop go -> then done <- token end end
+
+procedure ChanInputAccess (input go : token; output done : bit) is
+loop
+	 go -> then done <- 0 end
+end
+
+procedure InputCmd (input go : token; output done : token) is
+	channel v : bit
+begin
+	ChanInputAccess (go, v) ||
+	Lvalue (v, done)
+end

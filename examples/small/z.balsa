@@ -1,0 +1,15 @@
+constant dual = 2
+
+type dualT is dual bits
+
+procedure a (
+	input b1 : bit;
+	input b2 : bit;
+	output c : dualT
+) is
+	variable v1, v2 : bit
+begin
+	loop
+		b1 -> v1 || b2 -> v2; c <- v1 + v2
+	end
+end

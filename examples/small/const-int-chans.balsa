@@ -1,0 +1,7 @@
+procedure a (output o : 16 bits) is
+	channel c1, c2 : 8 bits
+begin
+	loop
+		c1 <- 0 || c2 <- 1 || c1, c2 -> then o <- (#c1 @ #c2) as 16 bits end
+	end
+end

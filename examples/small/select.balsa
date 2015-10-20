@@ -1,0 +1,14 @@
+procedure t is
+	variable v : bit
+	channel c1, c2 : 8 bits
+begin
+	v := 0;
+	if v then
+		c1 <- 10
+	else c2 <- 20
+	end ||
+	select c1 then
+		print "C1"
+	| c2 then print "C2"
+	end
+end

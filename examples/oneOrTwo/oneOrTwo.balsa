@@ -1,0 +1,6 @@
+procedure oneOrTwo (input c : bit; output o : 8 bits) is
+loop
+        c -> then
+                if c then o <- 1 else o <- 2 end
+        end
+end

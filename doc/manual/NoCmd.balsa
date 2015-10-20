@@ -1,0 +1,1 @@
+procedure NoCmd (* reallyInstantiate *) is begin continue end

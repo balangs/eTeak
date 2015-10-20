@@ -1,0 +1,33 @@
+
+
+procedure buffer (input i : 8 bits; output o : 8 bits) is
+	variable v : 8 bits
+begin
+	loop i -> v; o <- v end
+end
+
+type doit is enumeration no, yes end
+
+procedure out (parameter p : 8 bits;
+	output o : 8 bits) is
+begin
+	o <- p
+end
+
+procedure out8 is out (8)
+
+procedure top (parameter p : doit;
+	input i : 8 bits; output o : 8 bits)
+is
+	variable v : 8 bits
+begin
+	-- if p = doit'yes then
+	-- FIXME, the yes on the next line should work
+	if p = yes then
+		buffer (i, o)
+	else
+		i -> v; o <- v
+	end
+end
+
+-- procedure t is top (yes)

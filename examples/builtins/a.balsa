@@ -1,0 +1,21 @@
+import [balsa.sim.string]
+
+procedure a is
+	variable s1, s2 : String
+	type aT is 32 bits
+	variable a : aT
+begin
+	s1 := "Hello, " || s2 := "world";
+	a := 1000;
+	print s1;
+	print StringAppend (s1, s2);
+	print a;
+	loop
+	while a < 1040 then
+		print NumberToString (aT, a, 16, 2, 1);
+		print NumberToString (aT, a, 16, 4, 1);
+		print NumberToString (aT, a, 10, 4, 0);
+		print NumberToString (aT, a, 32, 4, 1);
+	a := a + 10 as aT
+	end
+end

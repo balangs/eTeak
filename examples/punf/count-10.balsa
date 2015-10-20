@@ -1,0 +1,12 @@
+-- This file is similar to count20 but tests out negative number handling
+
+procedure top is
+	variable v : 8 signed bits
+loop
+	v := 0;
+	loop
+	while v > -10 then
+		print "Hello world", v;
+		v := v - 1 as 8 signed bits
+	end
+end

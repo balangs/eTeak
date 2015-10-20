@@ -1,0 +1,26 @@
+
+import [balsa.sim.string]
+
+(--
+type TokenTail is record
+	token : String;
+	tail : String
+end
+
+function StringGetToken (line : String) is builtin : TokenTail
+--)
+
+procedure a is
+	variable line : String
+	variable step : StringTokenTail
+begin
+	line := "Hello world this is a sentence";
+	step.tail := line;
+
+	step := StringGetToken (step.tail);
+	print step.token;
+	step := StringGetToken (step.tail);
+	print step.token;
+	step := StringGetToken (step.tail);
+	print step.token
+end

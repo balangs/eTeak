@@ -1,0 +1,11 @@
+-- FIXME
+
+procedure a (
+	array 5 of input b : bit
+) is
+	variable v : bit
+begin
+	b[5] -> then
+		continue
+	end
+end

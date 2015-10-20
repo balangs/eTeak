@@ -1,0 +1,11 @@
+procedure a -- (
+	-- input a1, a2, a3 : 8 bits;
+	-- output o : 24 bits
+-- ) is
+is
+	variable v1, v2, v3 : 8 bits
+	variable v4 : array 3 of 8 bits
+begin
+	v4 := 0 as array 3 of 8 bits;
+	v4 := {v1, v2, v3}
+end

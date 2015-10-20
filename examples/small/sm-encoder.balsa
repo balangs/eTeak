@@ -1,0 +1,16 @@
+procedure a (
+	input b : 2 bits;
+	output o : 8 bits
+) is
+begin
+	loop
+		b -> then
+			case b of
+			| 0 then o <- 10
+			| 1 then o <- 20
+			| 2 then o <- 30
+			| 3 then o <- 40
+			end
+		end
+	end
+end

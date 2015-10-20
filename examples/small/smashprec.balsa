@@ -1,0 +1,18 @@
+
+type A is record
+	a, b : 8 bits
+end
+
+procedure a (array 1 of input a : A; output o : 8 bits) is
+begin
+	a[0] -> then
+		o <- a[0].a
+	end
+end
+
+procedure b (input a : A; output o : array 8 of bit) is
+begin
+	a -> then
+		o <- #a.a
+	end
+end

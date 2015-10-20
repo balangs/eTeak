@@ -1,0 +1,15 @@
+import [balsa.sim.string]
+
+type a is enumeration b, c end
+
+type b is record
+	a : a;
+	b : 8 bits
+end
+
+procedure top is
+begin
+	print FromString (b, "{b, 10}");
+	print FromString (b, "{c, 10}");
+	print FromString (b, "{d, 10}")
+end

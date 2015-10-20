@@ -1,0 +1,7 @@
+procedure a is
+	variable v : 8 bits
+begin
+	v := v;
+	#v[3..0] := {0, 0, 0, 0};
+	(v as array 2 of 4 bits)[0] := 0
+end

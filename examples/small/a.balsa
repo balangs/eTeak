@@ -1,0 +1,86 @@
+(--
+
+--)
+
+-- import [a]
+
+import [balsa.sim.sim]
+
+constant a = 1 + 4 : 32 bits
+
+procedure a (input b, c : 4 bits; sync d) is
+	variable v : 32 bits
+begin
+	continue ; continue || halt
+end
+
+constant z = 10[a]
+
+procedure y is begin end
+
+constant v = 1 + 2 * 10
+
+procedure w (array 1 .. 4 of sync a, b; array 3 of input c : 8 bits) is
+channel a : bit
+sync b, c
+array 1 .. 4 of channel d : bit
+begin
+	if a then a := b | b then c := d end
+end
+
+function a (b, f : 8 bits; g : bit) = 10 : bit
+
+type a is enumeration
+	a = 10, b
+end
+
+if g then constant l = 10 end
+
+procedure forever_loop (
+	sync forever
+) is
+begin
+	loop
+		sync forever
+	end
+end
+
+procedure command_while_expr_loop (
+	sync cwe_mid
+) is
+	variable guard : bit
+begin
+	guard := 1;
+
+	loop
+		sync cwe_mid
+	while guard
+	end
+end
+
+procedure while_guarded_command_loop (
+	sync cwg_mid
+) is
+	variable guard : bit
+begin
+	guard := 1;
+
+	loop
+	while guard then
+		sync cwg_mid
+	end
+end
+
+procedure command_while_guarded_command_loop (
+	sync cwg_pre, cwg_mid
+) is
+	variable guard : bit
+begin
+	guard := 1;
+
+	loop
+		sync cwg_pre
+	while guard then
+		sync cwg_mid
+	end
+end

@@ -1,0 +1,9 @@
+procedure a
+is
+	variable x, y : 8 bits
+	variable z : 9 bits
+begin
+	x := #z[8..1] as 8 bits;
+	y := #z[7..0] as 8 bits;
+	z := x + y
+end

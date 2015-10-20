@@ -1,0 +1,18 @@
+procedure a is
+	type vType is array 12 of 1 bits
+	variable v : vType
+	variable x : array 3 of 8 bits
+begin
+(--
+	v := 0 as vType;
+	v[7..4] := 0 as array 4 of 1 bits;
+	sink v;
+	sink v[3..0];
+	sink v[5..1]
+	--)
+	x[0] := x[2];
+	x[1] := x[0];
+	x[2] := x[1]
+	; x := (0 as array 3 of 8 bits)
+	; sink (#(x))[4..14]
+end

@@ -1,0 +1,12 @@
+procedure a
+is
+	variable x : array 4 of 8 bits
+begin
+	x[0] := 0;
+	x[1] := 0;
+	x[2] := 0;
+	x[3] := 0;
+	sink x;
+	-- sink {x[0], x[1]}, FIXME, can't determine type.  Default to array?
+	sink {x[0], x[1], x[2]} : array 3 of 8 bits
+end

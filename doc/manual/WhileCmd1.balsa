@@ -1,0 +1,10 @@
+procedure Cmd (* reallyInstantiate *) is begin continue end
+function Expr is builtin : bit 
+
+procedure WhileCmd1 is
+begin
+	loop
+		Cmd ()
+	while Expr ()
+	end
+end

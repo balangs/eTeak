@@ -1,0 +1,1046 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Creator: fig2dev Version 3.2 Patchlevel 5 -->
+
+<!-- CreationDate: Tue May 11 14:22:32 2010 -->
+
+<!-- Magnification: 1.000 -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="8.0in"
+   height="6.2in"
+   viewBox="3878 3075 9644 7447"
+   id="svg2855"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="traverse.fig">
+  <metadata
+     id="metadata3139">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3137">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 279 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="720 : 279 : 1"
+       inkscape:persp3d-origin="360 : 186 : 1"
+       id="perspective3141" />
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1233"
+     inkscape:window-height="1039"
+     id="namedview3135"
+     showgrid="false"
+     inkscape:zoom="0.42293907"
+     inkscape:cx="360"
+     inkscape:cy="274.27119"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2855" />
+  <g
+     style="stroke-width:.025in; stroke:black; fill:none"
+     id="g2857">
+    <!-- Line: box -->
+    <rect
+       x="7800"
+       y="3900"
+       width="600"
+       height="1200"
+       rx="150"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect2859" />
+    <!-- Text -->
+    <g
+       transform="translate(8167,4500) rotate(-90.00021046)"
+       id="g2861">
+      <text
+         xml:space="preserve"
+         x="0"
+         y="0"
+         stroke="#000000"
+         fill="#000000"
+         font-family="Helvetica"
+         font-style="normal"
+         font-weight="bold"
+         font-size="144"
+         text-anchor="middle"
+         id="text2863">mid</text>
+    </g>
+    <!-- Line: box -->
+    <rect
+       x="4800"
+       y="3900"
+       width="600"
+       height="1200"
+       rx="150"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect2865" />
+    <!-- Text -->
+    <g
+       transform="translate(5130,4500) rotate(-90.00021046)"
+       id="g2867">
+      <text
+         xml:space="preserve"
+         x="0"
+         y="0"
+         stroke="#000000"
+         fill="#000000"
+         font-family="Helvetica"
+         font-style="normal"
+         font-weight="bold"
+         font-size="144"
+         text-anchor="middle"
+         id="text2869">pre</text>
+    </g>
+    <!-- Line: box -->
+    <rect
+       x="5550"
+       y="7875"
+       width="900"
+       height="600"
+       rx="0"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect2871" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="6000"
+       y="8280"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="bold"
+       font-size="216"
+       text-anchor="middle"
+       id="text2873">C</text>
+    <!-- Line: box -->
+    <rect
+       x="7350"
+       y="7875"
+       width="900"
+       height="600"
+       rx="0"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect2875" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="7800"
+       y="8280"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="bold"
+       font-size="216"
+       text-anchor="middle"
+       id="text2877">N</text>
+    <!-- Line: box -->
+    <rect
+       x="8850"
+       y="7875"
+       width="900"
+       height="600"
+       rx="0"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect2879" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="9299"
+       y="8280"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="bold"
+       font-size="216"
+       text-anchor="middle"
+       id="text2881">V</text>
+    <!-- Line: box -->
+    <rect
+       x="10350"
+       y="7875"
+       width="900"
+       height="600"
+       rx="0"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect2883" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="10800"
+       y="8280"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="bold"
+       font-size="216"
+       text-anchor="middle"
+       id="text2885">N</text>
+    <!-- Line: box -->
+    <rect
+       x="6600"
+       y="6975"
+       width="600"
+       height="600"
+       rx="0"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect2887" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="6899"
+       y="7342"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="bold"
+       font-size="144"
+       text-anchor="middle"
+       id="text2889">cC</text>
+    <!-- Line -->
+    <polygon
+       points="5550,9375 11250,9375 11100,9825 5700,9825 5550,9375 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polygon2891" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="8400"
+       y="9645"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="bold"
+       font-size="144"
+       text-anchor="middle"
+       id="text2893">gatherResult</text>
+    <!-- Circle -->
+    <circle
+       cx="8025"
+       cy="9000"
+       r="150"
+       style="stroke:#000000;stroke-width:15;"
+       id="circle2895" />
+    <!-- Circle -->
+    <circle
+       cx="9525"
+       cy="9000"
+       r="150"
+       style="stroke:#000000;stroke-width:15;"
+       id="circle2897" />
+    <!-- Circle -->
+    <circle
+       cx="11025"
+       cy="9000"
+       r="150"
+       style="stroke:#000000;stroke-width:15;"
+       id="circle2899" />
+    <!-- Circle -->
+    <circle
+       cx="6225"
+       cy="9000"
+       r="150"
+       style="stroke:#000000;stroke-width:15;"
+       id="circle2901" />
+    <!-- Line -->
+    <polyline
+       points="5775,7275 6360,7275 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2903" />
+    <!-- Arrowhead on XXXpoint 5775 7275 - 6630 7275-->
+    <polygon
+       points="6358 7335 6598 7275 6358 7215 6358 7335  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2905" />
+    <!-- Line -->
+    <polyline
+       points="8400,9825 8400,10275 11610,10275 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2907" />
+    <!-- Arrowhead on XXXpoint 8400 10275 - 11880 10275-->
+    <polygon
+       points="11608 10335 11848 10275 11608 10215 11608 10335  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2909" />
+    <!-- Line -->
+    <polyline
+       points="5775,8475 5775,9135 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2911" />
+    <!-- Arrowhead on XXXpoint 5775 8475 - 5775 9405-->
+    <polygon
+       points="5715 9133 5775 9373 5835 9133 5715 9133  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2913" />
+    <!-- Line -->
+    <polyline
+       points="7575,8475 7575,9135 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2915" />
+    <!-- Arrowhead on XXXpoint 7575 8475 - 7575 9405-->
+    <polygon
+       points="7515 9133 7575 9373 7635 9133 7515 9133  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2917" />
+    <!-- Line -->
+    <polyline
+       points="9075,8475 9075,9135 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2919" />
+    <!-- Arrowhead on XXXpoint 9075 8475 - 9075 9405-->
+    <polygon
+       points="9015 9133 9075 9373 9135 9133 9015 9133  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2921" />
+    <!-- Line -->
+    <polyline
+       points="10575,8475 10575,9135 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2923" />
+    <!-- Arrowhead on XXXpoint 10575 8475 - 10575 9405-->
+    <polygon
+       points="10515 9133 10575 9373 10635 9133 10515 9133  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2925" />
+    <!-- Line -->
+    <polyline
+       points="5025,7275 5775,7275 5775,7635 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2927" />
+    <!-- Arrowhead on XXXpoint 5775 7275 - 5775 7905-->
+    <polygon
+       points="5715 7633 5775 7873 5835 7633 5715 7633  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2929" />
+    <!-- Line -->
+    <polyline
+       points="7575,7275 7575,7635 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2931" />
+    <!-- Arrowhead on XXXpoint 7575 7275 - 7575 7905-->
+    <polygon
+       points="7515 7633 7575 7873 7635 7633 7515 7633  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2933" />
+    <!-- Line -->
+    <polyline
+       points="9075,7275 9075,7635 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2935" />
+    <!-- Arrowhead on XXXpoint 9075 7275 - 9075 7905-->
+    <polygon
+       points="9015 7633 9075 7873 9135 7633 9015 7633  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2937" />
+    <!-- Line -->
+    <polyline
+       points="7200,7275 10575,7275 10575,7635 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2939" />
+    <!-- Arrowhead on XXXpoint 10575 7275 - 10575 7905-->
+    <polygon
+       points="10515 7633 10575 7873 10635 7633 10515 7633  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon2941" />
+    <!-- Line -->
+    <polyline
+       points="8025,8475 8025,8730 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2943" />
+    <!-- Arrowhead on XXXpoint 8025 8475 - 8025 8865-->
+    <polygon
+       points="7995 8729 8025 8849 8055 8729 7995 8729  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2945" />
+    <!-- Line -->
+    <polyline
+       points="9525,8475 9525,8730 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2947" />
+    <!-- Arrowhead on XXXpoint 9525 8475 - 9525 8865-->
+    <polygon
+       points="9495 8729 9525 8849 9555 8729 9495 8729  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2949" />
+    <!-- Line -->
+    <polyline
+       points="11025,8475 11025,8730 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2951" />
+    <!-- Arrowhead on XXXpoint 11025 8475 - 11025 8865-->
+    <polygon
+       points="10995 8729 11025 8849 11055 8729 10995 8729  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2953" />
+    <!-- Line -->
+    <polyline
+       points="5025,9000 5955,9000 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2955" />
+    <!-- Arrowhead on XXXpoint 5025 9000 - 6090 9000-->
+    <polygon
+       points="5954 9030 6074 9000 5954 8970 5954 9030  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2957" />
+    <!-- Line -->
+    <polyline
+       points="6375,9000 7755,9000 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2959" />
+    <!-- Arrowhead on XXXpoint 6375 9000 - 7890 9000-->
+    <polygon
+       points="7754 9030 7874 9000 7754 8970 7754 9030  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2961" />
+    <!-- Line -->
+    <polyline
+       points="8175,9000 9255,9000 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2963" />
+    <!-- Arrowhead on XXXpoint 8175 9000 - 9390 9000-->
+    <polygon
+       points="9254 9030 9374 9000 9254 8970 9254 9030  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2965" />
+    <!-- Line -->
+    <polyline
+       points="9675,9000 10755,9000 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2967" />
+    <!-- Arrowhead on XXXpoint 9675 9000 - 10890 9000-->
+    <polygon
+       points="10754 9030 10874 9000 10754 8970 10754 9030  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2969" />
+    <!-- Line -->
+    <polyline
+       points="11175,9000 11730,9000 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2971" />
+    <!-- Arrowhead on XXXpoint 11175 9000 - 11865 9000-->
+    <polygon
+       points="11729 9030 11849 9000 11729 8970 11729 9030  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2973" />
+    <!-- Line -->
+    <polyline
+       points="6225,8625 6225,8730 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2975" />
+    <!-- Arrowhead on XXXpoint 6225 8625 - 6225 8865-->
+    <polygon
+       points="6195 8729 6225 8849 6255 8729 6195 8729  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2977" />
+    <!-- Line -->
+    <polyline
+       points="6225,8475 6225,8625 6900,8625 6900,7694 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2979" />
+    <!-- Arrowhead on XXXpoint 6900 8625 - 6900 7560-->
+    <polygon
+       points="6930 7696 6900 7576 6870 7696 6930 7696  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2981" />
+    <!-- Line -->
+    <polyline
+       points="6225,6525 6225,7755 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2983" />
+    <!-- Arrowhead on XXXpoint 6225 6525 - 6225 7890-->
+    <polygon
+       points="6195 7754 6225 7874 6255 7754 6195 7754  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2985" />
+    <!-- Line -->
+    <polyline
+       points="8025,6525 8025,7755 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2987" />
+    <!-- Arrowhead on XXXpoint 8025 6525 - 8025 7890-->
+    <polygon
+       points="7995 7754 8025 7874 8055 7754 7995 7754  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2989" />
+    <!-- Line -->
+    <polyline
+       points="9525,6525 9525,7755 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2991" />
+    <!-- Arrowhead on XXXpoint 9525 6525 - 9525 7890-->
+    <polygon
+       points="9495 7754 9525 7874 9555 7754 9495 7754  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2993" />
+    <!-- Line -->
+    <polyline
+       points="11025,6525 11025,7755 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2995" />
+    <!-- Arrowhead on XXXpoint 11025 6525 - 11025 7890-->
+    <polygon
+       points="10995 7754 11025 7874 11055 7754 10995 7754  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon2997" />
+    <!-- Line -->
+    <polyline
+       points="9525,7875 9525,8355 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline2999" />
+    <!-- Arrowhead on XXXpoint 9525 7875 - 9525 8490-->
+    <polygon
+       points="9495 8354 9525 8474 9555 8354 9495 8354  "
+       style="stroke:#000000;stroke-width:7; fill:#000000;"
+       id="polygon3001" />
+    <!-- Line -->
+    <polyline
+       points="9075,8475 9075,8325 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3003" />
+    <!-- Line: box -->
+    <rect
+       x="9000"
+       y="8250"
+       width="150"
+       height="150"
+       rx="0"
+       style="stroke:#000000;stroke-width:0; stroke-linejoin:miter; stroke-linecap:butt; fill:#000000; "
+       id="rect3005" />
+    <!-- Line: box -->
+    <rect
+       x="6075"
+       y="6375"
+       width="5100"
+       height="300"
+       rx="150"
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; stroke-dasharray:40 40;"
+       id="rect3007" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="5025"
+       y="8925"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3009">cons</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="5025"
+       y="7200"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3011">context</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="11250"
+       y="8925"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3013">node</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="11025"
+       y="10200"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3015">result</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="8775"
+       y="6600"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="middle"
+       id="text3017">node arguments</text>
+    <!-- Line -->
+    <polygon
+       points="10800,4500 10800,5700 11400,5550 11400,4650 10800,4500 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polygon3019" />
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="11099"
+       y="5145"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="bold"
+       font-size="144"
+       text-anchor="middle"
+       id="text3021">g[,]</text>
+    <!-- Line: box -->
+    <rect
+       x="12000"
+       y="3900"
+       width="600"
+       height="1200"
+       rx="150"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect3023" />
+    <!-- Text -->
+    <g
+       transform="translate(12345,4500) rotate(-90.00021046)"
+       id="g3025">
+      <text
+         xml:space="preserve"
+         x="0"
+         y="0"
+         stroke="#000000"
+         fill="#000000"
+         font-family="Helvetica"
+         font-style="normal"
+         font-weight="bold"
+         font-size="144"
+         text-anchor="middle"
+         id="text3027">post</text>
+    </g>
+    <!-- Line -->
+    <polyline
+       points="3900,4200 4560,4200 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3029" />
+    <!-- Arrowhead on XXXpoint 3900 4200 - 4830 4200-->
+    <polygon
+       points="4558 4260 4798 4200 4558 4140 4558 4260  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3031" />
+    <!-- Line -->
+    <polyline
+       points="5400,4200 6060,4200 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3033" />
+    <!-- Arrowhead on XXXpoint 5400 4200 - 6330 4200-->
+    <polygon
+       points="6058 4260 6298 4200 6058 4140 6058 4260  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3035" />
+    <!-- Line -->
+    <polyline
+       points="9900,4200 11760,4200 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3037" />
+    <!-- Arrowhead on XXXpoint 9900 4200 - 12030 4200-->
+    <polygon
+       points="11758 4260 11998 4200 11758 4140 11758 4260  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3039" />
+    <!-- Line -->
+    <polyline
+       points="8400,4200 9060,4200 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3041" />
+    <!-- Arrowhead on XXXpoint 8400 4200 - 9330 4200-->
+    <polygon
+       points="9058 4260 9298 4200 9058 4140 9058 4260  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3043" />
+    <!-- Line -->
+    <polyline
+       points="6900,4200 7560,4200 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3045" />
+    <!-- Arrowhead on XXXpoint 6900 4200 - 7830 4200-->
+    <polygon
+       points="7558 4260 7798 4200 7558 4140 7558 4260  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3047" />
+    <!-- Line -->
+    <polyline
+       points="9900,4800 10560,4800 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3049" />
+    <!-- Arrowhead on XXXpoint 9900 4800 - 10830 4800-->
+    <polygon
+       points="10558 4860 10798 4800 10558 4740 10558 4860  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3051" />
+    <!-- Line -->
+    <polyline
+       points="6900,4800 7560,4800 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3053" />
+    <!-- Arrowhead on XXXpoint 6900 4800 - 7830 4800-->
+    <polygon
+       points="7558 4860 7798 4800 7558 4740 7558 4860  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3055" />
+    <!-- Line -->
+    <polyline
+       points="6600,3300 6600,3660 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3057" />
+    <!-- Arrowhead on XXXpoint 6600 3300 - 6600 3930-->
+    <polygon
+       points="6540 3658 6600 3898 6660 3658 6540 3658  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3059" />
+    <!-- Line -->
+    <polyline
+       points="8100,3300 8100,3660 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3061" />
+    <!-- Arrowhead on XXXpoint 8100 3300 - 8100 3930-->
+    <polygon
+       points="8040 3658 8100 3898 8160 3658 8040 3658  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3063" />
+    <!-- Line -->
+    <polyline
+       points="9600,3300 9600,3660 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3065" />
+    <!-- Arrowhead on XXXpoint 9600 3300 - 9600 3930-->
+    <polygon
+       points="9540 3658 9600 3898 9660 3658 9540 3658  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3067" />
+    <!-- Line -->
+    <polyline
+       points="8400,4800 8850,4800 8850,5400 10560,5400 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3069" />
+    <!-- Arrowhead on XXXpoint 8850 5400 - 10830 5400-->
+    <polygon
+       points="10558 5460 10798 5400 10558 5340 10558 5460  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3071" />
+    <!-- Line: box -->
+    <rect
+       x="6300"
+       y="3900"
+       width="600"
+       height="1200"
+       rx="150"
+       style="stroke:#000000;stroke-width:30; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect3073" />
+    <!-- Line: box -->
+    <rect
+       x="9300"
+       y="3900"
+       width="600"
+       height="1200"
+       rx="150"
+       style="stroke:#000000;stroke-width:30; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect3075" />
+    <!-- Line -->
+    <polyline
+       points="6300,5025 4875,6225 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3077" />
+    <!-- Line -->
+    <polyline
+       points="6900,5025 11850,6225 "
+       style="stroke:#000000;stroke-width:7; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3079" />
+    <!-- Line: box -->
+    <rect
+       x="4800"
+       y="6225"
+       width="7200"
+       height="4275"
+       rx="150"
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="rect3081" />
+    <!-- Line -->
+    <polyline
+       points="12600,4200 13260,4200 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3083" />
+    <!-- Arrowhead on XXXpoint 12600 4200 - 13530 4200-->
+    <polygon
+       points="13258 4260 13498 4200 13258 4140 13258 4260  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3085" />
+    <!-- Line -->
+    <polyline
+       points="12600,4800 13260,4800 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3087" />
+    <!-- Arrowhead on XXXpoint 12600 4800 - 13530 4800-->
+    <polygon
+       points="13258 4860 13498 4800 13258 4740 13258 4860  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3089" />
+    <!-- Line -->
+    <polyline
+       points="11400,5100 11550,5100 11550,4800 11760,4800 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3091" />
+    <!-- Arrowhead on XXXpoint 11550 4800 - 12030 4800-->
+    <polygon
+       points="11758 4860 11998 4800 11758 4740 11758 4860  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3093" />
+    <!-- Line -->
+    <polyline
+       points="5250,3900 5250,3300 12300,3300 12300,3660 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3095" />
+    <!-- Arrowhead on XXXpoint 12300 3300 - 12300 3930-->
+    <polygon
+       points="12240 3658 12300 3898 12360 3658 12240 3658  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3097" />
+    <!-- Line -->
+    <polyline
+       points="3900,3300 4950,3300 4950,3660 "
+       style="stroke:#000000;stroke-width:15; stroke-linejoin:miter; stroke-linecap:butt; "
+       id="polyline3099" />
+    <!-- Arrowhead on XXXpoint 4950 3300 - 4950 3930-->
+    <polygon
+       points="4890 3658 4950 3898 5010 3658 4890 3658  "
+       style="stroke:#000000;stroke-width:15; fill:#000000;"
+       id="polygon3101" />
+    <!-- Text -->
+    <g
+       transform="translate(6667,4500) rotate(-90.00021046)"
+       id="g3103">
+      <text
+         xml:space="preserve"
+         x="0"
+         y="0"
+         stroke="#000000"
+         fill="#000000"
+         font-family="Helvetica"
+         font-style="normal"
+         font-weight="bold"
+         font-size="144"
+         text-anchor="middle"
+         id="text3105">descend1</text>
+    </g>
+    <!-- Text -->
+    <g
+       transform="translate(9667,4500) rotate(-90.00021046)"
+       id="g3107">
+      <text
+         xml:space="preserve"
+         x="0"
+         y="0"
+         stroke="#000000"
+         fill="#000000"
+         font-family="Helvetica"
+         font-style="normal"
+         font-weight="bold"
+         font-size="144"
+         text-anchor="middle"
+         id="text3109">descend2</text>
+    </g>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="6975"
+       y="4725"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3111">result</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="6975"
+       y="4125"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3113">node</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="5475"
+       y="4125"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3115">node</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="8475"
+       y="4125"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3117">node</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="8475"
+       y="4725"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3119">result</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="9975"
+       y="4725"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3121">result</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="9975"
+       y="4125"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3123">node</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="3900"
+       y="4125"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3125">node</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="3900"
+       y="3225"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3127">context</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="5400"
+       y="6150"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3129">descendC?(N*V*|V*N*) context apply cons ...</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="12675"
+       y="4725"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3131">result</text>
+    <!-- Text -->
+    <text
+       xml:space="preserve"
+       x="12675"
+       y="4125"
+       stroke="#000000"
+       fill="#000000"
+       font-family="Helvetica"
+       font-style="normal"
+       font-weight="normal"
+       font-size="144"
+       text-anchor="start"
+       id="text3133">node</text>
+  </g>
+</svg>

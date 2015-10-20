@@ -1,0 +1,51 @@
+"M | w /= 0 ->"
+
+"net gfint[0..c-1][w-1..0]"
+"net gtint[0..c-1][w-1..0]"
+"net choice[0..c-1]"
+
+"foreach j in 0..w-1"
+"["
+   "foreach d in 0..c-1"
+   "["                 ___"4"
+         i[d]R0[j] ?--|   \
+                      |and |--! gfint[d][j]
+         choice[d] ?--|___/
+                       ___"3"
+         i[d]R1[j] ?--|   \
+                      |and |--! gtint[d][j]
+         choice[d] ?--|___/
+   "]"
+                       ___"1"
+       gfint[0][j] ?--|   \
+                      | or |--! oR0[j]
+     gfint[c-1][j] ?--|___/
+                       ___"2"
+       gtint[0][j] ?--|   \
+                      | or |--! oR1[j]
+     gtint[c-1][j] ?--|___/
+"]"
+
+"foreach d in 0..c-1:"
+"["
+                ___"5"
+     i[d]R0 ?--|   \ icomp[d]
+               |drcm|--.   ___"6"
+     i[d]R1 ?--|___/   `--|   \
+                          | C  |--v--! choice[d]
+    nchosen ?-------------|___/   |
+                           _|_    | 
+                          /   |---'"9"
+      i[d]A !------------|  C |
+                          \___|--? oA
+                            |
+                   reset ?--'
+"]"
+                 ___"7"
+   choice[0] ?--|   \ anychoice
+              : | or |--.   ___"8"
+ choice[c-1] ?--|___/   `--|   \
+                           | or |o--! nchosen
+                        ,--|___/
+                        |
+                        `-----------? oA

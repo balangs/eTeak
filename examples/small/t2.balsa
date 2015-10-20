@@ -1,0 +1,14 @@
+import [balsa.sim.string]
+
+procedure a is
+	variable v : 8 bits
+begin
+	v := 10;
+	loop
+	while v < 20 then
+		print "Hello world", v;
+		print "Hello world";
+		print NumberFromString (32 bits, TokenFromString ("10 20", "10"), 16);
+		v := v + 1 as 8 bits
+	end
+end

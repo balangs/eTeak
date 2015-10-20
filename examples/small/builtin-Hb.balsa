@@ -1,0 +1,26 @@
+import [balsa.sim.fileio]
+import [balsa.sim.string]
+
+type t2 is enumeration
+	el1, el2
+over 8 bits
+
+type t1 is record
+	a : 32 bits;
+	b : t2
+end
+
+procedure a is
+	variable f : File
+	variable s, s2 : String
+begin
+	f := FileOpen ("data", read);
+	s2 := "";
+
+	loop while not FileEOF (f) then
+		s := FileReadLine (f);
+
+		print "Value:   ", FromString (t1, s, s2);
+		print "Comment: ", s2
+	end
+end

@@ -1,0 +1,7 @@
+procedure j (
+	input a, b : 8 bits;
+	output o : 18 bits
+) is
+begin
+	a, b -> then o <- (#(a + 1) @ #(b + 2)) as 18 bits end
+end

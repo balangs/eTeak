@@ -1,0 +1,14 @@
+
+procedure enc_buffer (
+	input i : 32 bits;
+	output o : 32 bits
+) is
+begin
+	loop
+		i -> then
+			-- sink i
+			o <- i
+		end -- ;
+		-- o <- 10
+	end
+end

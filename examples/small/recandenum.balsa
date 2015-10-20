@@ -1,0 +1,39 @@
+
+type a is record
+	b : 8 bits;
+	c : 12 bits
+end
+
+type b is record
+	d : 8 bits;
+	e : 4 bits
+over 20 bits
+
+type c is record
+	d : 8 bits;
+	e : 4 bits
+over 10 bits
+
+type d is record
+	f : 40 bits
+over c
+
+type e is enumeration
+	a, b, c, d
+over b
+
+type e2 is enumeration
+	a, b, c, d
+over 2 bits
+
+type f is enumeration
+	a, b, c, d
+end
+
+type g is enumeration
+	a, b = -10, c, d
+end
+
+type h is enumeration
+	a = 2, b = 4
+over 3 bits

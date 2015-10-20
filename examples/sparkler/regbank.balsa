@@ -1,0 +1,69 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [types]
+import [debug]
+
+procedure RegBank (
+	input wEn : bit;
+	input rEn : array 3 of bit;
+	input wSel, r0Sel, r1Sel, r2Sel : Reg;
+	-- input wWindow, r0Window, r1Window, r2Window : Window;
+	input window : Window;
+	input w : Word;
+	output r0, r1, r2 : Word
+) is
+	type RegRegIndex is record
+		reg : 3 bits;
+		window : Window
+	end
+
+	variable globals : array 1..7 of Word
+	variable locals : array WindowCount * 8 of Word
+	variable inouts : array WindowCount * 8 of Word
+
+	function RegIndex (window : Window; reg : Reg) =
+		(RegRegIndex {(reg as 3 bits), window} as log WindowCount + 3 bits)
+begin
+	loop
+		window, rEn, wEn -> then
+			local
+				procedure WritePort (input sel : Reg; input w : Word) is
+				begin
+					sel, w -> then
+						-- print "Writing ", window, " ", sel, " ", w;
+						case sel of
+						  0 then continue
+						| 1..7 then globals[(sel as 3 bits)] := w
+						| 8..15 then inouts[RegIndex (window, sel)] := w
+						| 16..23 then locals[RegIndex (window, sel)] := w
+						| 24..31 then inouts[RegIndex ((window + 1 as Window), sel)] := w
+						end
+					end
+				end
+
+				procedure ReadPort (parameter portNo : cardinal; input sel : Reg; output r : Word) is
+				begin
+					sel -> then
+						-- print "Reading ", window, " ", sel;
+						case sel of
+						  0 then r <- 0
+						| 1..7 then r <- globals[(sel as 3 bits)]
+						| 8..15 then r <- inouts[RegIndex (window, sel)]
+						| 16..23 then r <- locals[RegIndex (window, sel)]
+						| 24..31 then r <- inouts[RegIndex ((window + 1 as Window), sel)]
+						end
+					end
+				end
+			begin
+				if rEn[0] then ReadPort (0, r0Sel, r0) end ||
+				if rEn[1] then ReadPort (1, r1Sel, r1) end ||
+				if rEn[2] then ReadPort (2, r2Sel, r2) end;
+				if wEn then (-- print "Yep"; --) WritePort (wSel, w) end
+			end
+		end
+	end
+end

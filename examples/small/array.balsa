@@ -1,0 +1,20 @@
+
+type b is array 8 of 1 bits
+type c is array 0 .. 7 of b
+type d is array 4 .. 0 of b
+type e is enumeration a, b, c, d end
+type e2 is enumeration a, b, c, d = 8 end
+type f is array e'a .. c of b
+type g is array a:e .. c of b
+type h is array over 2 bits of 8 bits
+type i is array over e of 8 bits
+type i2 is array over e2 of 8 bits
+
+procedure a is
+	variable f : f
+	variable g : g
+	variable h : h
+begin
+	sink f @ g;
+	sink g @ h
+end

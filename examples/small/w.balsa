@@ -1,0 +1,82 @@
+
+(--
+procedure w (
+	input goW : token;
+	output getC : token;
+	input goC : bit;
+	output goB : bit
+) is
+	procedure B (input i : token; output o : token) is begin i -> then continue end ; o <- token end
+
+begin
+	B (
+end
+--)
+
+procedure B (input i : token; output o : token) is
+begin
+	loop
+		i -> then continue end ; o <- token
+	end
+end
+
+procedure M (input i1, i2 : token; output o : token) is
+begin
+	loop
+		select i1 then o <- token
+		| i2 then o <- token
+		end
+	end
+end
+
+procedure W (
+	input go : token;
+	output Cgo : token;
+	input C : bit;
+	output B : token
+) is
+	channel again, againB, cycle, cycleB, start, stop : token
+begin
+	loop
+		go -> then
+			start <- token;
+			stop -> then continue end
+		end
+	end ||
+	B (again, againB) ||
+	M (start, againB, cycle) ||
+	B (cycle, cycleB) ||
+	loop
+		cycleB -> then
+			local
+				variable v : bit
+			begin
+				Cgo <- token || C -> v;
+				if v then
+					B <- token || again <- token
+				else
+					stop <- token
+				end
+			end
+		end
+	end
+end
+
+procedure top is
+	variable v : 8 bits
+	channel c : bit
+	channel b : token
+	channel cgo : token
+	channel go : token
+begin
+	v := 0;
+	go <- token ||
+	W (go, cgo, c, b) || -- !
+	loop cgo -> then c <- v < 10 end end || -- !
+	loop
+		b -> then
+			print v;
+			v := v + 1 as 8 bits
+		end
+	end
+end

@@ -1,0 +1,23 @@
+
+import [balsa.types.builtin]
+
+type t1 is enumeration
+	el0, el1, el3 = 3
+end
+
+type t2 is record
+	a : 5 bits;
+	b : t1
+end
+
+procedure a is
+	variable v : t2
+	variable v2 : String
+	variable v3 : bit
+begin
+	v := {4, el1};
+	v2 := "Hello2";
+	print StringAppend ("Hello ", ToString (t2, v));
+	v3 := WriteMessage (StringAppend ("Hello ", ToString (t2, v)));
+	print v2
+end

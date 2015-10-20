@@ -1,0 +1,15 @@
+procedure c (
+	input s : 2 bits;
+	input i : 8 bits;
+	array 4 of output o : 8 bits
+) is
+begin
+	loop
+		i, s -> then
+			case s of
+				-- for j in 0,1,2,3 then o[j] <- i
+				for j in 0..3 then o[j] <- i
+			end
+		end
+	end
+end

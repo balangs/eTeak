@@ -1,0 +1,66 @@
+
+ "drCompletion connF connT connResult"
+
+           ___
+ connF ?--|   \ 
+          |drcm|--! connResult
+ connT ?--|___/
+
+
+ "drCompletions d0s d1s outputs"
+ "for j in 0..n-1:"
+
+            ___
+ d0s[j] ?--|   \ 
+           |drcm|--! output[j]
+ d1s[j] ?--|___/
+
+ "buffer inpF inpT inpA outF outT outA"
+ "for j in 0..width-1:"
+
+               ___
+  inpF[j] ?---|   \
+              | C  |-v----------! outF[j]
+            ,-|___/  |  ___
+            |   |    `-|   \
+ reset[j] ?-+---<      |drcm|-.
+            |  _|_   ,-|___/  |
+  inpT[j] ?-+-|   \  |        |
+            | | C  |-^--------+-! outT[j]
+            >-|___/           |
+  inpA[j] ?-+-----------------'
+            | nack
+            `------o|<|---------? outA
+
+ "buffer0 inpR inpA outR outA"
+
+    reset ?-----.
+               _|_
+     inpR ?---|   \
+              | C  |-v---! outR
+            ,-|___/  |
+     inpA !-+--------'
+            | temp       
+            `------o|<|--? outA
+
+ "bufferN inpF inpT inpA outF outT outA"
+ "buffer0N inpF inpT inpA outF outT outA"
+ "drLatch inpF inpT en inpA outF outT reset"
+ "FIXME, reset fourth input to NOR"
+
+                            ___    
+               inpT ?--v---|   \ gt    ___
+                       |   |and |-----|   \
+                  ___  | ,-|___/      | or |ov-! outF
+                 /   |-' |         ,--|___/  |
+          ___  ,|and |   |         |         |
+         /   |-' \___|---+---------^---. ,---'
+ inpA !-| or |    ___    |              X
+         \___|-. /   |---+---------v---' `---.
+               `|and |   |         |         |
+                 \___|-. |  ___    |   ___   |
+                       | >-|   \ gf`--|   \  |
+                       | | |and |-----| or |o^-! outT
+               inpF ?--^-+-|___/   ,--|___/
+                 en ?----'         |
+              reset ?--------------'

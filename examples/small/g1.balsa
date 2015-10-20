@@ -1,0 +1,9 @@
+procedure a is
+begin
+	continue
+end
+
+procedure b is
+begin
+	a ()
+end

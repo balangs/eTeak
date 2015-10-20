@@ -1,0 +1,8 @@
+function Expr is builtin : bit 
+
+procedure ConsExpr (input go : token; output done : array 2 of bit) is
+loop
+	go -> then
+		show: done <- {Expr (), Expr ()}
+	end
+end

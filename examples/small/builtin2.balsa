@@ -1,0 +1,12 @@
+
+type a is record
+	a : String;
+	b : 8 bits;
+	c : String
+end
+
+procedure top is
+	variable v : a
+begin
+	v := v
+end

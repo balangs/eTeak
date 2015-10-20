@@ -1,0 +1,30 @@
+
+-- import [balsa.sim.portio]
+
+procedure a (
+	input init : 8 bits;
+	output o : 8 bits
+) is
+	variable v : 8 bits
+	variable v2 : 8 bits
+begin
+	v2 := 0;
+	loop while v2 < 20 then
+		init -> v;
+		loop while v < 20 then
+			v := (v + 1 as 8 bits);
+			o <- v
+		end;
+		v2 := (v2 + 1 as 8 bits)
+	end
+end
+
+(--
+procedure top is
+	channel i, o : 8 bits
+begin
+	a (i, o) ||
+	BalsaPrintOutputPortActivity (8 bits, "o", o) ||
+	BalsaPrintInputPortActivity (8 bits, "i", i, <- 0)
+end
+--)

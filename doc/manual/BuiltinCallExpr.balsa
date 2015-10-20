@@ -1,0 +1,9 @@
+function Expr is builtin : bit 
+function BuiltinFunc (i1, i2 : bit) is builtin : bit 
+
+procedure BuiltinCallExpr (input go : token; output done : bit) is
+loop
+	go -> then
+		show: done <- BuiltinFunc (Expr (), Expr ())
+	end
+end

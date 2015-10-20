@@ -1,0 +1,27 @@
+
+
+type t1 is enumeration
+	el1, el2
+end
+
+type t2 is record
+	a : 10 bits;
+	b : t1
+end
+
+procedure a is
+	variable v : t2
+	type wt is record
+		a : String;
+		b : 10 bits;
+		c : String
+	end
+	variable w : wt
+begin
+	v := {10, el1};
+	-- w := {"Hello", 10, "World"};
+	w.a := "Hello";
+	w.b := 10;
+	w.c := "World";
+	print "Hello", ToString (t2, v), ToString (String, "aa"), w
+end

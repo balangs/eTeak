@@ -1,0 +1,9 @@
+
+procedure a (output b : bit) is
+	shared sh is
+	begin
+		b <- 1
+	end
+begin
+	sh (); sh ()
+end

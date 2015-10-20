@@ -1,0 +1,31 @@
+procedure onehot (
+	input i : 2 bits;
+	output o : 4 bits
+) is
+begin
+	loop	
+		i -> then
+			case i of
+			| 0 then o <- 1
+			| 1 then o <- 2
+			| 2 then o <- 4
+			| 3 then o <- 8
+			end
+		end
+	end
+end
+
+procedure top
+is
+	channel i : 2 bits
+	channel o : 4 bits
+begin
+	loop
+		o -> then print o end
+	end ||
+	loop
+		for ; j in 0..3 then i <- j end
+	end
+	||
+	onehot (i, o)
+end

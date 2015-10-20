@@ -1,0 +1,29 @@
+type cardinal is 32 bits
+
+procedure a (
+	parameter w : cardinal;
+	input b : w bits;
+	output c : w bits
+) is
+begin
+	continue
+end
+
+procedure d (
+	input b : 8 bits;
+	output c : 8 bits
+) is
+begin
+	a (8, b, c)
+end
+
+function e (
+	parameter w : type;
+	a : w 
+	) = a
+
+type h is 8 bits
+
+function f (a : 8 bits) = e (h, a)
+
+function g = f (120)

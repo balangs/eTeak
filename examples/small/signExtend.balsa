@@ -1,0 +1,52 @@
+
+procedure signExtendTo32signedBits (
+	input i : 16 signed bits;
+	output o : 32 signed bits
+) is
+begin
+	-- signed numeric into wider numeric will sign extend
+	i -> then o <- (i as 32 signed bits) end
+end
+
+procedure signExtendTo32bits (
+	input i : 16 signed bits;
+	output o : 32 bits
+) is
+begin
+	-- signed numeric into wider numeric will sign extend
+	i -> then o <- (i as 32 bits) end
+end
+
+procedure zeroPad (
+	input i : 16 bits;
+	output o : 32 bits
+) is
+begin
+	i -> then o <- (i as 32 bits) end
+end
+
+procedure top is
+	channel oS, o0 : 32 bits
+	channel oS2 : 32 signed bits
+	channel iS, iS2 : 16 signed bits
+	channel i0 : 16 bits
+begin
+	loop signExtendTo32signedBits (iS2, oS2) end ||
+	loop signExtendTo32bits (iS, oS) end ||
+	loop zeroPad (i0, o0) end ||
+	loop oS -> then print "oS: ", oS end end ||
+	loop oS2 -> then print "oS2: ", oS2 end end ||
+	loop o0 -> then print "o0: ", o0 end end ||
+	begin
+		iS <- 0; iS2 <- 0; i0 <- 0;
+		print "Cns: ", ((0 as 16 signed bits) as 32 bits);
+		iS <- (0xF000 as 16 signed bits); iS2 <- (0xF000 as 16 signed bits); i0 <- 0xF000;
+		print "Cns0: (4294963200) ", ((0xF000 as 16 signed bits) as 32 bits);
+		print "Cns1: (61440) ", ((0xF000 as 16 bits) as 32 bits);
+		print "Cns2: (61440) ", ((0xF000 as 16 bits) as 32 signed bits);
+		print "Cns3: (-4096) ", ((0xF000 as 16 signed bits) as 32 signed bits);
+		print "Cns4: ({61440,0}) ", ((0xF000 as 16 signed bits) as array 2 of 32 signed bits);
+		iS <- 0x5555; iS2 <- 0x5555; iS <- 0x5555;
+		print "Cns: ", ((0x5555 as 16 signed bits) as 32 bits)
+	end
+end

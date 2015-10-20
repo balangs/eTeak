@@ -1,0 +1,15 @@
+procedure buffer (parameter j : bit; input i : bit; output o : bit;
+	if j then output p : bit end
+	)
+is
+begin
+	loop i -> then o <- i; if j then p <- i end end end
+end
+
+procedure buffer2 (input i : bit; output o : bit; output p : bit)
+is
+	channel int : bit
+begin
+	buffer (0, i, int) ||
+	buffer (1, int, o, p)
+end

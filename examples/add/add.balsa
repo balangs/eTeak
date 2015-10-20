@@ -1,0 +1,8 @@
+procedure add (input a : 2 bits;input b : 2 bits;output o : 3 bits) is
+begin
+	
+        	a, b -> then 
+			o <- a + b
+		end
+	
+end

@@ -1,0 +1,14 @@
+procedure mux (
+	input s : bit;
+	input i0, i1 : 8 bits;
+	output o : 8 bits
+) is
+begin
+	loop
+		 s -> then
+		 	if s then i1 -> o
+		 	else i0 -> o
+		 	end
+		 end
+	end
+end

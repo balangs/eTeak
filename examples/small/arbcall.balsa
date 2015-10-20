@@ -1,0 +1,14 @@
+procedure a (
+	input i0, i1 : 8 bits;
+	output o : 8 bits
+) is
+begin
+	loop
+		arbitrate
+			i0 then
+			o <- i0
+		|	i1 then
+			o <- i1
+		end
+	end
+end

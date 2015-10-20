@@ -1,0 +1,27 @@
+procedure a (
+	input i : 8 bits;
+	output o : 8 bits
+) is
+loop
+	i -> then
+		if i > 10 then
+			o <- i
+		else
+			o <- not i
+		end
+	end
+end
+
+procedure b (
+	input i : 8 bits;
+	output o : 4 bits
+) is
+loop
+	i -> then
+		if i > 10 then
+			o <- #i[7..4] as 4 bits
+		else
+			o <- not (#i[6..3] as 4 bits)
+		end
+	end
+end

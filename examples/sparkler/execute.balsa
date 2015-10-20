@@ -1,0 +1,227 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [alu]
+import [regbank]
+import [fetch]
+import [buffer]
+
+procedure ExecuteCtrl (
+	-- Instruction
+	input op : DecodedInst;
+	input pc : FetchedPC;
+	-- Fetch/change of flow
+	output doFetch : FetchType;
+	output newPc : Word;
+	-- Regbank
+	output wEn : bit;
+	output rEn : array 3 of bit;
+	output wSel, r0Sel, r1Sel, r2Sel : Reg;
+	output window : Window;
+	output w : Word;
+	input r0, r1, r2 : Word;
+	-- Alu
+	output aluOp : AluOp;
+	input aluResult : Word;
+	input aluFlags : Flags;
+	output aluLhs, aluRhs : Word;
+	-- Data memory I/F
+	output daddr : Word;
+	output daccess : MemAccess;
+	input dread : Word;
+	output dwrite : Word
+) is
+	variable opr : DecodedInst
+	variable pcr : FetchedPC
+	variable flags : Flags
+	variable preCarry : bit
+	variable cwp : Window
+
+	variable takeBranch, takeBranch2 : bit
+
+	shared Reg is begin
+		if debug then print "EXECUTE: register setup" end;
+		begin
+			rEn <- opr.rEn ||
+			if opr.rEn[0] then r0Sel <- opr.rSel[0] end ||
+			if opr.rEn[1] then r1Sel <- opr.rSel[1] end ||
+			if opr.rEn[2] then r2Sel <- opr.rSel[2] end ||
+			wEn <- opr.wEn ||
+			if opr.wEn then wSel <- opr.wSel end ||
+			window <- cwp
+		end;
+		if debug then print "EXECUTE: register setup done" end
+	end
+
+	shared AluArgs is begin
+		if debug then print "EXECUTE: alu args" end;
+		begin
+			-- aluOp <- {opr.aluOp, preCarry} ||
+			case opr.immRhs of
+			  immediate then aluRhs <- opr.imm
+			| register then r1 -> aluRhs
+			end ||
+			r0 -> aluLhs
+		end;
+		if debug then print "EXECUTE: alu args done" end
+	end
+
+	shared Fetch is begin doFetch <- sequential end
+
+	shared FetchOp is begin op -> opr || pc -> pcr end
+begin
+	begin
+		[ cwp := WindowCount - 1 || flags := {0,0,0,0} || takeBranch := false || takeBranch2 := false ];
+		loop
+			loop
+				FetchOp ()
+			while takeBranch2 and not pcr.newStream then	
+				if debug then print "EXECUTE: Skipping ", opr end
+			end;
+			[ takeBranch2 := takeBranch || preCarry := flags.c ];
+			takeBranch := false;
+			if debug then print "EXECUTE: Executing ", opr, " ", Hex (pcr.pc) end;
+			case opr.kind of
+			  nop then
+				if debug then print "EXECUTE: NOP" end ||
+				Fetch ()
+			| branch then
+				if debug then print "EXECUTE: BRANCH ", Hex (pcr.pc) end;
+				local
+					channel take : bit
+				begin
+					case opr.branchCond of
+					  bn, ba then take <- 0
+					| be, bne then take <- flags.z
+					| ble, bg then take <- flags.z or (flags.n /= flags.v)
+					| bl, bge then take <- flags.n /= flags.v
+					| bleu, bgu then take <- flags.c or flags.z
+					| bcs, bcc then take <- flags.c
+					| bneg, bpos then take <- flags.n
+					| bvs, bvc then take <- flags.v
+					end ||
+					take -> then 
+						takeBranch := take /= #(opr.branchCond)[3];
+						if debug then print "EXECUTE: BRANCH taken: ", takeBranch end;
+						-- FIXME, use ALU?
+						if takeBranch then
+							if debug then print "EXECUTE: BRANCH to ", Hex ((pcr.pc + opr.imm as Word)), " ",
+								Hex (opr.imm), " ", Hex (pcr.pc) end;
+							newPc <- (pcr.pc + opr.imm as Word) ||
+							doFetch <- newStream
+						else
+							Fetch ()
+						end
+					end
+				end
+			| alu then
+				if debug then print "EXECUTE: ALU" end;
+				begin
+					Reg () || AluArgs () ||
+					aluOp <- {opr.aluOp, preCarry} ||
+					aluFlags -> flags ||
+					aluResult -> then
+						if debug then print "EXECUTE: ALU result: ", aluResult end ||
+						if opr.wEn then w <- aluResult end
+					end ||
+					-- FIXME, calculate new flags
+					Fetch ()
+				end
+			| load then
+				if debug then print "EXECUTE: LOAD" end;
+				begin
+					Reg () || AluArgs () ||
+					aluOp <- {add, preCarry} ||
+					aluResult -> then
+						if debug then print "EXECUTE: LOAD from: ", aluResult end;
+						daddr <- aluResult
+					end ||
+					daccess <- {read, opr.memAccess.kind} ||
+					aluFlags -> then continue end ||
+					dread -> w ||
+					Fetch ()
+				end;
+				if debug then print "EXECUTE: LOAD done" end
+			| loadd then
+				Fetch ();
+				if debug then print "EXECUTE: LOADD FIXME" end
+			| store then
+				if debug then print "EXECUTE: STORE" end;
+				begin
+					Reg () || AluArgs () ||
+					aluOp <- {add, preCarry} ||
+					aluResult -> then
+						if debug then print "EXECUTE: STORE to: ", aluResult end;
+						daddr <- aluResult
+					end ||
+					daccess <- {write, opr.memAccess.kind} ||
+					aluFlags -> then continue end ||
+					r2 -> then
+						if debug then print "EXECUTE: STORE value: ", r2 end;
+						dwrite <- r2
+					end ||
+					Fetch ()
+				end;
+				if debug then print "EXECUTE: STORE done" end
+			| stored then
+				Fetch ();
+				if debug then print "EXECUTE: STORED FIXME" end
+			else if debug then print "EXECUTE: Don't know what to do" end
+			end;
+			if debug then print "EXECUTE: Executing end" end
+		end
+	end
+end
+
+procedure Execute (
+	-- Instruction
+	input op : DecodedInst;
+	input pc : FetchedPC;
+	-- Branch/change of flow
+	output doFetch : FetchType;
+	output newPc : Word;
+	-- Data memory I/F
+	output daddr : Word;
+	output daccess : MemAccess;
+	input dread : Word;
+	output dwrite : Word
+) is
+	channel aluOp : AluOp
+	channel aluResult : Word
+	channel aluFlags : Flags
+	channel aluLhs : Word
+	channel aluRhs : Word
+	channel wEn : bit
+	channel rEn : array 3 of bit
+	channel wSel : Reg
+	channel r0Sel : Reg
+	channel r1Sel : Reg
+	channel r2Sel : Reg
+	channel window : 1 bits -- Window
+	channel w_P, w_A : Word
+	channel r0 : Word
+	channel r1 : Word
+	channel r2 : Word
+begin
+	buffer (Word, w_A, w_P) ||
+
+	Alu (aluOp, aluResult, aluFlags, aluLhs, aluRhs) ||
+	RegBank (
+		wEn, rEn,
+		wSel, r0Sel, r1Sel, r2Sel,
+		window,
+		w_P, r0, r1, r2
+	) ||
+	ExecuteCtrl (
+		op, pc, doFetch, newPc,
+		wEn, rEn,
+		wSel, r0Sel, r1Sel, r2Sel,
+		window,
+		w_A, r0, r1, r2,
+		aluOp, aluResult, aluFlags, aluLhs, aluRhs,
+		daddr, daccess, dread, dwrite
+	)
+end

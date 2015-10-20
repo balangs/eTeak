@@ -1,0 +1,48 @@
+
+
+procedure CSAdder
+( parameter DataType : type;
+  input     a : DataType;
+  input     b : DataType;
+  input     cs : DataType;
+  output    cout : DataType;
+  output    s : DataType
+) is
+local
+ begin
+    loop
+        a,b,cs -> (-- ! --) then --!!!!
+            s  <- a xor b xor cs
+          ||
+            cout <- (a and b) or (cs and a) or (cs and b)
+        end
+    end
+end -- procedure CSAdder
+
+procedure add is CSAdder (32 bits)
+
+procedure a (
+	input b, c : 8 bits;
+	output o : 9 bits
+) is
+	channel d : array 2 of 8 bits
+begin
+	loop
+		b, c -> then d <- {b, c} end ||
+		d -> then
+			o <- d[0] + d[1]
+		end
+	end
+end
+
+procedure b (
+	input b, c : 8 bits;
+	output o : 9 bits
+) is
+begin
+	loop
+		b, c -> then
+			o <- b + c
+		end
+	end
+end

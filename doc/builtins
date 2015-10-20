@@ -1,0 +1,172 @@
+
+-- String, StringAppend : these are defined here as the compiler depends on them
+--	The function String creates a string object from its parameter
+(-- DONE --) type String is builtin
+(-- DONE --) function String (parameter string : String) is builtin : String
+(-- DONE --) function StringAppend (str1, str2 : String) is builtin : String
+
+-- ToString : function which can convert a value of (nearly) any type to a default
+--	formatted string, used within the compiler to implement runtime printing
+(-- DONE --) function ToString (parameter X : type; value : X) is builtin : String
+
+-- WriteMessage : write a runtime printing message string, returns 1
+(-- DONE --) function WriteMessage (str : String) is builtin : bit
+
+-- LongestEnumerationElement: returns the length (in characters) of the longest
+--	element name in the given enumerated type
+function LongestEnumerationElement (parameter X : type) is builtin : cardinal
+
+(-- DONE --) type BalsaMemory is builtin
+
+-- BalsaMemoryParams : parameters bundle, can add others
+type BalsaMemoryParams is record
+	addressWidth, dataWidth : cardinal
+end
+
+-- BalsaMemoryNew : make a new memory object, this is separate from the procedure
+--	BalsaMemory so we can, for example have a dump-memory routine external to that
+--	procedure.  You could can BalsaMemory with: BalsaMemory (16, 32, <- BalsaMemoryNew (), ...)
+(-- DONE --) function BalsaMemoryNew is builtin : BalsaMemory
+
+-- BalsaMemory{Read,Write} : simple access functions
+(-- DONE --) function BalsaMemoryRead (parameter params : BalsaMemoryParams;
+	memory : BalsaMemory; address : params.addressWidth bits) is builtin : params.dataWidth bits
+(-- DONE --) function BalsaMemoryWrite (parameter params : BalsaMemoryParams;
+	memory : BalsaMemory; address : params.addressWidth bits; data : params.dataWidth bits) is builtin : BalsaMemory
+
+-- BalsaMemory : a single read port memory component, reads a BalsaMemory
+--	object as it is initialised and then waits for an incoming address and
+--	rNw indication
+procedure BalsaMemory (
+	parameter params : BalsaMemoryParams;
+	input memory : BalsaMemory;
+	input address : params.addressWidth bits;
+	input rNw : bit;
+	input write : params.dataWidth bits;
+	output read : params.dataWidth bits
+) is
+	variable memory_v : BalsaMemory
+begin
+	memory -> memory_v;
+	loop
+		address, rNw -> then
+			if rNw then -- read
+				read <- BalsaMemoryRead (params, memory_v, address)
+			else -- write
+				write -> then 
+					sink BalsaMemoryWrite (params, memory_v, address, write)
+				end
+			end
+		end
+	end
+end
+
+-- procedure B1632 is BalsaMemory ({16, 32})
+(-- DONE --) type File is builtin
+
+type FileMode is enumeration
+	read, write,
+	writeUnbuffered, -- unbuffered file writing
+	writeLineBuffered -- flushes after each line
+over 3 bits
+
+-- FileOpen : open a file in the appropriate mode
+(-- DONE --) function FileOpen (fileName : String; mode : FileMode) is builtin : File
+
+-- FileReadLine : read upto an end of line and return a string without that trailing NL
+(-- DONE --) function FileReadLine (file : File) is builtin : String
+
+-- FileReadLine_withRetry : same as FileReadLine, but retries forever when it reaches end of file
+function FileReadLine_withRetry (file : File) is builtin : String
+
+-- FileWrite : write a string to a file, returns the file object
+function FileWrite (file : File; string : String) is builtin : File
+
+-- FileEOF : returns 1 if file is at the end of a file
+(-- DONE --) function FileEOF (file : File) is builtin : bit
+
+-- FileClose : close the file stream
+function FileClose (file : File) is builtin : File
+import [balsa.types.basic]
+
+-- String defined in [balsa.types.builtin] as the compiler depends on it
+-- type String is builtin
+
+-- StringAppend : also defined in [balsa.types.builtin] as balsa-c implements
+--	it with the `+' operator for convenience
+-- function StringAppend (str1, str2 : String) is builtin : String
+
+-- StringLength : returns the length of the given string (0 for an empty or uninitialised string)
+(-- DONE --) function StringLength (string : String) is builtin : cardinal
+
+-- SubString : returns a sub-string of the given string between character indices `index' and `index + length - 1'
+--	If length = 0 or index >= StringLength (string) then returns an empty string,
+--	If `index + length' > StringLength (string) then returns a sub-string of `string'
+--	between indices `index' and StringLenth (string) - 1
+(-- DONE --) function SubString (string : String; index : cardinal; length : cardinal) is builtin : String
+
+-- StringEqual : returns 1 if two strings or equal.  The two given strings must be the same length
+--	and contain the same characters (in the same order!) to be equal
+(-- DONE --) function StringEqual (str1, str2 : String) is builtin : bit
+
+-- FromString : parse a value of the given type (in the default formatting) from the given
+--	`source' string and return the remainder of the string in `remainder'.  Note that the most
+--	common way of calling this function will be with the same string as source and remainder.
+--	To discard the remainder, just pass a constant (or unused) string as remainder.
+function FromString (parameter X : type; source : String; remainder : String) is builtin : X
+
+-- RepeatString : make a string with `n' occurences of source string `str'
+(-- DONE --) function RepeatString (str : String; n : cardinal) is builtin : String
+
+-- FitStringToWidth : pad or clip a given string to create a string which is exactly `width'
+--	characters long.  `justification' chooses whether strings shorter than `width' should be
+--	packed at the start (left) or end (right) of the result string
+type StringJustification is enumeration left, right end
+(-- DONE --) function FitStringToWidth (str : String; width : cardinal; justification : StringJustification) is builtin : String
+
+-- NumberFromString : parse a number of the given radix (assuming there will be no radix
+--	prefices) from the given string.  Radix is an element of [2,36]
+(-- DONE --) function NumberFromString (parameter X : type; source : String; radix : 6 bits) is builtin : X
+
+-- NumberToString : make a string representation of the given number in the given radix.
+--	Insert underscores at the specified distance apart (except where underscoreSpacing is 0)
+(-- DONE --) function NumberToString (parameter X : type; value : X; radix : 6 bits;
+	underscoreSpacing : 8 bits; showLeadingZeroes : bit) is builtin : String
+
+-- TokenFromString : parse a whitespace delimeted string token from the start of `string' and
+--	return that token as the return value and the remains of the string in `remainder'.
+--	Note that this is not the same as FromString (String, ...) as that would require quotes
+--	around the string to be parsed.
+(-- DONE --) function TokenFromString (string : String; remainder : String) is builtin : String
+
+-- Chr (short name by tradition!) : convert the given 8b value into a single character string
+(-- DONE --) function Chr (value : byte) is builtin : String
+
+-- Ord (") : returns the character value of the first character in the given string.  If the
+--	string is empty, returns 0
+(-- DONE --) function Ord (char : String) is builtin : byte
+
+-- StringToPrintable : copy the given string replacing unprintable characters with <HH> hex representations
+(-- DONE --) function StringToPrintable (string : String) is builtin : String
+
+type TokenTail is record
+	token : String;
+	tail : String
+end
+
+(-- DONE --) function StringGetToken (line : String) is builtin : TokenTail
+
+-- BalsaSimulationTime : get the current simulation time as a string.
+--	This function must be provided genuinely builtin by any simulation system
+(-- DONE --) function BalsaSimulationTime is builtin : String
+
+-- BalsaSimulationStop : stop the current simulation
+(-- DONE --) function BalsaSimulationStop is builtin : bit
+
+-- BalsaGetCommandLineArg : get the value of a keyed command line argument 
+-- from the simulator based on the key
+--  This function must be provided genuinely builtin by any simulation system
+(-- DONE --) function BalsaGetCommandLineArg (key : String) is builtin : String
+
+-- ForwardValuePrintMessage : print a port activity message
+(-- DONE --) function ForwardValuePrintMessage (parameter portName : String; value : String) is builtin : String

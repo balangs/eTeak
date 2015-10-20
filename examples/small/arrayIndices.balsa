@@ -1,0 +1,24 @@
+
+procedure a is
+    type t is 8 bits
+    variable va : array -5 .. 7 of t
+    variable vs : array 0 .. 3 of t
+    variable vi : t
+    variable i : 4 signed bits
+begin
+    -- Expressions
+    vi := vi[4];
+    vi := va[0];
+    vi := va[vi];
+    vi := va[i];
+    vi := va[-6];
+    vi := va[0..3];
+    vs := va[0..3];
+    vs := va[-3..0];
+    vs := va[-6..-3];
+    -- Lvalues
+    vs[0] := vs[1];
+    vs[0..2] := vs[1..3];
+    va[i] := vs[0];
+    continue
+end

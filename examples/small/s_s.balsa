@@ -1,0 +1,32 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [types]
+
+type ShiftDirection is enumeration left, right end
+
+type ShiftOp is record
+	direction : ShiftDirection;
+	fill : bit
+end
+
+procedure SparklerShifter (
+	input shift : ShiftOp;
+	input distance : 5 bits;
+	output result : Word;
+	input arg : Word
+) is
+begin
+	distance, shift -> then
+		arg -> then
+			if 0 then
+				result <- (arg + distance as Word)
+			else
+				result <- 10
+			end
+		end
+	end
+end

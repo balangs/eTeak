@@ -1,0 +1,12 @@
+procedure Cmd (* reallyInstantiate *) is begin continue end
+function Expr2bits is builtin : 2 bits
+
+procedure CaseCmd is
+begin
+	case Expr2bits () of
+	| 0 then Cmd ()
+	| 1 then Cmd ()
+	| 2 then Cmd ()
+	else Cmd ()
+	end
+end

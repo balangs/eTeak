@@ -1,0 +1,11 @@
+procedure vv (
+	-- input i1, i2 : 8 bits;
+	output o : 8 bits
+) is
+	variable v1, v2 : 8 bits
+begin
+	loop
+		v1 := 1 || v2 := 2;
+		o <- v1 + v2 as 8 bits
+	end
+end

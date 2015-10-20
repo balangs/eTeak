@@ -1,0 +1,22 @@
+
+procedure sinkChan (
+	parameter t : type;
+	input i : t
+) is
+begin
+	i -> then continue end
+end
+
+procedure a (
+	output b : token;
+	input c : token;
+	input d : token
+) is
+begin
+	b <- token;
+	c -> then continue end;
+	sinkChan (type token, c);
+	d -> then
+		continue
+	end
+end

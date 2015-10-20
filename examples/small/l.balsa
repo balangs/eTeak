@@ -1,0 +1,10 @@
+procedure a
+is
+	variable a, b : bit
+begin
+	if (a as 4 bits) = b then
+		continue
+	end
+end
+
+constant x = y as 4 bits

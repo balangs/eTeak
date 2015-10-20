@@ -1,0 +1,7 @@
+procedure Cmd (* reallyInstantiate *) is begin continue end
+
+procedure ParCmd is
+begin
+	Cmd () ||
+	Cmd ()
+end

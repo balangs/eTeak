@@ -1,0 +1,43 @@
+
+(--
+type t is 8 bits
+
+procedure a (
+	-- array 4 .. -7 of input b : t;
+	array -6 .. 3 of input c : t;
+	-- array 1 .. 9 of input c : t;
+	output o : t
+) is
+begin
+	-- b -> then continue end;
+	c -> then
+		o <- c[-4];
+		o <- c[-7]
+		-- continue
+	end
+end
+--)
+
+type e is enumeration a, b, c, d end
+
+procedure b (
+	array 0 .. 6 of output a : 8 bits
+) is
+begin
+	a[0] <- 0;
+	a[6] <- 0
+end
+
+procedure c (
+	array e'a .. c of output a : 8 bits
+) is
+begin
+	a[e'a] <- 0;
+	a[e'd] <- 0
+end
+
+procedure d is
+	variable e : array 1 .. 5 of 8 bits
+begin
+	sink e[1]
+end

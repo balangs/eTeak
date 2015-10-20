@@ -1,0 +1,9 @@
+
+procedure a is
+	variable v : array 4 of 8 bits
+	variable w : array 8 of 8 bits
+	type h is array 4 of 12 bits
+begin
+	w := v @ v;
+	w := v @ {1, 1, 1, 1}
+end

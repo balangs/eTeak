@@ -1,0 +1,28 @@
+procedure a (
+	array 2 of array 4 of input a : 4 bits;
+	array 2 of output b : 6 bits
+) is
+begin
+	a[0][0..1] -> then
+		a[1][2..3] -> then
+			b[0] <- (a[0][0] + a[0][1]) + (a[1][2] + a[1][3])
+		end
+	end ||
+	a[1][0..1] -> then
+		a[0][2..3] -> then
+			b[1] <- (a[1][0] + a[1][1]) + (a[0][2] + a[0][3])
+		end
+	end
+end
+
+procedure b (
+	array 2 of array 4 of input a : 4 bits;
+	array 2 of output b : 6 bits
+) is
+begin
+	for || i in 0..1 then
+		a[i] -> then
+			b[i] <- (a[i][0] + a[i][1]) + (a[i][2] + a[i][3])
+		end
+	end
+end

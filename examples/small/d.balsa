@@ -1,0 +1,19 @@
+procedure a is
+	array 4 of array 4 of channel a : 8 bits
+	channel b : 8 bits
+	variable v : 8 bits
+	variable w : 16 bits
+begin
+(--
+	b[0] -> v;
+	a[0] -> then
+		continue
+	end
+--)
+	b -> v;
+	b -> w;
+	b <- w;
+	a <- v;
+	a[0] -> v;
+	a[0] -> then continue end
+end

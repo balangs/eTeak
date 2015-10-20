@@ -1,0 +1,11 @@
+
+
+procedure z is
+begin
+	local
+		type a is 32 bits
+		constant a = 10
+		constant a = 20
+	begin
+	end
+end

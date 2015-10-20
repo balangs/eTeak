@@ -1,0 +1,20 @@
+import [balsa.sim.string]
+
+procedure test is
+	type b is record
+		a, b : 8 bits
+	end 
+
+	type c is array 2 of 8 bits
+
+	type d is array 2 of b
+begin
+	print "EXPECT 4198";
+	print "GOT    ", (FromString (b, "{102, 0x10}") as 16 bits);
+	print "EXPECT {106,16}";
+	print "GOT    ", FromString (b, "{102, 0x10}");
+	print "EXPECT {106,16}";
+	print "GOT    ", FromString (c, "{102, 0x10}");
+	print "EXPECT {{2,16},{106,16}}";
+	print "GOT    ", FromString (d, "{{0x102, 0x10},{102, 0x10}}")
+end

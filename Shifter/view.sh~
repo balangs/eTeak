@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./teak --gui -e m.report -o dummy m.teak

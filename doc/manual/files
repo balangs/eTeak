@@ -1,0 +1,72 @@
+# Balsa to PT
+
+Parser.hs -- file parsing combinators
+Lexer.hs -- Parser specialised for lexical analysis (infinite lookahead)
+BalsaLexer.hs -- Tokeniser for reading Balsa files
+BalsaParser.hs -- Parser for Balsa
+ParseTree.hs -- Parse/Evaluation tree for Balsa
+Type.hs -- Type manipulating functions
+Context.hs -- Context (symbol table) manipulating functions
+Traverse.hs -- ParseTree traversal
+Bind.hs -- Symbol binding compilation phase
+Eval.hs -- Evaluation compilation phase
+Call.hs -- Function/Procedure call handling for Eval.hs
+Chan.hs -- Channel handling for Eval.hs
+Expr.hs -- Expression handling for Eval.hs
+Finish.hs -- ParseTree cleanup compilation phase
+Print.hs -- Parse tree reader/writer
+Balsa.hs -- Compilation top-level functions
+
+# PT to Network
+
+NetParts.hs -- Network component, link, access types and NetworkIF network class
+Network.hs -- Implementation of NetworkIF used by Main.hs
+Teak.hs -- ParseTree to network compilation phase
+
+# Misc
+
+Misc.hs -- Miscellaneous functions
+Bits.hs -- Bit manipulation, Slices, Implicants
+Show.hs -- Reader/writer construction functions
+Report.hs -- Error reporting types
+Options.hs -- Command line option (and sub-option) handling
+State.hs -- State, StateT and MaybeT monads
+TeakScript.hs -- Simple Haskell-like expression language used by Rule.hs
+
+# Gui/Plot
+
+Dot.hs -- Graphviz .dot file manipulation
+Layout.hs -- Network layout rendering
+Plot.hs -- Dot graph preparation for Layout.hs
+GuiSupport.hs -- GUI support functions
+Gui.hs -- GUI
+
+# Gates
+
+Gates.hs -- Gate level netlist types, Verilog parser/writer
+Gen.hs -- Gate level component generators
+
+# Latch
+
+Graph.hs -- Graph manipulation (from Glasgow)
+Latch.hs -- Latch rule application
+
+# Optim
+
+Optim.hs -- Optimisation types/application
+Rule.hs -- Optimisation rule parser/applier
+
+# Sim
+
+Monitor.hs -- Monitor events file reader/renderer
+SimTypes.hs -- Types for simulation
+SimBuiltin.hs -- Builtin function behaviour for simulation
+Sim.hs -- Language level simulator
+SimPN.hs -- Petri net generator/simulator
+
+# Config/options/top level
+
+Config.hs -- Compile-time configuration
+ToolOptions.hs -- Toolwide options
+Main.hs -- Top level
+

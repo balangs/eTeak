@@ -1,0 +1,8 @@
+function Value is builtin : bit
+
+procedure ValueExpr (input go : token; output done : bit) is
+loop
+	go -> then
+		show: done <- Value ()
+	end
+end

@@ -1,0 +1,6 @@
+import [balsa.sim.sim]
+
+procedure a is
+begin
+	print BalsaGetCommandLineArg ("hello")
+end

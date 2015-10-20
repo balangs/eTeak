@@ -1,0 +1,4 @@
+procedure hello_top is
+begin
+	print "Hello, world"
+end

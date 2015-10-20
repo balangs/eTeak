@@ -1,0 +1,5 @@
+import [balsa.types.basic]
+
+-- LongestEnumerationElement: returns the length (in characters) of the longest
+--	element name in the given enumerated type
+function LongestEnumerationElement (parameter X : type) is builtin : cardinal

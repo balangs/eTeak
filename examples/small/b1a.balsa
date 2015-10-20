@@ -1,0 +1,46 @@
+
+procedure z (
+	input i : 8 bits;
+	output o : 8 bits
+) is
+	variable v : 8 bits
+begin
+	i -> v ; o <- v
+end
+
+procedure buffer (
+	input i : 8 bits;
+	output o : 8 bits
+) is
+	variable v : 8 bits
+begin
+	loop i -> v ; o <- v end
+end
+
+procedure buffer2 (
+	input i : 8 bits;
+	output o : 8 bits
+) is
+	channel c : 8 bits
+begin
+	buffer (i, c) ||
+    buffer (c, o)
+end
+
+procedure c (
+	input i : 8 bits;
+	input sel : 1 bits;
+	array 2 of output o : 8 bits
+) is
+	variable v : 1 bits
+begin
+	i, sel -> then
+		v := sel;
+		case v of
+			0 then o[0] <- i
+		|	1 then o[1] <- 1
+		end
+	end
+end
+(--
+--)

@@ -1,0 +1,13 @@
+
+type a is 8 bits
+type b is array 2 of a
+
+procedure s (
+	input i, j, k, l : a;
+	output o : b
+) is
+begin
+	select i, j then o <- {i, j}
+	| k, l then o <- {k, l}
+	end
+end

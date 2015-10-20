@@ -1,0 +1,6 @@
+procedure tv (input i : 8 bits; output o1, o2 : 8 bits) is
+begin
+	loop
+		i -> then o1 <- i || o2 <- i end
+	end
+end

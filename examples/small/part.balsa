@@ -1,0 +1,28 @@
+import [balsa.types.basic]
+
+-- Buffer: single place sequential read, write buffer with type param.
+procedure Buffer (
+	parameter X : type;
+	input	i : X;
+	output	o : X ) is
+local variable x : X
+begin
+	loop
+		i -> x ;
+		o <- x
+	end
+end
+
+-- {Bit,Boolean,Byte,Nybble,Nibble,SByte,SNybble,SNibble}Buffer: buffers over common types
+--		from [balsa.types.basic]
+procedure BitBuffer is Buffer (bit)
+(--
+procedure BooleanBuffer is Buffer (boolean)
+procedure ByteBuffer is Buffer (byte)
+procedure NybbleBuffer is Buffer (nybble)
+procedure NibbleBuffer is NybbleBuffer
+procedure SByteBuffer is Buffer (sbyte)
+procedure SNybbleBuffer is Buffer (snybble)
+--)
+-- procedure SNibbleBuffer is SNybbleBuffer
+

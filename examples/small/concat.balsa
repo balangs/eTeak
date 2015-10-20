@@ -1,0 +1,16 @@
+
+procedure top (
+	input i : 8 bits
+) is
+	variable a3 : array 3 of bit
+	variable a5 : array 5 of bit
+begin
+	i -> then
+		a3 := #i[0..2];
+		a5 := #i[0..2] @ #i[4..4] @ #i[7..7];
+
+		case i of
+			0b00001xxx then continue
+		end
+	end
+end

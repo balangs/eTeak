@@ -1,0 +1,41 @@
+procedure TOP is
+	variable TOP_A : 8 bits
+	variable TOP_B : 8 bits
+begin
+	local
+		procedure TOP_C is
+			variable TOP_C_A : 8 bits
+			variable TOP_C_B : 8 bits
+		begin
+			continue
+		end
+	begin
+		local -- TOP_D
+			variable TOP_D_A : 8 bits
+			variable TOP_D_B : 8 bits
+		begin
+			continue
+		end
+	end
+end
+
+procedure TOP2 is
+	variable TOP2_A : 8 bits
+	variable TOP2_B : 8 bits
+begin
+	local
+		procedure TOP2_C is
+			variable TOP2_C_A : 8 bits
+			variable TOP2_C_B : 8 bits
+		begin
+			continue
+		end
+	begin
+		local -- TOP2_D
+			variable TOP2_D_A : 8 bits
+			variable TOP2_D_B : 8 bits
+		begin
+			continue
+		end
+	end
+end

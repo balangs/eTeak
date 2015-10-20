@@ -1,0 +1,671 @@
+-- Optimisation rules
+
+let
+	min a b = if a < b then a else b
+	max a b = if a > b then a else b
+	sum = foldl (\acc i -> acc + i) 0
+
+	all f ls = and (map f ls)
+	any f ls = or (map f ls)
+
+	isTokenLink l = l.width == 0
+	isDataLink l = l.width /= 0
+
+	const width value = [ (oConstant width value) { index = 1 } ]
+
+	ifNot0Width oSlice = if oSlice.slice.width /= 0 then [oSlice] else []
+
+	fSlice l = sliceFromOW l.fOffset l.width
+	sSlice l = sliceFromOW l.sOffset l.width
+	rSlice l = sliceFromOW l.rOffset l.width
+
+	widenSlice i slice = if slice.offset == 0
+		then sliceFromOW 0 (slice.width + i)
+		else sliceFromOW (slice.offset - i) (slice.width + i * 2)
+
+	spanningSlice slice1 slice2 = sliceFromOW retLow ((retHigh - retLow) + 1)
+		where
+			retLow = min slice1.offset slice2.offset
+			retHigh = max (sliceHigh slice1) (sliceHigh slice2)
+
+	shiftOSlice distance oSlice = newOSlice oSlice.index (shiftSlice distance oSlice.slice)
+	shiftSlice distance slice = sliceFromOW (slice.offset + distance) slice.width
+
+	slicesOverlap slice1 slice2 =
+		(slice2.offset <= sliceHigh slice1 && sliceHigh slice2 >= slice1.offset) ||
+		(slice1.offset <= sliceHigh slice2 && sliceHigh slice1 >= slice2.offset)
+	sliceHigh slice = slice.width + slice.offset - 1
+	slicesAreAdjacentOrOverlap slice1 slice2 = slicesOverlap (widenSlice 1 slice1) (widenSlice 1 slice2)
+
+	fullWidthWrite v wg = wg.wOffset == 0 && wg.width == v.width && v.bOffsets == []
+
+	-- incTermIndices : increment term numbers (and slice term nos. within) but using `inputSliceNo' to
+	--	replace 0-index (input) slices
+	incTermIndices inputSliceNo incr terms = terms { index = index + incr, slices = map incOSliceIndex slices }
+		where incOSliceIndex slice = slice { index = if index == 0 then inputSliceNo else index + incr }
+
+rule ff "collapse connected Fs"
+	from
+		f1: F (_, [...,i,...])
+		f2: F (i, f2o)
+	to
+		f1: F (_, [...,f2o',...])
+	where
+		f2o' = f2o { fOffset = if width == 0 then 0 else fOffset + i.fOffset }
+
+rule mm "collapse connected Ms"
+	from
+		m1: M ([...,i,...], _)
+		m2: M (mi, i)
+	to
+		m1: M ([...,mi,...], _)
+
+rule jj "collapse connected Js"
+	from
+		j1: J ([...,i,...], _)
+		j2: J (ji, i)
+	to
+		j1: J ([...,ji,...], _)
+
+rule sm "merge shared S-M links"
+	from
+		s1: S (_, [...,i,...,j,...])
+		m1: M ([...,i,...,j,...], _) permute (i, j)
+	when i.width == j.width && i.sOffset == j.sOffset
+	to
+		s1: S (_, [k,...,...,...])
+		m1: M ([k,...,...,...], _)
+	where
+		k = newlink { width = i.width, sImps = i.sImps ++ j.sImps, sOffset = i.sOffset }
+
+rule fj0 "remove redundant F-J token links"
+	from
+		f1: F (_, [...,i,...,j,...]) permute (i, j)
+		j1: J ([...,i,...,j,...], _)
+	-- can't permute j1 because order of ...s in j1 relative to i/j matters
+	when isTokenLink i || isTokenLink j
+	to
+		f1: F (_, [i',j',...,...,...])
+		j1: J ([...,i',...,j',...], _)
+	where
+		-- preferentially replace i
+		i' = if isTokenLink i then [] else [i]
+		j' = if isTokenLink i then [j] else []
+
+rule fjl1 "remove redundant F-J token links"
+	from
+		f1: F (fi, [...,i,...,j,...]) permute (i, j)
+		j1: J ([...,i,...,k,...], jo) -- can't permute to preserve ...,k,... relationship
+		j -|-> k excluding (fi, jo)
+	when isTokenLink i
+	to
+		f1: F (fi, [j,...,...,...])
+		j1: J ([...,...,k,...], jo)
+
+rule fjl2 "remove redundant F-J token links"
+	from
+		f1: F (fi, [...,i,...,j,...]) permute (i, j)
+		j1: J ([...,k,...,i,...], jo) -- can't permute to preserve ...,k,... relationship
+		j -|-> k excluding (fi, jo)
+	when isTokenLink i
+	to
+		f1: F (fi, [j,...,...,...])
+		j1: J ([...,k,...,...], jo)
+
+rule fj "merge adjacent J inputs from same F"
+	-- This is subsumed by fj2 but is simpler.  Think about removing
+	from
+		f1: F (_, [...,i,...,j,...]) permute (i, j)
+		j1: J ([...,i,j,...], _)
+	when i.fOffset + i.width == j.fOffset
+	to
+		f1: F (_, [k,...,...,...])
+		j1: J ([...,k,...], _)
+	where
+		k = newlink { width = i.width + j.width, fOffset = i.fOffset }
+
+rule fj2 "like fj but with overlap/opposite order, inserting O to reorder"
+	from
+		f1: F (_, [...,i,...,j,...]) permute (i, j)
+		j1: J ([jl:...,i,jm:...,j,jr:...], jo)
+	when isDataLink i && isDataLink j && slicesAreAdjacentOrOverlap (fSlice i) (fSlice j)
+	to
+		f1: F (_, [k,...,...,...])
+		j1: J ([jl,k,jm,jr], jo')
+		o1: O { terms = checkOTerms joinTerms } (jo', jo)
+	where
+		jlWidth = sum jl.width
+		jrWidth = sum jr.width
+		jmWidth = sum jm.width
+		kSlice = spanningSlice (fSlice i) (fSlice j)
+		jlSlice = newOSlice 0 (sliceFromOW 0 jlWidth)
+		iSlice = shiftOSlice kInOInputOffset (newOSlice 0 (fSlice i))
+		jmSlice = newOSlice 0 (sliceFromOW (jlWidth + kSlice.width) jmWidth)
+		jSlice = shiftOSlice kInOInputOffset (newOSlice 0 (fSlice j))
+		jrSlice = newOSlice 0 (sliceFromOW (jlWidth + jmWidth + kSlice.width) jrWidth)
+		kInOInputOffset = jlWidth - kSlice.offset
+
+		joinTerms = [ oAppend { index = 1, slices =
+			ifNot0Width jlSlice ++
+			ifNot0Width iSlice ++
+			ifNot0Width jmSlice ++
+			ifNot0Width jSlice ++
+			ifNot0Width jrSlice } ]
+
+		k = newlink { width = kSlice.width, fOffset = kSlice.offset }
+		jo' = newlink { width = jrWidth + jmWidth + kSlice.width + jlWidth }
+
+rule sv "remove `buffer' Vs"
+	from
+		v: V ([wg], [wd], [wd], [rd])
+	when wg.wOffset == rd.rOffset && wg.width == rd.width
+	alias wg => rd
+
+rule vv "merge Vs with joined writes"
+	from
+		j1: J ([...,wd1,...,wd2,...], wd) -- AB permute (wd1, wd2)
+		v1: V ([wg1], [wd1], rg1, rd1)
+		v2: V ([wg2], [wd2], rg2, rd2)
+	when
+		fullWidthWrite v1 wg1 &&
+		fullWidthWrite v2 wg2
+	to
+		j1: J ([wd',...,...,...], wd)
+		j2: J { pos = j1.pos } ([wg1,wg2], w)
+		v: V { name = newName, width = newWidth, pos = newPos } ([w], [wd'], [rg1,rg2], [rd1,rd2'])
+	where
+		newName = v1.name ++ "-" ++ v2.name
+		newWidth = v1.width + v2.width
+		newPos = posList [v1.pos, v2.pos]
+		w = newlink { width = wg1.width + wg2.width, wOffset = 0 }
+		wd' = newlink { width = 0 }
+		rd2' = rd2 { rOffset = rOffset + v1.width }
+
+rule fal "remove F aliases"
+	from
+		f1: F (i, [o])
+	when
+		o.fOffset == 0 && i.width == o.width
+	alias i => o
+	
+rule jal "remove J aliases"
+	from
+		j1: J ([i], o)
+	alias i => o
+	
+rule sal "remove S aliases"
+	from
+		s1: S (i, [o])
+	when i.width == o.width
+	alias i => o
+	
+rule sal2 "reduce S to narrowing F"
+	from
+		s1: S (i, [o])
+	when i.width > o.width
+	to
+		f1: F (i, [o'])
+	where
+		o' = o { fOffset = if width == 0 then 0 else sOffset }
+	
+rule mal "remove M aliases"
+	from
+		m1: M ([i], o)
+	alias i => o
+	
+rule gal "any non-teak component acting as a simple alias"
+	from
+		c1: instance (i, o)
+	when partPortAliases c1.part == [[0,1]]
+	alias i => o
+	
+group al "remove link aliases" (mal, sal, sal2, jal, fal, lal, gal)
+	
+rule jo "move O through J"
+	from
+		o1: O (oi, oo)
+		j1: J ([jl:...,oo,jr:...], jo)
+	when oo.width /= 0
+	to
+		j2: J ([jl,oi,jr], oi')
+		o1: O { terms = checkOTerms newTerms } (oi', jo)
+	where
+		jlWidth = sum jl.width
+		jrWidth = sum jr.width
+		oi' = newlink { width = jlWidth + oi.width + jrWidth }
+		oTerms' = if isTokenLink oi then o1.terms else incTermIndices 1 1 o1.terms
+		resultTerm = last oTerms'
+		oiTerms = if isDataLink oi then [
+			oAppend { index = 1, slices = [newOSlice 0 (sliceFromOW jlWidth oi.width)] } ] else [] 
+		resultTermSlice = newOSlice (resultTerm.index) (sliceFromOW 0 (oTermWidth resultTerm))
+		newTerms = (oiTerms ++ oTerms' ++
+			[oAppend { index = resultTerm.index + 1, slices =
+				ifNot0Width (newOSlice 0 (sliceFromOW 0 jlWidth)) ++
+				[resultTermSlice] ++
+				ifNot0Width (newOSlice 0 (sliceFromOW (jlWidth + oi.width) jrWidth)) }])
+	
+rule oo "collapse connected Os"
+	from
+		o1: O (oi, o)
+		o2: O (o, oo)
+	when isDataLink o
+	to
+		o3: O { terms = checkOTerms newTerms } (oi, oo)
+	where
+		o1Result = (last o1.terms).index
+		newTerms = (o1.terms ++ incTermIndices o1Result o1Result o2.terms)
+
+rule sho "shorten O terms"
+	from
+		o1: O (oi, oo)
+	when terms' /= o1.terms
+	to	
+		o1: O { terms = terms' } (oi, oo)
+	where
+		terms' = shortenOTerms o1.terms
+
+rule ns "narrow S outputs"
+	from
+		s1: S (_, [...,i,...])
+		f1: F (i, [j])
+	to
+		s1: S (_, [...,j',...])
+	where
+		j' = j { sImps = i.sImps, sOffset = i.sOffset + j.fOffset }
+
+rule vjv "cascading V writes"
+	from
+		j1: J ([jl:...,wd1,jr:...], wg2)
+		v1: V ([wg1], [wd1], _, _)
+		v2: V ([wg2], [wd2], _, _)
+	when
+		fullWidthWrite v1 wg1 &&
+		fullWidthWrite v2 wg2
+	to
+		j1: J ([jl,jr,wg1], w')
+		f1: F (w', [wg1', wg2'])
+		j2: J ([wd1,wd2'], wd2)
+		v1: V ([wg1'], [wd1], _, _)
+		v2: V ([wg2'], [wd2'], _, _)
+	where
+		w' = newlink { width = wg1.width + wg2.width }
+		wg1' = newlink { width = wg1.width, wOffset = 0, fOffset = wg2.width }
+		wg2' = wg2 { wOffset = 0, fOffset = 0 }
+		wd2' = newlink { width = 0 }
+
+rule tvn "trim V read ports"
+	from
+		v1: V ([wg], [wd], [rgl:..., rg, rgr:...], [rdl:..., rd, ...])
+		wd -|-> rg excluding (wg)
+	when
+		length rgl == length rdl && fullWidthWrite v1 wg && rgl ++ rgr /= []
+	to
+		f1: F (wg, [wgf, rdf])
+		v1: V ([wgf], [wdv], [rgl, rgr], [rdl, ...])
+		j1: J ([rdf, rg, wdf], rd)
+		f2: F (wdv, [wd', wdf])
+	where
+		wdv = newlink { width = 0 }
+		wdf = newlink { width = 0, fOffset = 0 }
+		wd' = wd { fOffset = 0 } 
+		wgf = newlink { width = wg.width, fOffset = 0, wOffset = 0 }
+		rdf = newlink { width = rd.width, fOffset = rd.rOffset }
+		rdrOffset = rd.rOffset
+		rdwidth = rd.width
+		wgwidth = wg.width
+
+rule tv1 "trim last V read port"
+	from
+		v1: V ([wg], [wd], [rg], [rd])
+		wd -|-> rg excluding (wg)
+	when
+		fullWidthWrite v1 wg -- && rd.rOffset == 0 && rd.width == wg.width
+	to
+		f1: F (wg, [wd', rd'])
+		j1: J ([rd', rg], rd)
+	where
+		wd' = wd { fOffset = 0 }
+		rd' = newlink { width = rd.width, fOffset = rd.rOffset }
+
+rule fo "move Fs through Os"
+	from
+		o1: O (oi, oo)
+		f1: F (oo, [fol:..., fo, for:...])
+	when
+		fo.width == oo.width && fo.fOffset == 0 && all isTokenLink fol && all isTokenLink for
+	to
+		o1: O (fo', fo)
+		f1: F (oi, [fol, fo', for])
+	where
+		fo' = newlink { width = oi.width, fOffset = 0 }
+
+rule il "remove I loop"
+	-- FIXME, do J-I-J and J-I-F
+	from
+		i1: I (ii, io)
+		j1: J ([jl:..., io, jr:...], jo)
+		f1: F (fi, [fl:..., ii, fr:...])
+		jo -> fi
+	when
+		jl ++ jr /= [] && fl ++ fr /= []
+	to
+		j1: J ([jl, jr], jo)
+		f1: F (fi, [fl, fr])
+
+-- FIXME, all the narrowings could actually work on multiple output forks that
+--	don't cover the full input width
+
+rule njl "narrow datapath - J low end"
+	from
+		f1: F (fi, [fo])
+		j1: J ([jl:..., ji, jr:...], fi)
+	when
+		fo.fOffset /= 0 && fo.width /= fi.width
+			&& all isTokenLink jl && isDataLink ji
+	to
+		f1: F (fi', [fo'])
+		j1: J ([jl:..., ji', jr:...], fi')
+		f2: F (ji, [ji'])
+	where
+		trim = min ji.width fo.fOffset
+		jiWidth = ji.width
+		fi' = newlink { width = fi.width - trim }
+		ji' = newlink { width = ji.width - trim, fOffset = trim }
+		fo' = fo { fOffset = fOffset - trim }
+
+rule njh "narrow datapath - J high end" -- adter njl has trimmed until fo.fOffset == 0
+	from
+		f1: F (fi, [fo])
+		j1: J ([jl:..., ji, jr:...], fi)
+	when
+		fo.fOffset == 0 && fo.width /= fi.width
+			&& all isTokenLink jr && isDataLink ji
+	to
+		f1: F (fi', [fo])
+		j1: J ([jl:..., ji', jr:...], fi')
+		f2: F (ji, [ji'])
+	where
+		trim = min ji.width (fi.width - fo.width)
+		jiWidth = ji.width
+		fi' = newlink { width = fi.width - trim }
+		ji' = newlink { width = ji.width - trim, fOffset = 0 }
+
+rule nvr0 "remove V read port"
+	from
+		f1: F (rd, [fo])
+		v1: V (_, _, [rgl:..., rg, rgr:...], [rdl:..., rd, rdr:...])
+	when
+		length rgl == length rdl && isTokenLink fo && rgl ++ rgr /= []
+	to
+		f1: F (rg, [fo])
+		v1: V (_, _, [rgl, rgr], [rdl, rdr])
+
+rule nvr "narrow V read port"
+	from
+		f1: F (rd, [fo])
+		v1: V (_, _, [rgl:..., rg, rgr:...], [rdl:..., rd, rdr:...])
+	when
+		length rgl == length rdl && isDataLink fo && rgl ++ rgr /= []
+	to
+		v1: V (_, _, [rgl, rg, rgr], [rdl, fo', rdr])
+	where
+		fo' = fo { rOffset = rd.rOffset + fo.fOffset }
+
+rule nm "narrow M"
+	from
+		f1: F (mo, [fo])
+		m1: M (mis, mo)
+	to
+		m1: M (mis', fo)
+		foreach (mi, mi') in (mis, mis') f2: F (mi, [mi'])
+	where mis' = foreach mi in mis newlink { width = fo.width, fOffset = fo.fOffset }
+
+rule no "narrow O" -- this then leads into rule oo
+	from
+		f1: F (oo, [fo])
+		o1: O (oi, oo)
+	when isDataLink fo
+	to
+		o1: O (oi, oo)
+		o2: O { terms = checkOTerms fTerms } (oo, [fo])
+	where
+		fTerms = [ oAppend { index = 1, slices = [ newOSlice 0 (fSlice fo) ] } ]
+
+rule no0 "remove O" -- this then leads into rule oo
+	from
+		f1: F (oo, [fo])
+		o1: O (oi, oo)
+	when
+		isTokenLink fo && not (any isBuiltinCall o1.terms)
+	to
+		f1: F (oi, [fo])
+
+rule fv "push Fs through V read"
+	from
+		f1: F (rd, [fol:..., fo, for:...])
+		v1: V (_, _, [rgl:..., rg, rgr:...], [rdl:..., rd, rdr:...])
+	when
+		length rgl == length rdl && isTokenLink fo && fol ++ for /= []
+	to
+		f2: F (rg, [rg', fo])
+		f1: F (rd, [fol, for])
+		v1: V (_, _, [rgl, rg', rgr], [rdl, rd, rdr])
+	where
+		rg' = newlink { width = 0, fOffset = 0 }
+
+rule sf "move Fs to before S"
+	from
+		s1: S (si, [..., so1, ..., so2, ...])
+		f1: F (so1, [f1l:..., mi1, f1r:...])
+		f2: F (so2, [f2l:..., mi2, f2r:...])
+		m1: M ([..., mi1, ..., mi2, ...], _) permute (mi1, mi2)
+	when
+		isTokenLink mi1 && isTokenLink mi2
+	to
+		s1: S (si, [..., ..., ..., so])
+		f3: F (so, [fo, mi])
+		s2: S { slice = s1.slice } (fo, [so1, so2])
+		f1: F (so1, [f1l, f1r])
+		f2: F (so2, [f2l, f2r])
+		m1: M ([..., ..., ..., mi], _)
+	where
+		so = newlink { width = si.width, sOffset = 0, sImps = so1.sImps ++ so2.sImps }
+		fo = newlink { width = si.width, fOffset = 0 }
+		mi = newlink { width = 0, fOffset = 0 }
+
+rule ss "S merge"
+	from
+		s1: S (_, [..., so, ...])
+		s2: S (so, s2o)
+	to
+		s1: S (_, [..., s2o', ...])
+	where
+		s2o' = s2o { sOffset = if width == 0 then 0 else sOffset + so.sOffset }
+
+rule ffmm "F-M cross"
+	from
+		f1: F (f1i, [f1o1, f1o2]) permute (f1o1, f1o2)
+		f2: F (f2i, [f2o1, f2o2]) permute (f2o1, f2o2) exhaustive
+		m1: M ([..., f1o1, ..., f2o1, ...], mo1) permute (f1o1, f2o1)
+		m2: M ([..., f1o2, ..., f2o2, ...], mo2) permute (f1o2, f2o2)
+	when
+		isTokenLink f1o1 && isTokenLink f2o1
+	to
+		f1: F (f1i, [f1o2])
+		f2: F (f2i, [f2o2])
+		m3: M ([f1o2, f2o2], moj)
+		f3: F (moj, [mo1', mo2'])
+		m1: M ([..., ..., ..., mo1'], mo1)
+		m2: M ([..., ..., ..., mo2'], mo2)
+	where
+		moj = newlink { width = mo2.width, fOffset = 0 }
+		mo1' = newlink { width = 0, fOffset = 0 }
+		mo2' = newlink { width = mo2.width, fOffset = 0 }
+
+rule soom "use O for S-M with constants"
+	from
+		s1: S (si, [...,i,...,j,...])
+		o1: O (i, k)
+		o2: O (j, l)
+		m1: M ([...,k,...,l,...], _) permute (k, l)
+	when isDataLink k && isDataLink l
+	to
+		s1: S (si, [...,i',...,...])
+		o3: O { terms = checkOTerms newTerms } (i', k)
+		m1: M ([k,...,...,...], _)
+	where
+		iSlice = spanningSlice s1.slice (spanningSlice (sSlice i) (sSlice j))
+		mWidth = k.width
+
+		inpTerms = [
+			oAppend { index = 1, slices = [ newOSlice 0 (sliceFromOW (i.sOffset - iSlice.offset) i.width) ]},
+			oAppend { index = 2, slices = [ newOSlice 0 (sliceFromOW (j.sOffset - iSlice.offset) j.width) ]} ]
+		o1Terms' = incTermIndices 1 2 o1.terms
+		o2Terms' = incTermIndices 2 (last o1Terms').index o2.terms
+
+		muxTerm = (oMux [i.sImps, j.sImps]) { index = (last o2Terms').index + 1, slices = [
+			newOSlice 0 (shiftSlice (0 - iSlice.offset) s1.slice),
+			newOSlice (last o1Terms').index (sliceFromOW 0 mWidth),
+			newOSlice (last o2Terms').index (sliceFromOW 0 mWidth)] }
+
+		newTerms = inpTerms ++ o1Terms' ++ o2Terms' ++ [muxTerm]
+		i' = newlink { width = iSlice.width, sOffset = iSlice.offset, sImps = i.sImps ++ j.sImps }
+
+rule som "use O for S-M with constants"
+	from
+		s1: S (si, [...,i,...,j,...]) permute (i, j)
+		o1: O (i, k)
+		m1: M ([...,k,...,j,...], _) permute (k, j)
+	when isDataLink k
+	to
+		s1: S (si, [...,i',...,...])
+		o3: O { terms = checkOTerms newTerms } (i', k)
+		m1: M ([k,...,...,...], _)
+	where
+		iSlice = spanningSlice s1.slice (spanningSlice (sSlice i) (sSlice j))
+		mWidth = k.width
+
+		inpTerms = [
+			oAppend { index = 1, slices = [ newOSlice 0 (sliceFromOW (i.sOffset - iSlice.offset) i.width) ]},
+			oAppend { index = 2, slices = [ newOSlice 0 (sliceFromOW (j.sOffset - iSlice.offset) j.width) ]} ]
+		o1Terms' = incTermIndices 1 2 o1.terms
+
+		muxTerm = (oMux [i.sImps, j.sImps]) { index = (last o1Terms').index + 1, slices = [
+			newOSlice 0 (shiftSlice (0 - iSlice.offset) s1.slice),
+			newOSlice (last o1Terms').index (sliceFromOW 0 mWidth),
+			newOSlice 2 (sliceFromOW 0 mWidth)] }
+
+		newTerms = inpTerms ++ o1Terms' ++ [muxTerm]
+		i' = newlink { width = iSlice.width, sOffset = iSlice.offset, sImps = i.sImps ++ j.sImps }
+
+rule svrr "S to variable read ports"
+	default off
+	from
+		s1: S (si, [rg1, rg2])
+		v1: V (_, _, [rg1, rg2], [rd1, rd2])
+	to
+		f1: F (si, [rg, si'])
+		v1: V (_, _, [rg], [rd])
+		j2: J ([rd, si'], s2i)
+		s2: S { slice = sliceFromOW rdSlice.width s1.slice.width } (s2i, [rd1', rd2'])
+	where
+		rdSlice = spanningSlice (rSlice rd1) (rSlice rd2)
+
+		rd = newlink { width = rdSlice.width, rOffset = rdSlice.offset }
+		rg = newlink { width = 0, fOffset = 0 }
+		si' = newlink { width = s1.slice.width, fOffset = s1.slice.offset }
+		rd1' = rd1 { sImps = rg1.sImps, sOffset = rd1.rOffset - rdSlice.offset }
+		rd2' = rd2 { sImps = rg2.sImps, sOffset = rd2.rOffset - rdSlice.offset }
+		s2i = newlink { width = s1.slice.width + rdSlice.width }
+
+(--
+rule svrr2 "S to variable read ports"
+	default off
+	from
+		v1: V (wg, _, [rgl:..., rg1, rgm:..., rg2, ...], [rdl:..., rd1, rdm:..., rd2, ...])
+		s1: S (si, [..., so1, ..., so2, ...]) permute (so1, so2) exhaustive
+		so1 -|-> rg1 excluding (wg)
+		so2 -|-> rg2 excluding (wg)
+	when
+		slicesOverlap (rSlice rd1) (rSlice rd2)
+	to
+		f1: F (si, [rg, si'])
+		v1: V (wg, _, [rgl, rgm, ..., rg], [rdl, rdm, ..., rd])
+		j1: J ([si', rd], si'')
+		s1: S (si'', [so1', so2'])
+		f2: F (so1', [b1, so1''])
+		f3: F (so2', [b2, so2''])
+		j2: J ([b1, rg1], rd1)
+		j3: J ([b2, rg2], rd2)
+	where
+		rdSlice = spanningSlice (rSlice rd1) (rSlice rd2)
+
+		rg = newlink { width = 0, fOffset = 0 }
+		si' = newlink { width = si.width, fOffset = 0 }
+		rd = newlink { width = rdSlice.width, rOffset = rdSlice.offset }
+		si'' = newlink { width = si.width + rdSlice.width }
+		so1' = newlink { width = (si.width - so1.sOffset) + rdSlice.width, sImps = so1.sImps, sOffset = so1.sOffset }
+		so2' = newlink { width = (si.width - so2.sOffset) + rdSlice.width, sImps = so2.sImps, sOffset = so2.sOffset }
+		so1'' = so1 { fOffset = 0 }
+		so2'' = so2 { fOffset = 0 }
+		b1 = newlink { width = rd1.width, fOffset = so1.width + (rd1.rOffset - rdSlice.offset) }
+		b2 = newlink { width = rd2.width, fOffset = so2.width + (rd2.rOffset - rdSlice.offset) }
+		--)
+
+(--
+rule svrr3 "S to variable read ports"
+	default off
+	from
+		v1: V (wg, _, [rgl:..., rg1, rgm:..., rg2, ...], [rdl:..., rd1, rdm:..., rd2, ...])
+		s1: S (si, [so1, so2]) permute (so1, so2) exhaustive
+		so1 -|-> rg1 excluding (wg)
+		so2 -|-> rg2 excluding (wg)
+	when
+		length rgl == length rdl && length rgm == length rdm &&
+			slicesOverlap (rSlice rd1) (rSlice rd2)
+	to
+		f1: F (si, [rg, si'])
+		s1: S (si', [so1, so2])
+		f2: F (rd, [rd1', rd2'])
+		j1: J ([rg1, rd1'], rd1)
+		j2: J ([rg2, rd2'], rd2)
+		v1: V (wg, _, [rgl, rgm, ..., rg], [rdl, rdm, ..., rd])
+	where
+		rdSlice = spanningSlice (rSlice rd1) (rSlice rd2)
+
+		rg = newlink { width = 0, fOffset = 0 }
+		rd = newlink { width = rdSlice.width, rOffset = rdSlice.offset }
+		si' = newlink { width = si.width, fOffset = 0 }
+		rd1' = newlink { width = rd1.width, fOffset = rd1.rOffset - rdSlice.offset }
+		rd2' = newlink { width = rd2.width, fOffset = rd2.rOffset - rdSlice.offset }
+		--)
+
+rule rf "Push R through F"
+	from
+		r1: R (ro)
+		f1: F (ro, [fol:..., fo, for:...])
+	when
+		fol ++ for /= []
+	to
+		r1: R (ro)
+		f1: F (ro, [fol, for])
+		r2: R (fo)
+
+rule rm "R - M becomes I"
+	from
+		r1: R (ro)
+		m1: M ([mil:..., ro, mir:...], mo)
+	when length (mil ++ mir) /= 0
+	to
+		m1: M ([mil, mir], mo')
+		i1: I (mo', mo)
+	where
+		mo' = newlink { width = mo.width }
+		
+group tv "trim V read ports" (tvn, tv1)
+
+group nd "narrow datapath" (njl, njh, nvr0, nvr, nm, no, no0)
+
+group stom "S-M with some Os between" (soom, som)
+
+group offoptims "off-by-default rules" (stom)

@@ -1,0 +1,30 @@
+
+type r2 is record
+	a : 8 bits
+end
+
+type r is record
+	a : 8 bits;
+	b : 12 bits;
+	c : r2;
+	d : 5 bits
+end
+
+procedure a is
+	variable v : 12 bits
+	variable R : r
+	variable R2 : r2
+	variable e : 8 bits
+begin
+	v := R.a;
+	v := R.b;
+	R.a := v;
+	R.b := v;
+	R.c.a := e;
+	e := R.c.a;
+	e := (r {1, 1, r2 {1}, 1}).c.a;
+	R := {1, 1 + 1, r2 {1 + 1}, 1};
+	R := ({1, 1 + 1, r2 {1 + 1}, 1} as r);
+	R2 := r2 {1};
+	e := {1, 1}
+end

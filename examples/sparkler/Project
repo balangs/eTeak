@@ -1,0 +1,25 @@
+;;; Balsa Project file
+;;; Created: Tue Sep 28 17:48:32 2010
+;;; By: hongguar@hardys.cs.man.ac.uk (Linux)
+;;; With balsa-mgr version: 4.0 (2010-06-09)
+;;; Supplied with Balsa version: 4.0
+
+(balsa-project
+    (name "sparkler_rhg")
+    (import-path ".")
+    (simulation-system "breezesim")
+    (files
+        "alu"
+        "buffer"
+        "debug"
+        "decode"
+        "execute"
+        "fetch"
+        "memarb"
+        "regbank"
+        "shifter"
+        "sim"
+        "sparkler"
+        "types"
+    )
+)

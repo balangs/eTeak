@@ -1,0 +1,47 @@
+(--
+	Sparkler Balsa SPARC description
+
+	2007-05-07 Andrew Bardsley
+--)
+
+import [types]
+import [debug]
+
+procedure MemArbiter (
+	-- Instruction fetch
+	input faddr : Word;
+	output finst : Inst;
+	-- CPU memory access
+	input daddr : Word;
+	input daccess : MemAccess;
+	output dread : Word;
+	input dwrite : Word;
+	-- Towards memory
+	output maddr : Word;
+	output maccess : MemAccess;
+	input mread : Word;
+	output mwrite : Word
+)
+	-- (* latch="simple=1" *)
+is
+begin
+	loop
+		if debug then print "MEMARB: begin" end;
+		arbitrate
+		  faddr then
+		  	if debug then print "MEMARB: fetch ", Hex (faddr) end ||
+			maddr <- faddr ||
+			maccess <- {read, instruction} ||
+			mread -> then finst <- (mread as Inst) end
+		| daddr, daccess then
+		  	if debug then print "MEMARB: mem access ", Hex (daddr), " ", daccess end ||
+			maddr <- daddr ||
+			maccess <- daccess ||
+			case daccess.dir of
+			  write then dwrite -> mwrite
+			| read then mread -> dread
+			end
+		end;
+		if debug then print "MEMARB: done" end
+	end
+end

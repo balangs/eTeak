@@ -1,0 +1,11 @@
+procedure sv (
+	input i : 8 bits;
+	output o : 8 bits
+) is
+loop
+	i -> then
+		if i > 10 then o <- i
+		else o <- not i
+		end
+	end
+end

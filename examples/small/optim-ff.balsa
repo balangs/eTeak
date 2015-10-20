@@ -1,0 +1,14 @@
+procedure ff (
+	input i : array 8 of bit;
+	array 8 of output o : 1 bits )
+is
+begin
+	i -> then
+		for || k in 4..7 then
+			o[k] <- i[k]
+		end ||
+		for || k in 0..3 then
+			o[k] <- i[k]
+		end
+	end
+end

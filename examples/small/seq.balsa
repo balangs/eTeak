@@ -1,0 +1,21 @@
+procedure top is
+	channel a, b : 8 bits
+	variable v : 8 bits
+begin
+	begin
+		for ; i in 0..10 then
+			a <- 10; print "A"
+		end
+	end ||
+	loop
+		local
+			channel c : bit
+		begin
+			for ; i in 0..10 then c <- 1 || c -> then continue end end
+		end;
+		a -> then
+			-- b <- 20
+			print "B"
+		end
+	end
+end

@@ -1,0 +1,34 @@
+"J | null zeroIndices ->"
+
+"foreach d in 0..c-1:"
+"["
+    "offset = sum (foreach e in 0..d-1: inWidths[e])
+
+    "foreach j in 0..inWidths[d]-1:"
+    "["
+       i[d]R0[j] ?----! oR0[offset+j]
+       i[d]R1[j] ?----! oR1[offset+j]
+    "]"
+"]"
+ iA !----? oA
+
+"J | outWidth == 0 ->"
+              ___
+  i[0]R  ?---|   \
+             | C  |---! oR
+ i[c-1]R ?---|___/
+
+      iA !----? oA
+
+"J | otherwise ->"
+
+"net joinf[outWidth-1:0]"
+"net joint[outWidth-1:0]"
+
+"foreach d in 0..c-1:"
+"["
+
+"]"
+
+"zeroIndices = findIndices (== 0) inWidths"
+"nonZeroIndices = findIndices (/= 0) inWidths"

@@ -1,0 +1,44 @@
+
+procedure a (parameter z : bit) is
+	function AddOne (v : 10 bits) = v + 1
+	variable p : 11 bits
+begin
+	p := AddOne ((p as 10 bits))
+end
+
+function ToString (parameter X : type;
+	parameter v : type;
+	parameter z : 32 bits;
+	parameter w : String;
+	value : X; value2 : X) is builtin : String
+
+function noparams (a : 10 bits) is builtin : String
+
+procedure b (
+	output o : String
+) is
+begin
+	o <- ToString (23 bits, 10 bits, 1, "Hello", 10, 20);
+	o <- noparams (10)
+end
+
+procedure c (
+	output o : String
+) is
+begin
+	b (o)
+end
+
+(--
+type e1 is enumeration a, b end
+
+function x (parameter x : 32 bits; value : x bits; v2 : e1) is builtin
+: bit
+
+procedure c (
+	output o : bit
+) is
+begin
+	o <- x (10, 1000000000000000000000000000, b)
+end
+--)

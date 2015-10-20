@@ -1,0 +1,79 @@
+Allow 0-sized data structures for convenience in parameterisation.
+        e.g.  variable v : array 0 of bit
+Allow dangling ';' and '||'
+Default to 'variable' in local declarations / parameter in argument lists
+Have wire procedure arguments. Make 'channel' and 'wire' qualifiers for procedure arguments
+        e.g.  (input a : 8 bits) really means (input channel a : 8 bits)
+Carry attributes for channel signalling types
+Make 'channel' a type-like construct where data encoding/signalling are qualifiers to values
+        e.g.  (input channel a : 8 bits)  (input my_new_channel_class a : 8 bits)
+        or    variable class1of4 v : 8 bits
+        or    encoding channel (n : cardinal) is wire r : bit; wire a : bit; 
+                wire d : n bits
+              in push output then output r; input a; output d
+              | push input then input r; output a; input d
+              | pull output then ...
+              end
+Have parameteric types: type a (p : cardinal) is record b : p bits end
+Have 'n bits' as a parameteric type expression
+Make ranges order significant
+Implement wire operations such as (from Verilog): '@'
+Have distinguished unions with distinguishing expressions
+Define constant promotion rules better.  Make 'fixed type' constants/parameters not eligible
+Allow ';'s in declarations
+Allow form of constants: 'constant name : type = value' as well as 'constant name = value : type'
+
+Multidimensional channel arrays
+Channel arrays operations, fork/join
+
+type numeric (
+	parameter length : cardinal;
+	parameter signedness : boolean
+) is new array length of bit
+
+typecons n (: cardinal) 'bits' is numeric (n, false)
+typecons n (: cardinal) 'signed' 'bits' is numeric (n, true)
+
+keyword bits
+
+canonical numeric
+    (parameter n, false) is n bits
+|	(parameter n, true) is n signed bits
+end
+
+keyword array, ..
+
+canonical vector
+	(parameter t, 0, parameter s) is array s of t
+|   (parameter t, parameter l, parameter u) is array l .. u of t
+end
+
+canonical vector
+	(parameter t, 0, parameter s) is array s of t
+|   (parameter t, parameter l, parameter u) is array l .. u of t
+end
+
+type wordAndPosition (parameter length : cardinal) is
+record
+	word : length bits;
+	position : log length bits
+end
+
+wordAndPosition (8)
+
+typecons 
+	(parameter length : cardinal)
+of
+	length 'wordbits'
+is
+	wordAndPosition (length)
+end
+
+8 wordbits
+
+UnaryFunc only does Invert (Neg can be BinaryFuncConstR (ReverseSubtract, 0))
+	Roll UnaryFunc functions into BinaryFuncConstR
+
+Make Split and Combine take non-homogenous width inputs like Variable read ports
+
+Write grammar for specification strings on Case and for Variable ports

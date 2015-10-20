@@ -1,0 +1,8 @@
+import [balsa.sim.string]
+
+procedure a is
+begin
+	print Chr (0x21);
+	print Ord ("a") ;
+	print Ord ("")
+end

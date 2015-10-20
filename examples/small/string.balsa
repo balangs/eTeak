@@ -1,0 +1,13 @@
+
+import [balsa.sim.string]
+
+procedure a is
+	variable v : String
+begin
+	v := "Hello";
+	v := StringAppend ("a", "b");
+	v := "a" + "b";
+-- EXPECT string.balsa:a:11:14: unsupported operator `-' for string typed arguments in: `("a" - "b")'
+	v := "a" - "b"
+end
+

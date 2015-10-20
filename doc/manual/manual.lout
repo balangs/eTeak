@@ -1,0 +1,327 @@
+@Include {book}
+@Book
+@Title {The Teak Manual}
+@Author { {lines} @Break {
+Andrew Bardsley
+School of Computer Science
+The University of Manchester} }
+//
+@Chapter @Title {Introduction}
+@Begin
+@LP
+@FIXME
+@BeginSections
+@Section @Title {Teak is Balsa}
+@Begin
+@LP
+@FIXME
+@End @Section
+@Section @Title {Teak is not Balsa}
+@Begin
+@LP
+@FIXME
+@End @Section
+@EndSections
+@End @Chapter
+@Chapter @Title {Teak Components and Networks}
+@Begin
+@LP
+@FIXME
+@End @Chapter
+@Chapter @Title {Teak Command Line and GUI}
+@Begin
+@LP
+@FIXME
+@BeginSections
+@Section @Title {Command line flows}
+@Begin
+# @Figure @Caption {Teak files and processes} {15c @Wide @Scale @IncludeGraphic "flow.eps"}
+@Figure @Caption {Teak files and processes} {@Scale @IncludeGraphic "flow.eps"}
+@Figure @Caption {Teak optimisation} {@Scale @IncludeGraphic "flow-optim.eps"}
+@Figure @Caption {Teak files and processes} {15c @Wide @Scale @IncludeGraphic "gui.eps"}
+@LP
+@FIXME
+@End @Section
+@Section @Title {The GUI}
+@Begin
+@LP
+@FIXME
+@End @Section
+@EndSections
+@End @Chapter
+@Chapter @Title {Inside Teak}
+@Begin
+@BeginSections
+@Section @Title {Package Structure}
+@Begin
+@LP
+@FIXME
+@BeginSubSections
+@SubSection @Title {Files}
+@Begin
+lines @Break {@LP
+@B {Balsa to PT}
+
+Parser.hs -- file parsing combinators
+Lexer.hs -- Parser specialised for lexical analysis (infinite lookahead)
+BalsaLexer.hs -- Tokeniser for reading Balsa files
+BalsaParser.hs -- Parser for Balsa
+ParseTree.hs -- Parse"/"Evaluation tree for Balsa
+Type.hs -- Type manipulating functions
+Context.hs -- Context (symbol table) manipulating functions
+Traverse.hs -- ParseTree traversal
+Bind.hs -- Symbol binding compilation phase
+Eval.hs -- Evaluation compilation phase
+Call.hs -- Function"/"Procedure call handling for Eval.hs
+Chan.hs -- Channel handling for Eval.hs
+Expr.hs -- Expression handling for Eval.hs
+Finish.hs -- ParseTree cleanup compilation phase
+Print.hs -- Parse tree reader"/"writer
+Balsa.hs -- Compilation top-level functions
+
+@B {PT to Network}
+
+NetParts.hs -- Network component, link, access types and NetworkIF network class
+Network.hs -- Implementation of NetworkIF used by Main.hs
+Teak.hs -- ParseTree to network compilation phase
+
+@B {Misc}
+
+Misc.hs -- Miscellaneous functions
+Bits.hs -- Bit manipulation, Slices, Implicants
+Show.hs -- Reader"/"writer construction functions
+Report.hs -- Error reporting types
+Options.hs -- Command line option (and sub-option) handling
+State.hs -- State, StateT and MaybeT monads
+TeakScript.hs -- Simple Haskell-like expression language used by Rule.hs
+
+@B {Gui"/"Plot}
+
+Dot.hs -- Graphviz .dot file manipulation
+Layout.hs -- Network layout rendering
+Plot.hs -- Dot graph preparation for Layout.hs
+GuiSupport.hs -- GUI support functions
+Gui.hs -- GUI
+
+@B {Gates}
+
+Gates.hs -- Gate level netlist types, Verilog parser"/"writer
+Gen.hs -- Gate level component generators
+
+@B {Latch}
+
+Graph.hs -- Graph manipulation (from Glasgow)
+Latch.hs -- Latch rule application
+
+@B {Optim}
+
+Optim.hs -- Optimisation types"/"application
+Rule.hs -- Optimisation rule parser"/"applier
+
+@B {Sim}
+
+Monitor.hs -- Monitor events file reader"/"renderer
+SimTypes.hs -- Types for simulation
+SimBuiltin.hs -- Builtin function behaviour for simulation
+Sim.hs -- Language level simulator
+SimPN.hs -- Petri net generator"/"simulator
+
+@B {Config"/"options"/"top level}
+
+Config.hs -- Compile-time configuration
+ToolOptions.hs -- Toolwide options
+Main.hs -- Top level
+}
+@End @SubSection
+@EndSubSections
+@End @Section
+@Include {compilation.lout}
+@Section @Title {Back end: Parse tree to network}
+@Begin
+@LP
+@FIXME
+@End @Section
+@Section @Title {Network manipulation API}
+@Begin
+@LP
+@FIXME
+@End @Section
+@EndSections
+@End @Chapter
+@Chapter @Title {Network Optimisation and Latching}
+@Begin
+@LP
+@FIXME
+@BeginSections
+@Section @Title {Optimisation rules}
+@Begin
+@LP
+@FIXME
+@End @Section
+@Section @Title {Applying optimisations}
+@Begin
+@LP
+@FIXME
+@End @Section
+@EndSections
+@End @Chapter
+@Chapter @Title {Simulation}
+@Begin
+@LP
+@FIXME
+@BeginSections
+@Section @Title {Builtin functions and types}
+@Begin
+@LP
+@FIXME
+@End @Section
+@Section @Title {Parse tree simulation}
+@Begin
+@LP
+@FIXME
+@End @Section
+@Section @Title {Gate level simulation}
+@Begin
+@LP
+@FIXME
+@BeginSubSections
+@SubSection @Title {Tech mapping files}
+@Begin
+@LP
+@FIXME
+@End @SubSection
+@EndSubSections
+@End @Section
+@Section @Title {Petri-net simulation}
+@Begin
+@LP
+@FIXME
+@End @Section
+@EndSections
+@End @Chapter
+@Chapter @Title {Examples}
+@Begin
+@LP
+@FIXME
+@End @Chapter
+@Appendix @Title {Balsa Grammar}
+@Begin
+@Include {grammar.lout}
+@End @Appendix
+@Appendix @Title {Builtin Functions}
+@Begin
+@LP
+@FIXME List builtin implementations for Verilog and Teak internal simulator
+@End @Appendix
+@Appendix @Title {Teak Components}
+@Begin
+@BeginSubAppendices
+@SubAppendix @Title {A -- Arbiter}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {F -- Fork}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {I -- Initial}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {J -- Join}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {L -- Latch}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {M -- Merge}
+@Begin
+@Figure @Caption {M} {7c @Wide @Scale @IncludeGraphic "m0.eps"}
+@Figure @Caption {M} {7c @Wide @Scale @IncludeGraphic "m.eps"}
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {O -- Operator}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {R -- Reset}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {S -- Steer}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@SubAppendix @Title {V -- Variable}
+@Begin
+@LP
+@FIXME
+@End @SubAppendix
+@EndSubAppendices
+@End @Appendix
+@Appendix @Title {Parse Tree Structure}
+@Begin
+@LP
+@Figure @Caption {ParseTree traverse} {12c @Wide @Scale @IncludeGraphic "traverse.eps"}
+@Include {parsetree.lout}
+@End @Appendix
+@Appendix @Title {Optimisation Rules}
+@Begin
+@BeginSubAppendices
+@Include {optim.lout}
+@EndSubAppendices
+@End @Appendix
+@Appendix @Title {Technology Mapping Gates}
+@Begin
+@LP
+A list of the gate descriptions to be provided by each tech. mapping file.  Also see
+the file @FileRef {tech"/"empty-mapping.v}.
+@LP
+{lines} @Break {@LP
+"//" tkg_{and,or,nand,nor}[23] : 2"/"3 input AND"/"OR"/"NAND"/"NOR gates
+tkg_and2 (output o, input i0, i1);
+tkg_and3 (output o, input i0, i1, i2);
+tkg_or2 (output o, input i0, i1);
+tkg_or3 (output o, input i0, i1, i2);
+tkg_nand2 (output o, input i0, i1);
+tkg_nand3 (output o, input i0, i1, i2);
+tkg_nor2 (output o, input i0, i1);
+tkg_nor3 (output o, input i0, i1, i2);
+
+"//" tkg_c[23] : 2"/"3 input symmetric C-elements
+module tkg_c2 (output o, input i0, i1);
+module tkg_c3 (output o, input i0, i1, i2);
+"//" tkg_c2r1 : 2 input symmetric C-element with active high reset
+module tkg_c2r1 (output o, input i0, i1, r);
+"//" tkg_c1u1 : asymmetric C-element with one 'symmetric' and one 'up' input
+module tkg_c1u1 (output o, input s0, u0);
+
+"//" tkg_ao22 : AND-OR-22.  o = i0"&"i1 "|" i2"&"i3
+module tkg_ao22 (output o, input i0, i1, i2, i3);
+"//" tkg_ao222 : AND-OR-222.  o = i0"&"i1 "|" i2"&"i3 "|" i4"&"i5
+module tkg_ao222 (output o, input i0, i1, i2, i3, i4, i5);
+
+"//" tkg_gnd : logic 0 connection
+module tkg_gnd (output o);
+
+"//" tkg_inv : inverter
+module tkg_inv (output o, input i);
+
+"//" tkg_buff : non-inverting logical buffer
+module tkg_buff (output o, input i);
+
+"//" tkg_mutex : mutual exclusion element.  ag"&"bg is never true.
+module tkg_mutex (input ar, br, output ag, bg);
+}
+@End @Appendix

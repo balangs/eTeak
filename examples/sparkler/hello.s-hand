@@ -1,0 +1,26 @@
+0000 ----_---- main:
+0000 0300_0000 	sethi	%hi(.LLC0), %g1			; 00_g1_100_(top 22 of LLC0)
+0004 C448_6100 	ldsb	[%g1+%lo(.LLC0)], %g2	; 11_g2_001001_g1_1_(low of LLC0)
+0008 8610_6100 	or	%g1, %lo(.LLC0), %g3		; 10_g3_000010_g1_1_(low of LLC0)
+000C 80A0_A000 	cmp	%g2, 0						; subcc %g2, 0, %g0  10_g0_010100_g2_1_(0 as 13 bits)
+0010 0280_000A 	be	.LL9						; 00_0_0001_010_(0x20, 8 instr)
+0014 C408_6100 	ldub	[%g1+%lo(.LLC0)], %g2	; 11_g2_000001_g1_1_(low of LLC0)
+0018 0900_0000 	sethi	%hi(outChar), %g4		; 00_g4_100_(top 22 of 0x200)
+001C ----_---- .LL4:
+001C 8600_E001 	add	%g3, 1, %g3					; 10_g3_000000_g3_1_(1 as 13 bits)
+0020 C201_2200 	ld	[%g4+%lo(outChar)], %g1		; 11_g1_000000_g4_1_(0x200 as 13 bits)
+0024 C428_4000  stb	%g2, [%g1]					; 11_g2_000101_g1_0_00000000_g0
+0028 C448_C000  ldsb	[%g3], %g2				; 11_g2_001001_g3_0_00000000_g0
+002C 80A0_A000 	cmp	%g2, 0						; subcc %g2, 0, %g0  10_g0_010100_g2_1_(0 as 13 bits)
+0030 12BF_FFFB 	bne	.LL4 						; 00_0_1001_010_(-6 instr)
+0034 C408_C000  ldub	[%g3], %g2				; 11_g2_000001_g3_0_00000000_g0
+0038 ----_---- .LL9:
+0038 C028_0000 	stb %g0, [%g0+0]
+0040 ...._.... 	nop
+0100 ----_---- .LLC0:
+0100 4865_6C6C 	.asciz	"Hell"					; FIXED ADDRESS!
+0104 6F2C_2077  .asci   "o, w"
+0108 6F72_6C64  .asci   "orld"
+010C 0A9F_4B00  .asci   "\n\x9FK\0"
+0200 0000_FFFF
+FFFC 0000_0000 ; Character out stream at FFFF

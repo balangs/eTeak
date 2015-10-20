@@ -1,0 +1,14 @@
+procedure out2 (
+	input i : bit;
+	input j : 8 bits;
+	output o : 8 bits
+) is
+	variable v : 8 bits
+begin
+	i -> then
+		case i of
+		| 0 then j -> then o <- j end
+		| 1 then j -> then o <- j end
+		end
+	end
+end
