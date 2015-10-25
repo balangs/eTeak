@@ -1,8 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 
 # Initialisations
-AC_INIT(library/teak/builtin.balsa)
-AM_INIT_AUTOMAKE(teak, 0.4)
+AC_INIT([teak], [0.4])
+AC_CONFIG_SRCDIR(library/teak/builtin.balsa)
+AM_INIT_AUTOMAKE([foreign])
 
 AC_PROG_INSTALL
 AC_PATH_PROG(GHC, ghc, no)
