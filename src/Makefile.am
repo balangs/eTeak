@@ -13,7 +13,7 @@ HFLAGS = -O2 -Wall -fno-warn-name-shadowing @GHC_FLAGS@ -DHAS_GTK2HS=@HAS_GTK2HS
 
 HLDFLAGS = -package mtl @PACKAGES@
 
-teak: $(objects)
+teak$(EXEEXT): $(objects)
 	$(GHC) -o $@ $(HFLAGS) $(HLDFLAGS) $(objects)
 
 SUFFIXES = .hs .o
