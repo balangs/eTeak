@@ -13,7 +13,7 @@ HFLAGS = -O2 -Wall -fno-warn-name-shadowing @GHC_FLAGS@
 
 HLDFLAGS = -package cairo
 
-aschem: $(objects)
+aschem$(EXEEXT): $(objects)
 	$(GHC) -o $@ $(HFLAGS) $(HLDFLAGS) $(objects)
 
 SUFFIXES = .hs .o
