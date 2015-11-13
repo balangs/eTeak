@@ -82,7 +82,7 @@ module Bits (
 	boolToBit True = 1
 	boolToBit False = 0
 
-	bitNot :: Bits i => Int -> i -> i
+	bitNot :: (Num i, Bits i) => Int -> i -> i
 	bitNot width arg = (bit width - 1) - arg
 
 	-- extractBitfield : extract an unsigned bitfield from the (positive, negative or zero) integer
@@ -460,7 +460,7 @@ module Bits (
 					(minR, maxR) = rangeWithLSDCs low (dcCount + 1)
 
 	-- bitmaskToSlices : return intervals matching the longest spans of 1s (by bit index) in the given integer
-	bitmaskToIntervals :: (Bits i, Integral j, Show j) => i -> [Slice j]
+	bitmaskToIntervals :: (Bits i, Num i, Integral j, Show j) => i -> [Slice j]
 	bitmaskToIntervals mask = notInSlice 0 mask
 		where
 			notInSlice _ 0 = []
@@ -477,5 +477,5 @@ module Bits (
 				| otherwise = (from<:(to - 1)) : notInSlice to mask 
 
 	-- sliceToBitmask : return a bitmask with 1s at each of the bit indices of the given slice
-	sliceToBitmask :: (Bits j, Integral i) => Slice i -> j
+	sliceToBitmask :: (Bits j, Num j, Integral i) => Slice i -> j
 	sliceToBitmask slice = ((bit $ fromIntegral $ sliceWidth slice) - 1) `shiftL` (fromIntegral (sliceOffset slice))
