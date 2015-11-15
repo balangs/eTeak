@@ -818,8 +818,7 @@ module SimPN (
 				linkChan <- teakLink partName link
 				return (refLink link, linkChan)
 
-		let
-			portChans = tryPart part $ do
+		let portChans = tryPart part $ do
 			portLinks <- liftM concat $ mapM' (nwGetPortAccess . fromJust . nwPortRef) $ networkPorts part
 			return $ map (linkChans DM.!) portLinks
 

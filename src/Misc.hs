@@ -81,7 +81,7 @@ module Misc (
 	import Data.Array
 	import Data.Maybe
 	import Numeric (showHex)
-	import System.Cmd
+	import System.Process
 	import System.Directory
 	import System.Exit
 	import Data.Char

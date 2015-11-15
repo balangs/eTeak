@@ -82,6 +82,7 @@ module GuiSupport (
 	import Data.Maybe
 	import Control.Monad
 	import Data.List
+	import qualified Data.Text as Text
 
 	import Misc
 	import Dot
@@ -89,6 +90,7 @@ module GuiSupport (
 
 	-- import Graphics.UI.Gtk hiding ({- fill, lineWidth, -} layoutHeight, layoutWidth)
 	import qualified Graphics.UI.Gtk as Gtk
+	import qualified System.Glib as Glib
 	import Graphics.Rendering.Cairo
 	import Graphics.UI.Gtk.Gdk.EventM (eventCoordinates)
 	import Control.Monad.Trans
@@ -497,7 +499,7 @@ module GuiSupport (
 				combo <- Gtk.comboBoxNewText
 				model <- Gtk.comboBoxGetModelText combo
 				Gtk.listStoreClear model
-				mapM_ (Gtk.listStoreAppend model) elems
+				mapM_ (Gtk.listStoreAppend model) $ map Text.pack elems
 				TableOptionValueEnum value <- tableOptionGet opt
 				-- FIXME, make immediate/`apply' update an option rather than always doing it?
 				Gtk.comboBoxSetActive combo value
@@ -586,7 +588,7 @@ module GuiSupport (
 				Gtk.textViewSetEditable text False
 				let shortName = shortenFilename file
 
-				errorTag <- Gtk.textTagNew (Just "Errors")
+				errorTag <- Gtk.textTagNew (Just (Glib.stringToGlib "Errors"))
 				Gtk.set errorTag [ Gtk.textTagBackground Gtk.:= "pink" ]
 				tagTable <- Gtk.textBufferGetTagTable buffer
 				Gtk.textTagTableAdd tagTable errorTag

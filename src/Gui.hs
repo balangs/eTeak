@@ -43,6 +43,7 @@ module Gui (
 	import qualified Data.IntMap as IM
 	import Data.Array
 	import Data.Char
+	import qualified Data.Text as Text
 
 	import Misc
 	import NetParts
@@ -68,6 +69,7 @@ module Gui (
 	-- import Graphics.UI.Gtk hiding ({- fill, -} toLayout)
 	import qualified Graphics.UI.Gtk as Gtk
 	import qualified Graphics.UI.Gtk.Gdk.Events as Events
+	import System.Glib
 
 	gui :: (Read network, NetworkIF network) => ToolOptions network -> [Part network] -> IO [Part network]
 
@@ -898,12 +900,11 @@ module Gui (
 				let usingMappingFile = activeRow == 0
 				Gtk.widgetSetSensitivity mappingFileEntry usingMappingFile
 				Gtk.widgetSetSensitivity mappingLabel usingMappingFile
-
 			setEntryTech = do
 				let toolOpts = guiToolOptions info
 				techs <- teakFindTechs toolOpts
 				Gtk.listStoreClear techsModel
-				mapM_ (Gtk.listStoreAppend techsModel) ("From Mapping File":techs)
+				mapM_ (Gtk.listStoreAppend techsModel) $ map Text.pack ("From Mapping File":techs)
 				info <- readIORef infoRef
 				let
 					tech = optTech $ guiToolOptions info
@@ -917,7 +918,7 @@ module Gui (
 				activeRow <- Gtk.comboBoxGetActive techCombo
 				case activeRow of
 					0 -> Gtk.entryGetText mappingFileEntry
-					_ -> Gtk.comboBoxGetActiveText techCombo >>= return . (fromMaybe "")
+					_ -> Gtk.comboBoxGetActiveText techCombo >>= return . (fromMaybe (Text.pack ""))
 
 		setEntryTech
 
@@ -932,8 +933,8 @@ module Gui (
 			filename <- Gtk.entryGetText entry
 			let toolOpts = guiToolOptions info
 			tech <- getEntryTech
-			putStrLn $ "Tech: " ++ tech
-			Why comp techMapping <- runWhyT $ teakFindTechMapping toolOpts tech
+			putStrLn $ "Tech: " ++ (Text.unpack tech)
+			Why comp techMapping <- runWhyT $ teakFindTechMapping toolOpts (Text.unpack tech)
 			case comp of
 				Complete -> genMakeGatesFile True [] -- FIXME
 					"by teak gui" -- FIXME
@@ -1495,7 +1496,7 @@ module Gui (
 
 			newAction name displayedName maybeTooltip maybeIcon maybeAccel = do
 				action <- Gtk.actionNew name displayedName maybeTooltip maybeIcon
-				Gtk.actionGroupAddActionWithAccel actions action maybeAccel
+				Gtk.actionGroupAddActionWithAccel actions action (maybeAccel :: Maybe String)
 				return action
 
 		newAction "File" "_File" Nothing Nothing Nothing

@@ -53,7 +53,6 @@ module Main (
 	import SimPN
 	import State
 	import Dot
-	import Scp
 
 	import System.Environment
 	import System.Exit
@@ -63,6 +62,7 @@ module Main (
 	import System.Directory
 	import Control.Monad
 	import System.IO
+	import System.IO.Error
 	import Data.Maybe
 	import Control.Monad.Trans
 	import qualified Data.Map as DM
@@ -425,7 +425,7 @@ module Main (
 
 	mainWithArgs :: [String] -> IO ()
 	mainWithArgs args = do
-		teakHome <- catch (getEnv "TEAKHOME") $ const $ return buildTeakHome
+		teakHome <- catchIOError (getEnv "TEAKHOME") $ const $ return buildTeakHome
 		let state0 = modifyToolOptions defaultCommandLineState $ setTeakHome (Just teakHome) Nothing
 		(stateWithoutFlat, remainingArgs) <- parseOptions clOptions state0 args
 
@@ -675,24 +675,7 @@ module Main (
 
 					let
 						doscp = (findBoolSubOption latchOpts LatchDoSCP) -- || findBoolSubOption latchOpts (LatchSCPLimit 3000)
-					scpParts <- if not doscp
-						then return latchedParts
-						else do 
-							gatelist <- tryWhyT $ do
-								gates <- teakFindTechFile (clOpts state) "umc130f"
-								return gates
-							let
-								Just (LatchSCPLimit scplimit) = findSubOption latchOpts (LatchSCPLimit undefined)
-								mapping = mappingNetlistToTechMapping gatelist
-						                partDelayList = foldl func DM.empty latchedParts
-						                        where
-						                                func partDelayList part = DM.insert (networkName part) 
-											(snd (scp part mapping partDelayList)) partDelayList
-								scpLatchedParts = map (\part->nwInsertScpLatches part scplimit mapping partDelayList) latchedParts
-							exit <- printCompleteness noPosContext comp
-							when exit exitFailure
-							return scpLatchedParts
-					return scpParts
+					return latchedParts
 {-						
 							
 					putVerboseObj (Just latchedParts) "Finished latch insertion"

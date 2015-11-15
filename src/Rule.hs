@@ -77,6 +77,7 @@ module Rule (
 	import qualified Data.Map as DM
 	import Data.Array (listArray, (!))
 	import Control.Monad.ST
+	import Control.Monad.ST.Unsafe
 	import System.FilePath
 	import System.IO
 
