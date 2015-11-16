@@ -3,12 +3,19 @@ version:             0.4
 synopsis:            This is the eTeak system. A GALS back end for the Balsa language
 homepage:            balangs.github.io
 license:             GPL-3
-license-file:        LICENSE
+license-file:        LICENCE
 author:              Mahdi Jelodar
 maintainer:          m.j.1989@ieee.org
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
+data-files:          optim/default.rules
+                     library/teak/*.balsa
+                     library/teak/sim/*.balsa
+                     library/balsa/parts/*.balsa
+                     library/balsa/sim/*.balsa
+                     library/balsa/types/*.balsa
+                     tech/*.v
 
 
 executable eTeak
