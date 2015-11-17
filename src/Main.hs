@@ -56,7 +56,7 @@ module Main (
 
 	import System.Environment
 	import System.Exit
-	import System.Time
+	import Data.Time.LocalTime
 	import System.FilePath
 	import Data.List hiding (group)
 	import System.Directory
@@ -459,7 +459,7 @@ module Main (
 
 	putTimeStamped :: String -> IO ()
 	putTimeStamped str = do
-		time <- getClockTime
+		time <- getZonedTime
 		putStrLn $ show time ++ ": " ++ str
 
 	compileFlow :: CommandLineState -> [String] -> IO ()

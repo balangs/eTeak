@@ -48,7 +48,7 @@ module Gen (
 	import Data.Char
 	import Numeric
 	import System.IO
-	import System.Time
+	import Data.Time.LocalTime
 
 	data RelDir = Forward | Reverse
 		deriving (Show, Read, Eq)
@@ -1583,7 +1583,7 @@ module Gen (
 					concatMap (mapN 100 id) $ splitWith "\n" str
 
 			timeStamp f = do
-				time <- getClockTime
+				time <- getZonedTime
 				hPutStrLn f $ "// Generated on: " ++ show time
 
 			clipNames = False
