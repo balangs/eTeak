@@ -21,4 +21,12 @@
 #src/
 	Source of `teak'
 
+#Building
+Install ghc 7.8 and cabal. The instructions below assume its installed as /usr/bin/ghc-7.8.
 
+	cabal configure -w /usr/bin/ghc-7.8
+	cabal build
+	cabal install
+
+To run (Assumes $HOME/.cabal/bin is on your PATH):
+	eTeak --gui
