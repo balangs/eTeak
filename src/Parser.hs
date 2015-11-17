@@ -51,6 +51,8 @@ module Parser (
 	) where
 
 	import Data.List
+	import Control.Applicative hiding (optional)
+	import Control.Monad.State
 
 	import Misc
 	import Report
@@ -75,6 +77,13 @@ module Parser (
 		noMoreTokens (LA1Tokens tokens) = null tokens
 		tokenStep (LA1Tokens (t:ts)) = (LA1Tokens [t], LA1Tokens ts)
 		tokenStep (LA1Tokens []) = error "LA1Tokens tokenStep: no more tokens"
+
+	instance ParserTokens tokens => Functor (Parser tokens reason) where
+		fmap = liftM
+
+	instance ParserTokens tokens => Applicative (Parser tokens reason) where
+		pure = return
+		(<*>) = ap
 
 	instance ParserTokens tokens => Monad (Parser tokens reason) where
 		parser >>= k = follow parser k

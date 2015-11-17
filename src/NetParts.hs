@@ -171,6 +171,7 @@ module NetParts (
 	import qualified Data.Map as Map
 	import Data.Array
 	import Control.Monad.State
+	import Control.Applicative
 
 	data RW = Read | Write
 		deriving (Show, Read, Eq)
@@ -1041,6 +1042,13 @@ module NetParts (
 
 	newtype {- NetworkIF network => -}
 		NetworkMonad network a = NetworkMonad { networkMonadM :: State network a }
+
+	instance NetworkIF network => Functor (NetworkMonad network) where
+		fmap = liftM
+
+	instance NetworkIF network => Applicative (NetworkMonad network) where
+		pure = return
+		(<*>) = ap
 
 	instance NetworkIF network => Monad (NetworkMonad network) where
 		l >>= k = NetworkMonad $ (networkMonadM l) >>= k'

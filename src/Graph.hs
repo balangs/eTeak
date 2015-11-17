@@ -31,6 +31,7 @@ module Graph(
 	import Data.Array.ST (STArray, newArray, readArray, writeArray)
 	import Data.Array
 	import Data.List
+	import Control.Applicative
 
 	import NetParts (NetworkLinkRef (..))
 
@@ -151,11 +152,27 @@ module Graph(
 	-- to hold the set of vertex that we need to discard
 	-- SAME
 	newtype SetM s a = SetM { runSetM :: STArray s Vertex Bool -> ST s a }
-	
+
 	-- SAME
+	instance Functor (SetM s) where
+		f `fmap` SetM v = SetM $ \s -> f `fmap` v s
+		{-# INLINE fmap #-}
+
 	instance Monad (SetM s) where
 		return x     = SetM $ const (return x)
-		SetM v >>= f = SetM $ \ s -> do { x <- v s; runSetM (f x) s }
+		{-# INLINE return #-}
+		SetM v >>= f = SetM $ \s -> do { x <- v s; runSetM (f x) s }
+		{-# INLINE (>>=) #-}
+
+	-- SAME
+	instance Applicative (SetM s) where
+		pure x = SetM $ const (return x)
+		{-# INLINE pure #-}
+		SetM f <*> SetM v = SetM $ \s -> f s >>= (`fmap` v s)
+		-- We could also use the following definition
+		--   SetM f <*> SetM v = SetM $ \s -> f s <*> v s
+		-- but Applicative (ST s) instance is present only in GHC 7.2+
+		{-# INLINE (<*>) #-}
 	
 	-- SAME
 	run          :: Bounds -> (forall s. SetM s a) -> a

@@ -69,6 +69,7 @@ module Report (
 	import Data.Maybe
 	import Data.Array
 	import Control.Monad.State
+	import Control.Applicative
 	import Data.List
 
 	import Show
@@ -327,11 +328,25 @@ module Report (
 		failPosDefault :: a -> Pos -> String -> m a
 		failPosDefault _ pos msg = fail $ showPos noPosContext pos ++ ": " ++ msg
 
+	instance Functor Why where
+		fmap = liftM
+
+	instance Applicative Why where
+		pure = return
+		(<*>) = ap
+
 	instance Monad Why where
 		(Why Complete l) >>= k = k l
 		(Why comp _) >>= _ = Why comp undefined
 		fail = failPos NoPos
 		return v = Why Complete v
+
+	instance Monad m => Functor (WhyT m) where
+		fmap = liftM
+
+	instance Monad m => Applicative (WhyT m) where
+		pure = return
+		(<*>) = ap
 
 	instance Monad m => Monad (WhyT m) where
 		l >>= k = defaultConnectWhyT undefined l k

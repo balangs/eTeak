@@ -34,6 +34,7 @@ module State (
 	) where
 
 	import Control.Monad.State
+	import Control.Applicative
 	import Data.Maybe
 
 	runStateT_ :: Monad m => StateT b m a -> m a
@@ -41,10 +42,17 @@ module State (
 
 	newtype {- Monad m => -} MaybeT m a = MaybeT { runMaybeT :: m (Maybe a) }
 
+	instance Monad m => Functor (MaybeT m ) where
+		fmap = liftM
+
+	instance Monad m => Applicative (MaybeT m) where
+		pure = return
+		(<*>) = ap
+
 	instance Monad m => Monad (MaybeT m) where
 		l >>= k = MaybeT $ runMaybeT l >>= maybe (return Nothing) (runMaybeT . k)
-		return r = MaybeT $ return $ Just r
 		fail _ = MaybeT $ return Nothing
+		return r = MaybeT $ return $ Just r
 
 	instance MonadTrans MaybeT where
 		lift = MaybeT . liftM Just
