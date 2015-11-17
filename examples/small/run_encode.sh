@@ -8,9 +8,9 @@ IN=encode
 OPTS="-O -q soom"
 
 rm ${IN}.v
-teak -v -L -l simple=1 --gates ${OPTS} -t ${TOP} --test-protocol ${IN}
+eTeak -v -L -l simple=1 --gates ${OPTS} -t ${TOP} --test-protocol ${IN}
 
-RUNTIME=`teak-config`/share/teak/runtime/verilog
+RUNTIME=`eTeak-runtime`/verilog
 
 cver +define+DUT=teak_${TOP} ${IN}.v \
 	${RUNTIME}/runtime.v ${RUNTIME}/top.v ${RUNTIME}/example.v \

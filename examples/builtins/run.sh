@@ -11,9 +11,9 @@ IN=a
 OPTS="-O"
 
 rm -f ${IN}.v
-teak -L -l simple=1 --gates ${OPTS} -t ${TOP} --test-protocol ${IN}
+eTeak -L -l simple=1 --gates ${OPTS} -t ${TOP} --test-protocol ${IN}
 
-RUNTIME=`teak-config`/share/teak/runtime/verilog
+RUNTIME=`eTeak-runtime`/verilog
 export PATH
 export LM_LICENSE_FILE
 CADTOOLS=/home/cadtools5
@@ -21,10 +21,10 @@ CADTOOLS=/home/cadtools5
 while [ $# != 0 ]; do
 	case $1 in
 		teak)
-			teak --simulate ${IN}
+			eTeak --simulate ${IN}
 			;;
 		pn)
-			teak --simulate -s type=pn ${IN}
+			eTeak --simulate -s type=pn ${IN}
 			;;
 		cver)
 			cver +define+DUT=teak_${TOP} ${IN}.v \

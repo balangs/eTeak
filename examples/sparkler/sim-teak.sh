@@ -34,15 +34,15 @@ LATCHES="-L -l loop=1"
 if [ ${DO_COMPILE} = yes ]; then
 	rm -f teak-unlatched.teak teak.v
 
-	teak -v ${OPTS} -t test -o teak-unlatched sim
+	eTeak -v ${OPTS} -t test -o teak-unlatched sim
 fi
 
 if [ ${DO_LATCH} = yes ]; then
-	teak -v --gates --test-protocol ${LATCHES} -n teak-unlatched.teak -o teak
+	eTeak -v --gates --test-protocol ${LATCHES} -n teak-unlatched.teak -o teak
 fi
 
 if [ ${DO_SIM} = yes ]; then
-	RUNTIME=`teak-config`/share/teak/runtime/verilog
+	RUNTIME=`eTeak-runtime`/verilog
 
 	#	+define+HAS_GO \
 	#	+define+HAS_DONE \

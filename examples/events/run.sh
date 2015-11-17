@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# teak -L -l after-v=1:loop=2 a
-# teak -L -l simple=1 a
-# teak -L -l loop=1 a
-teak -L -l loop=1 a
-teak -o a -n a.teak --test-protocol --gates
+# eTeak -L -l after-v=1:loop=2 a
+# eTeak -L -l simple=1 a
+# eTeak -L -l loop=1 a
+eTeak -L -l loop=1 a
+eTeak -o a -n a.teak --test-protocol --gates
 
-RUNTIME=`teak-config`/share/teak/runtime/verilog
+RUNTIME=`eTeak-runtime`/verilog
 
 cver +define+DUT=teak_top +define+TECHFILE='"'${EXAMPLE_CELLS}'"' \
 	+define+HAS_GO \

@@ -35,11 +35,11 @@ LATCHES="-L -l before-i=3"
 if [ ${DO_COMPILE} = yes ]; then
 	rm -f teak-unlatched.teak shifter.v
 
-	./teak -v ${OPTS} -t Shifter -o teak-unlatched shifter
+	eTeak -v ${OPTS} -t Shifter -o teak-unlatched shifter
 fi
 
 if [ ${DO_LATCH} = yes ]; then
-	./teak -v --gates --test-protocol ${LATCHES} -n shifter.teak -o shifter
+	eTeak -v --gates --test-protocol ${LATCHES} -n shifter.teak -o shifter
 fi
 
 # cver -s

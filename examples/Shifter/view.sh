@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./teak --gui -e shifter.report -o dummy shifter.teak
+eTeak --gui -e shifter.report -o dummy shifter.teak

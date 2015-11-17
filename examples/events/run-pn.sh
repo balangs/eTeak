@@ -1,1 +1,1 @@
-teak -S -s type=pn -L -l simple=1 -t top a
+eTeak -S -s type=pn -L -l simple=1 -t top a

@@ -34,16 +34,16 @@ LATCHES="-L -l loop=1"
 if [ ${DO_COMPILE} = yes ]; then
 	rm -f teak-unlatched.teak teak.v
 
-	teak -v ${OPTS} -t Sparkler2 -o teak-unlatched sparkler
+	eTeak -v ${OPTS} -t Sparkler2 -o teak-unlatched sparkler
 fi
 
 if [ ${DO_LATCH} = yes ]; then
-	teak -v --gates --test-protocol ${LATCHES} -n teak-unlatched.teak -o teak
+	eTeak -v --gates --test-protocol ${LATCHES} -n teak-unlatched.teak -o teak
 fi
 
 # cver -s
 if [ ${DO_SIM} = yes ]; then
-	RUNTIME=`teak-config`/share/teak/runtime/verilog
+	RUNTIME=`eTeak-runtime`/verilog
 
 	cver \
 		+define+TKR_STR_COUNT=10000 \

@@ -16,7 +16,7 @@ for a in ${FILES}; do
 			exit 1
 		fi
 	fi
-	if ! teak ${a} > log 2>&1 ; then
+	if ! eTeak ${a} > log 2>&1 ; then
 		cat $a | grep '^-- EXPECT' | sed 's/^-- EXPECT //' > expected
 		if cmp expected log > /dev/null 2> /dev/null; then
 			echo 'PASS (EXPECTED ERRORS)   '$a

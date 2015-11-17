@@ -32,9 +32,9 @@ fi
 set -e
 
 echo Making PN file with Teak
-teak ${LATCH} ${OPTIM} -t top $* ${BALSA_FILE}
-teak -S -s type=pn:no-simulate:write-pn-format=hl_net:write-pn=${PN_FILE} ${TEAK_FILE}
-teak -S -s type=pn:no-simulate:write-pn-format=dot:write-pn=${DOT_FILE} ${TEAK_FILE}
+eTeak ${LATCH} ${OPTIM} -t top $* ${BALSA_FILE}
+eTeak -S -s type=pn:no-simulate:write-pn-format=hl_net:write-pn=${PN_FILE} ${TEAK_FILE}
+eTeak -S -s type=pn:no-simulate:write-pn-format=dot:write-pn=${DOT_FILE} ${TEAK_FILE}
 
 # Ignore punf's error output for now
 echo Running punf
@@ -60,5 +60,5 @@ if grep -q SOLUTION ${MPSAT_LOG_FILE}; then
 	) > ${SOLN_FILE}
 
 	echo Solution in ${SOLN_FILE}
-	teak --gui -g show-time-window:time-step=1 -e ${SOLN_FILE} ${TEAK_FILE}
+	eTeak --gui -g show-time-window:time-step=1 -e ${SOLN_FILE} ${TEAK_FILE}
 fi
