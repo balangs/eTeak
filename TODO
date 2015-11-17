@@ -119,3 +119,8 @@ Documentation
   Optimiser language/API
   Tech description
   Gate level component construction
+
+Cleanup
+  fix examples/Shifter/teak_inclusions.v
+  Move to ghc 7.10
+  Get the manual building again and update for eTeak
