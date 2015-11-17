@@ -15,13 +15,38 @@ data-files:          optim/default.rules
                      library/balsa/sim/*.balsa
                      library/balsa/types/*.balsa
                      tech/*.v
+                     examples/add/*.balsa
+                     examples/adder/*.balsa
+                     examples/builtins/*.balsa
+                     examples/builtins/*.sh
+                     examples/events/*.balsa
+                     examples/events/*.sh
+                     examples/events/*.v
+                     examples/oneOrTwo/*.balsa
+                     examples/punf/*.balsa
+                     examples/punf/*.sh
+                     examples/Shifter/*.balsa
+                     examples/Shifter/*.sh
+                     examples/Shifter/*.v
+                     examples/small/*.balsa
+                     examples/small/*.sh
+                     examples/sparkler/*.balsa
+                     examples/sparkler/*.sh
+                     examples/sparkler/*.s
+                     examples/sparkler/*.s-hand
+                     examples/sparkler/*.v
+                     examples/sparkler/Project
+                     examples/ssem/*.balsa
+                     examples/ssem/gcd.raw
+                     examples/ssem/gcd.s
+                     examples/test/*.balsa
+
 extra-source-files:  README.md
-                     doc/*.txt
+extra-doc-files:     doc/*.txt
                      doc/banner.hs
                      doc/builtins
                      doc/font
                      doc/language-ideas
-
 executable eTeak
   main-is:             Main.hs
   -- other-modules:       
