@@ -1,7 +1,7 @@
 # set -x
 
 if [ $# == 0 ]; then
-	echo 'Usage: '$0' {teak|pn|cver|veriwell|vcs|ncverilog|modelsim}*'
+	echo 'Usage: '$0' {teak|pn|cver|veriwell|vcs|ncverilog|modelsim|iverilog}*'
 	exit 0
 fi
 
@@ -76,6 +76,14 @@ while [ $# != 0 ]; do
 				${RUNTIME}/runtime.v ${RUNTIME}/top.v ${RUNTIME}/example.v \
 				${RUNTIME}/monitors.v
 			;;
+		iverilog)
+			iverilog -D DUT=teak_${TOP} ${IN}.v \
+				-D HAS_GO -D HAS_DONE \
+				-D DUMPFILE='"/tmp/a-icarus.vcd"' \
+				${RUNTIME}/runtime.v ${RUNTIME}/top.v ${RUNTIME}/example.v \
+				${RUNTIME}/monitors.v &&
+				./a.out
+			;;
 		*)
 			echo Unrecognised option $1
 			exit 1
@@ -84,12 +92,4 @@ while [ $# != 0 ]; do
 	shift
 done
 
-if false; then
-	iverilog -D DUT=teak_${TOP} ${IN}.v \
-		-D HAS_GO -D HAS_DONE \
-		-D DUMPFILE='"/tmp/a-icarus.vcd"' \
-		${RUNTIME}/runtime.v ${RUNTIME}/top.v ${RUNTIME}/example.v \
-		${RUNTIME}/monitors.v &&
-	./a.out
-fi
 
