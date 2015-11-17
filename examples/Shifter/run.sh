@@ -39,11 +39,10 @@ if [ ${DO_COMPILE} = yes ]; then
 fi
 
 if [ ${DO_LATCH} = yes ]; then
-	eTeak -v --gates --test-protocol ${LATCHES} -n shifter.teak -o shifter
+	eTeak -v --gates --test-protocol ${LATCHES} -n teak-unlatched.teak -o shifter
 fi
 
-# cver -s
 if [ ${DO_SIM} = yes ]; then
-	
-	cver m_harness.v
+
+	iverilog -D DUT=teak_Shifter -I`eTeak-runtime`/verilog  m_harness.v
 fi

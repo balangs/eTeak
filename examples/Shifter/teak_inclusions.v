@@ -1,4 +1,4 @@
-`include "/home/mahdi/Desktop/teak/runtime/verilog_main/runtime.v"
-`include "/home/mahdi/Desktop/teak/runtime/verilog_main/monitors.v"
-`include "/home/mahdi/Desktop/teak/runtime/verilog_main/example.v"
-`include "/home/mahdi/Desktop/teak/runtime/verilog_main/top.v"
+`include "runtime.v"
+`include "monitors.v"
+`include "example.v"
+`include "top.v"
