@@ -53,10 +53,10 @@ module ToolOptions (
 	import System.FilePath
 	import Data.Maybe
 
+	import Paths_eTeak
+
 	data {- NetworkIF network => -} ToolOptions network = ToolOptions {
 		-- General options
-		optTeakHome :: FilePath,
-		optTeakShareHome :: FilePath,
 		optBalsaSearchPath :: [FilePath],
 		optVerbose :: Bool,
 		-- Compilation options
@@ -92,8 +92,6 @@ module ToolOptions (
 
 	defaultToolOptions :: NetworkIF network => ToolOptions network
 	defaultToolOptions = ToolOptions {
-		optTeakHome = "",
-		optTeakShareHome = "",
 		optBalsaSearchPath = ["."],
 		optVerbose = False,
 		optDumpParseTree = False,
@@ -114,34 +112,27 @@ module ToolOptions (
 		optBaseName = Nothing
 		}
 
-	teakLibraryPath :: NetworkIF network => ToolOptions network -> FilePath
-	teakLibraryPath opts = optTeakShareHome opts </> "library"
 
-	teakOptimPath :: NetworkIF network => ToolOptions network -> FilePath
-	teakOptimPath opts = optTeakShareHome opts </> "optim"
+	teakLibraryPath:: IO FilePath
+	teakLibraryPath = getDataFileName "library"
 
-	teakTechPath :: NetworkIF network => ToolOptions network -> FilePath
-	teakTechPath opts = optTeakShareHome opts </> "tech"
+	teakOptimPath :: IO FilePath
+	teakOptimPath = getDataFileName "optim"
 
-	setTeakHome :: NetworkIF network => Maybe FilePath -> Maybe FilePath ->
-		ToolOptions network -> ToolOptions network
-	setTeakHome (Just home) share opts = opts'
+	teakTechPath :: IO FilePath
+	teakTechPath = getDataFileName "tech"
+
+	setTeakHome :: NetworkIF network => FilePath -> ToolOptions network -> ToolOptions network
+	setTeakHome librarypath opts = opts'
 		where opts' = opts {
-			optTeakHome = home,
-			optTeakShareHome = fromMaybe (home </> "share" </> "teak") share,
-			optBalsaSearchPath = [".", teakLibraryPath opts'] }
-	setTeakHome Nothing (Just share) opts = opts'
-		where opts' = opts {
-			optTeakShareHome = share,
-			optBalsaSearchPath = [".", teakLibraryPath opts'] }
-	setTeakHome Nothing Nothing opts = opts
+			optBalsaSearchPath = [".", librarypath] }
 
 	techMappingFileSuffix :: String
 	techMappingFileSuffix = "-mapping" <.> "v"
 
 	teakFindTechs :: NetworkIF network => ToolOptions network -> IO [String]
 	teakFindTechs toolOpts = do
-		let techPath = teakTechPath toolOpts
+		techPath <- teakTechPath
 		canRead <- canReadDirectory techPath
 		if canRead
 			then do
@@ -152,9 +143,10 @@ module ToolOptions (
 
 	teakFindTechFile :: NetworkIF network => ToolOptions network -> String -> WhyT IO [GateNetlist]
 	teakFindTechFile toolOpts techName = do
+		techPath <- lift $ teakTechPath
 		let mappingFile = if isSuffixOf ".v" techName
 			then techName
-			else teakTechPath toolOpts </> (techName ++ techMappingFileSuffix)
+			else techPath </> (techName ++ techMappingFileSuffix)
 
 		exists <- lift $ doesFileExist mappingFile
 		if exists

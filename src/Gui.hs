@@ -1616,6 +1616,7 @@ module Gui (
 
 		historyRef <- newIORef (GuiHistory False 0 10 [] (historySetSensitive undoAction redoAction))
 
+		optimPath <- teakOptimPath
 		let
 			partSensitiveActions = [optAction, leadsAction, stepAction, partAction, topLevelAction,
 				insertLatchesAction, removeLatchesAction, experimentalAction]
@@ -1629,7 +1630,7 @@ module Gui (
 						Just oldName -> replaceBaseName oldName (fromJust baseName) }
 				Gtk.actionSetSensitive saveNetworkAction $ isJust baseName
 
-			defaultRulesFile = teakOptimPath toolOpts0 </> "default" <.> "rules"
+			defaultRulesFile = optimPath </> "default" <.> "rules"
 
 		writeIORef infoRef $ GuiInfo {
 			guiHistory = historyRef,

@@ -139,10 +139,6 @@ module Main (
 			(\state [top] -> return $ state { clTopLevel = Just top }),
 		CommandLineOption "include" 'I' ["directory"] "add <directory> to Balsa module path"
 			(onClOpts $ \opts [path] -> return $ opts { optBalsaSearchPath = path:(optBalsaSearchPath opts) }),
-		CommandLineOption "teak-home" ' ' ["directory"] "Teak installation path (also reads env. TEAKHOME)"
-			(onClOpts $ \opts [dir] -> return $ setTeakHome (Just dir) Nothing opts),
-		CommandLineOption "teak-share-home" ' ' ["directory"] "Teak installation `share' path"
-			(onClOpts $ \opts [dir] -> return $ setTeakHome Nothing (Just dir) opts),
 		CommandLineOption "teak-opt" 'k' ["opt"] "component-generation sub-options"
 			(onClOpts $ \opts [opt] -> do
 				teakOpts' <- parseSubOptionsString teakOptionUsage teakUsage (optTeak opts) opt
@@ -361,12 +357,13 @@ module Main (
 
 	readDefaultRules :: CommandLineState -> WhyT IO CommandLineState
 	readDefaultRules state = do
+		optimPath <- lift $ teakOptimPath
+		let defaultRulesFile = optimPath </> "default" <.> "rules"
 		if not (clReadDefaultRules state)
 			then do
 				opts' <- appendRulesFile (clOpts state) defaultRulesFile
 				return $ state { clReadDefaultRules = True, clOpts = opts' }
 			else return state
-		where defaultRulesFile = teakOptimPath (clOpts state) </> "default" <.> "rules"
 
 	readDefaultRulesIO :: CommandLineState -> IO CommandLineState
 	readDefaultRulesIO state = do
@@ -425,8 +422,8 @@ module Main (
 
 	mainWithArgs :: [String] -> IO ()
 	mainWithArgs args = do
-		teakHome <- catchIOError (getEnv "TEAKHOME") $ const $ return buildTeakHome
-		let state0 = modifyToolOptions defaultCommandLineState $ setTeakHome (Just teakHome) Nothing
+		teakLibrary <- teakLibraryPath
+		let state0 = modifyToolOptions defaultCommandLineState $ setTeakHome teakLibrary
 		(stateWithoutFlat, remainingArgs) <- parseOptions clOptions state0 args
 
 		let
