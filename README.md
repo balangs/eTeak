@@ -6,7 +6,6 @@ This is the eTeak system. A GALS back end for the Balsa language.
 Install ghc 7.8 and cabal. The instructions below assume its installed as /usr/bin/ghc-7.8.
 
 	cabal configure -w /usr/bin/ghc-7.8
-	cabal build
 	cabal install -w /usr/bin/ghc-7.8
 
 To run (Assumes $HOME/.cabal/bin is on your PATH):
