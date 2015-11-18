@@ -1,0 +1,14 @@
+#! /bin/sh
+set -x
+
+MACPORTS_ACLOCAL=/opt/local/share/aclocal
+
+ACLOCAL_OPTS=
+if test -d /opt/local/share/aclocal; then
+	ACLOCAL_OPTS="${ACLOCAL_OPTS} -I ${MACPORTS_ACLOCAL}"
+fi
+
+aclocal ${ACLOCAL_OPTS}
+automake --add-missing --copy
+autoconf
+

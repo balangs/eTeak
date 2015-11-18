@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+all: manual.pdf
+
 EXTRA_DIST = \
 	manual.lout \
 	book \
@@ -14,12 +16,12 @@ EXTRA_DIST = \
 	traverse.svg \
 	files
 
-ASCHEM = $(top_builddir)/aschem/aschem
-TEAK = $(top_builddir)/src/teak --teak-home $(top_builddir) --teak-share-home $(top_builddir)
+ASCHEM = $(top_builddir)/dist/build/aschem/aschem
+TEAK = $(top_builddir)/dist/build/eTeak/eTeak
 PS2PDF = ps2pdf -sPAPERSIZE=a4
 PS2EPSI = ps2epsi
 DOT = dot
-CONVERT = @CONVERT@
+CONVERT = convert
 
 OPTIM_RULES = ../../optim/default.rules
 
