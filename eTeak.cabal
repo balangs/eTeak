@@ -16,6 +16,7 @@ data-files:          optim/default.rules
                      library/balsa/types/*.balsa
                      tech/*.v
                      runtime/verilog/*.v
+                     SELF_files/*.v
                      examples/add/*.balsa
                      examples/adder/*.balsa
                      examples/builtins/*.balsa
@@ -43,11 +44,39 @@ data-files:          optim/default.rules
                      examples/test/*.balsa
 
 extra-source-files:  README.md
+                     configure
+                     configure.ac
+                     aclocal.m4
+                     install-sh
+                     Makefile.am
+                     Makefile.in
+                     doc/Makefile.am
+                     doc/Makefile.in
+                     doc/manual/Makefile.am
+                     doc/manual/Makefile.in
+                     doc/manual/*.balsa
+                     doc/manual/*.aschem
+                     doc/manual/book
+                     doc/manual/compilation.lout
+                     doc/manual/files
+                     doc/manual/flow.dot
+                     doc/manual/flow-optim.dot
+                     doc/manual/grammar.lout
+                     doc/manual/gui.png
+                     doc/manual/lout.sh
+                     doc/manual/macros
+                     doc/manual/manual.lout
+                     doc/manual/parsetree.lout
+                     doc/manual/traverse.svg
+                     aschem/*.hs
+                     src/*.hs
+
 extra-doc-files:     doc/*.txt
                      doc/banner.hs
                      doc/builtins
                      doc/font
                      doc/language-ideas
+
 executable eTeak
   main-is:             Main.hs
   -- other-modules:       
