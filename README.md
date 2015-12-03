@@ -6,6 +6,7 @@ This is the eTeak system. A GALS back end for the Balsa language.
 Install [stack](https://github.com/commercialhaskell/stack)
 
 If you're building from git, first you need to
+
 	./bootstrap
 
 If you've done that or you're building from tarball, proceed to:
