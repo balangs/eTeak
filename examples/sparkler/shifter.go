@@ -48,9 +48,7 @@ func Shifter (
 	) {
 
 	shift_n = func() Word {
-
-	select {
-		case
+	
 /*
 	loop
 		distanceI, shift -> then
@@ -61,6 +59,12 @@ func Shifter (
 					input i : Word;
 					output o : Word
 				) is
+*/
+	dI := <-distanceI
+	s := <-shift
+
+	func shift_n (distanceBit cardinal, distance cardinal, i <-chan Word, o chan<- Word) {
+/*
 				local
 					constant remaining = 32 - distance
 
@@ -68,7 +72,9 @@ func Shifter (
 					function PackWordRight (lsw : remaining bits; msw : distance bits) = (#lsw @ #msw as Word)
 
 					channel c : Word
+*/
 
+/*
 					procedure shift_body (
 						output o : Word
 					) is

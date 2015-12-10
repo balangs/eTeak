@@ -8,7 +8,7 @@ const (
 type Foo uint
 //(5)
 //
-
+/*
 type Word uint32
 
 func (w *Word) _bitslice(offset int, size int) {
@@ -18,7 +18,7 @@ func (w *Word) _bitslice(offset int, size int) {
 type Inst Word
 func (w *Inst) low() { w._bitslice(0,30) }
 func (w *Inst) op() { w._bitslice(30,2) }
-
+*/
 
 /*procedure onehot (
 	input i : 2 bits;
@@ -38,7 +38,7 @@ begin
 end
 */
 
-func onehot (i chan byte, o chan byte) {
+func onehot (i <-chan byte, o chan<- byte) {
 	for {
 		v := <-i
 		switch v {
@@ -85,12 +85,12 @@ func top (i chan byte, o chan byte) {
 }
 
 func main() {
-	var i Inst
+/*	var i Inst
 	i = 0xF000000F
 	
 	fmt.Printf("%d",i.op())
 	fmt.Printf("%d",i.low())
-
+*/
 	var i = make (chan byte)
 	var o = make (chan byte)
 	top (i,o)
