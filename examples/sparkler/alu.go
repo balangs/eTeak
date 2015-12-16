@@ -10,7 +10,7 @@ import [shifter]
 */
 
 package main
-import "fmt"
+//import "fmt"
 
 
 /*
@@ -22,6 +22,7 @@ procedure Alu (
 ) is
 */
 
+/*
 func Alu (op chan AluOp,
 	result chan Word,
 	flags chan Flags,
@@ -34,7 +35,7 @@ func Alu (op chan AluOp,
 	shiftDist chan byte
 	shiftResult chan Word
 	shiftArg chan Word
-
+*/
 
 /*
 *

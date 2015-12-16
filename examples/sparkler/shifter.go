@@ -8,7 +8,6 @@ import [types]
 */
 
 package main
-import . "types"
 
 /*
 type ShiftDirection is enumeration left, right end
@@ -26,8 +25,8 @@ const (
 )
 
 type ShiftOp struct {
-	direction type ShiftDirection
-	fill type bool
+	direction ShiftDirection
+	fill bool
 }
 
 /*
@@ -41,14 +40,10 @@ begin
 */
 
 func Shifter (
-	shift chan ShiftOp
-	distanceI chan byte
-	result chan Word
-	arg chan Word
-	) {
-
-	shift_n = func() Word {
-	
+	shift chan ShiftOp,
+	distanceI chan byte,
+	result chan Word,
+	arg chan Word) {
 /*
 	loop
 		distanceI, shift -> then
@@ -63,7 +58,7 @@ func Shifter (
 	dI := <-distanceI
 	s := <-shift
 
-	func shift_n (distanceBit cardinal, distance cardinal, i <-chan Word, o chan<- Word) {
+	shift_n := func (distanceBit cardinal, distance cardinal, i <-chan Word, o chan<- Word) {
 /*
 				local
 					constant remaining = 32 - distance
@@ -74,6 +69,9 @@ func Shifter (
 					channel c : Word
 */
 
+		remaining := 32 - distance
+//		PackWordLeft := func (lsw Word, msw Word) Word {lsw._bitslice(distance), 
+	}
 /*
 					procedure shift_body (
 						output o : Word
@@ -109,3 +107,7 @@ func Shifter (
 		end
 	end
 end
+*/
+
+}
+

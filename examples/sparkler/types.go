@@ -8,7 +8,6 @@
 package main
 
 //import [balsa.types.basic]
-import . "basic"
 
 /*
 (--
@@ -45,6 +44,11 @@ type SWord int32
 type HalfWord uint16
 type SHalfWord int16
 
+func (w *Word) _bitslice(offset uint, size uint) Word {
+	return (*w >> offset) & Word(((2^size)-1))
+}
+
+
 //type Reg is 5 bits
 
 type Reg byte
@@ -73,39 +77,39 @@ over 4 bits
 type Cond int
 const (
 	bn Cond = iota
-	be Cond
-	ble Cond
-	bl Cond
-	bleu Cond
-	bcs Cond
-	bneg Cond
-	bvs Cond
-	ba Cond
-	bne Cond
-	bg Cond
-	bge Cond
-	bgu Cond
-	bcc Cond
-	bpos Cond
-	bvc Cond
+	be
+	ble
+	bl
+	bleu
+	bcs
+	bneg
+	bvs
+	ba
+	bne
+	bg
+	bge
+	bgu
+	bcc
+	bpos
+	bvc
 )
 const (
 	tn Cond = iota
-	te Cond
-	tle Cond
-	tl Cond
-	tleu Cond
-	tcs Cond
-	tneg Cond
-	tvs Cond
-	ta Cond
-	tne Cond
-	tg Cond
-	tge Cond
-	tgu Cond
-	tcc Cond
-	tpos Cond
-	tvc Cond
+	te
+	tle
+	tl
+	tleu
+	tcs
+	tneg
+	tvs
+	ta
+	tne
+	tg
+	tge
+	tgu
+	tcc
+	tpos
+	tvc
 )
 
 //type Op2 is enumeration
@@ -149,13 +153,13 @@ const (
 	subcc  Op3 = 0x14; andncc Op3 = 0x15; orncc  Op3 = 0x16; xnorcc Op3 = 0x17
 	addxcc Op3 = 0x18; umulcc Op3 = 0x1A; smulcc Op3 = 0x1B
 	subxcc Op3 = 0x1C; udivcc Op3 = 0x1E; sdivcc Op3 = 0x1F
-	sll  Op3 = 0x25, srl Op3 = 0x26, sra Op3 = 0x27,
-	jmpl Op3 = 0x38,
-	save Op3 = 0x3C, restore Op3 = 0x3D,
+	sll  Op3 = 0x25; srl Op3 = 0x26; sra Op3 = 0x27
+	jmpl Op3 = 0x38;
+	save Op3 = 0x3C; restore Op3 = 0x3D
 	// op Op3 = 3
-	ld Op3 = 0x00, ldub Op3 = 0x01, lduh Op3 = 0x02, ldd Op3 = 0x03,
-	st Op3 = 0x04, stb  Op3 = 0x05, sth  Op3 = 0x06, std Op3 = 0x07,
-	ldsb Op3 = 0x09, ldsh Op3 = 0x0A
+	ld Op3 = 0x00; ldub Op3 = 0x01; lduh Op3 = 0x02; ldd Op3 = 0x03
+	st Op3 = 0x04; stb  Op3 = 0x05; sth  Op3 = 0x06; std Op3 = 0x07
+	ldsb Op3 = 0x09; ldsh Op3 = 0x0A
 )
 
 //-- constant Op3cc = (0b01xxxx as Op3)
@@ -166,14 +170,14 @@ const (
 end
 */
 
-func (w *Word) _bitslice(offset int, size int) {
-	return (w >> offset) & ((2^size)-1)
+type Inst struct {
+	Word
 }
 
-type Inst Word
-func (w *Inst) low() { w._bitslice(0,30) }
-func (w *Inst) op() { w._bitslice(30,2) }
+func (w *Inst) low() Word { return w._bitslice(0,30) }
+func (w *Inst) op() Word { return w._bitslice(30,2) }
 
+/*
 type Inst1 is record
 	disp30 : 30 bits;
 	op : 2 bits
@@ -309,4 +313,4 @@ type DecodedInst is record
 	imm : Word;
 	memAccess : Mem
 end
-
+*/
