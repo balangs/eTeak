@@ -1,25 +1,6 @@
 package main
 import "fmt"
 
-const (
-	foo =1; bar =2
-)
-
-type Foo uint
-//(5)
-//
-/*
-type Word uint32
-
-func (w *Word) _bitslice(offset int, size int) {
-»·······return (w >> offset) & ((2^size)-1)
-}
-
-type Inst Word
-func (w *Inst) low() { w._bitslice(0,30) }
-func (w *Inst) op() { w._bitslice(30,2) }
-*/
-
 /*procedure onehot (
 	input i : 2 bits;
 	output o : 4 bits
