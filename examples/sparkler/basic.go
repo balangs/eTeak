@@ -1,15 +1,7 @@
 package main
 
-type bits struct {
-	uint
-}
-
-type bits_1 struct { bits }
-func (b *bits_1) size() uint { return 1 }
-
 //-- Common type declarations
 //type byte is 8 bits
-
 
 //type nybble is 4 bits
 //type nibble is nybble
@@ -33,4 +25,34 @@ type long uint64
 //constant false = 0 : bit
 
 
+func smashU32(v uint32) []bool {
+	var bits []bool
+	for i:=31; i>=0; i-- {
+		b := (v & uint32(1<<uint(i))) != 0
+		bits = append(bits,bool(b))
+	}
+	return bits
+}
 
+
+func smashI32(v int32) []bool {
+	return smashU32(uint32(v))
+}
+
+func unsmashU32(bits []bool) uint32 {
+	ret := uint32(0);
+	off := uint(len(bits))
+	if (off > 32) { off = 32 }
+
+	for _,b := range bits {
+		off--
+		if b {
+			ret = ret | (1 << off)
+		}
+	}
+	return ret
+}
+
+func unsmashI32(bits []bool) int32 {
+	return int32(unsmashU32(bits))
+}
