@@ -28,6 +28,9 @@ func TestSmashU32(t *testing.T) {
 		if tmp != v {
 			t.Errorf("%x failed, gave %v, expecting %v", k, smashU32(k), v)
 		}
+		if len(smashU32(k))!=32 {
+			t.Errorf("Wrong size array returned")
+		}
 	}
 }
 
