@@ -8,7 +8,7 @@ import [types]
 */
 
 package main
-
+import "fmt"
 /*
 type ShiftDirection is enumeration left, right end
 
@@ -30,6 +30,19 @@ type ShiftOp struct {
 }
 
 /*
+* function PackWordLeft (lsw : distance bits; msw : remaining bits) = (#lsw @ #msw as Word)
+* function PackWordRight (lsw : remaining bits; msw : distance bits) = (#lsw @ #msw as Word)
+*/
+
+func PackWord (lsw uint32, leastBits int, msw uint32, mostBits int) uint32 {
+	fmt.Printf("lsw:%x, leastBits:%v, msw:%x, mostbits:%v\n", lsw, leastBits, msw, mostBits)
+	bitsL := smashU32(lsw)[leastBits:]
+	bitsR := smashU32(msw)[(32-mostBits):]
+	fmt.Printf("bitsL:%v\nbitsR:%v\n", bitsL, bitsR)
+	return unsmashU32(append(bitsR,bitsL...))
+}
+
+/*
 procedure Shifter (
 	input shift : ShiftOp;
 	input distanceI : 5 bits;
@@ -42,8 +55,8 @@ begin
 func Shifter (
 	shift chan ShiftOp,
 	distanceI chan byte,
-	result chan Word,
-	arg chan Word) {
+	result chan uint32,
+	arg chan uint32) {
 /*
 	loop
 		distanceI, shift -> then
@@ -55,10 +68,10 @@ func Shifter (
 					output o : Word
 				) is
 */
-	dI := <-distanceI
-	s := <-shift
+//	dI := <-distanceI
+//	s := <-shift
 
-	shift_n := func (distanceBit cardinal, distance cardinal, i <-chan Word, o chan<- Word) {
+//	shift_n := func (distanceBit cardinal, distance cardinal, i <-chan uint32, o chan<- uint32) {
 /*
 				local
 					constant remaining = 32 - distance
@@ -69,8 +82,8 @@ func Shifter (
 					channel c : Word
 */
 
-		remaining := 32 - distance
-//		PackWordLeft := func (lsw Word, msw Word) Word {lsw._bitslice(distance), 
+//		remaining := 32 - distance
+
 	}
 /*
 					procedure shift_body (
@@ -109,5 +122,5 @@ func Shifter (
 end
 */
 
-}
+//}
 

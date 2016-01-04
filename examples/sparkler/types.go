@@ -35,23 +35,13 @@ package main
    '-----'--------------'-----------------'--------------'--------------------------'--------------'
 --)
 */
+
+//NO TYPE ALIAS IN GO!
 //type Word is 32 bits
 //type SWord is 32 signed bits -- signed word for sign extension uses
 //type HalfWord is 16 bits
 //type SHalfWord is 16 signed bits
-type Word uint32
-type SWord int32
-type HalfWord uint16
-type SHalfWord int16
-
-func (w *Word) _bitslice(offset uint, size uint) Word {
-	return (*w >> offset) & Word(((2^size)-1))
-}
-
-
 //type Reg is 5 bits
-
-type Reg byte
 
 /*
 type Cond is enumeration
@@ -171,11 +161,11 @@ end
 */
 
 type Inst struct {
-	Word
+	uint32
 }
 
-func (w *Inst) low() Word { return w._bitslice(0,30) }
-func (w *Inst) op() Word { return w._bitslice(30,2) }
+func (w *Inst) low() uint32{ return unsmashU32(smashU32(uint32(w.uint32))[0:30]) }
+func (w *Inst) op() uint32{ return unsmashU32(smashU32(uint32(w.uint32))[30:32]) }
 
 /*
 type Inst1 is record
