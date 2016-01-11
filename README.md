@@ -1,6 +1,8 @@
+#NOTE eTeak's GALS/synchronous backend is not available to public. Please feel free to try it out and contribute to the asynchronous backend. 
+
 #eTeak
 
-This is the eTeak system. A GALS back end for the Balsa language.
+This is the eTeak system. A synchronous/asycnhronous synthesis backend for the Balsa language.
 
 #Building and running
 Install [stack](https://github.com/commercialhaskell/stack)
