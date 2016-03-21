@@ -31,6 +31,7 @@ module Print (
 	ShowParseNode (..)
 	) where
 
+        import Prelude hiding (traverse)
 	import ParseTree
 	import Traverse
 	import Misc
@@ -117,7 +118,7 @@ module Print (
 		postImportPath = printPostImportPath,
 		postSliceInt = printPostSliceInt,
 		preRef = preNoAccum printPreRef
-		}	
+		}
 
 	printPostInteger :: PostShow Integer
 	printPostInteger _ (_, int) = ([showString $ show int], int)
@@ -617,7 +618,7 @@ module Print (
 	instance ShowParseNode Attr where
 		showParseNode cs (ExprAttr name expr) = name ++ " = " ++ showParseNode cs expr
 
-	instance ShowParseNode (Binding Decl) where 
+	instance ShowParseNode (Binding Decl) where
 		showParseNode cs binding = showDecl (bindingName binding) cs (bindingValue binding)
 
 	showDirection :: Direction -> ShowS
@@ -628,7 +629,7 @@ module Print (
 	showDecl name cs decl = body decl
 		where
 			typedDecl keyword typ = keyword ++ " " ++ name ++ " : " ++ showParseNode cs typ
-		
+
 			body (NoDecl {}) = comment "no decl"
 			body (PosDecl {}) = comment "position decl"
 			body (ExprDecl _ expr) = comment $ name ++ " expr " ++ showParseNode cs expr

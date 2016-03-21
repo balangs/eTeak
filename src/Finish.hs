@@ -24,6 +24,7 @@ module Finish (
 	finish
 	) where
 
+        import Prelude hiding (traverse)
 	import ParseTree
 	import Traverse
 	import Context
@@ -86,7 +87,7 @@ module Finish (
 
 	type FinishPost node = ApplyPostFunc FinishContext () node
 	type FinishPre node = FinishContext -> node -> (FinishContext, node)
-	
+
 	typeStripApply :: Apply [Context Decl] () ()
 	typeStripApply = emptyApply {
 		applyContextCons = (:),
@@ -113,7 +114,7 @@ module Finish (
 			chans' = flattenChans chans
 
 			flattenChans chans = concatMap flattenChan chans
-			
+
 			flattenChan chan@(Chan {}) = [chan]
 			flattenChan (FlatArrayedChan _ _ chans) = flattenChans chans
 			-- flattenChan (PartialArrayedChan _ chans) = chans

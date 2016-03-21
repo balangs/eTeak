@@ -603,4 +603,3 @@ module Optim (
 				where
 					follow = lift . foldM prevLinksBody visited'
 					visited' = link : visited
-

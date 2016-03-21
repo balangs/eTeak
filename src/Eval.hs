@@ -27,6 +27,7 @@ module Eval (
 
 	-- import Debug.Trace
 
+        import Prelude hiding (traverse)
 	import ParseTree
 	import Misc
 	import Traverse
@@ -78,7 +79,7 @@ module Eval (
 		postRef = evalPostRef }
 
 	appendResult :: Completeness -> (Completeness, node) -> (Completeness, node)
-	appendResult r1 (r2, node) = (andCompleteness r1 r2, node)	
+	appendResult r1 (r2, node) = (andCompleteness r1 r2, node)
 
 	typeCheckExpr :: Type -> Expr -> Expr
 	typeCheckExpr typ expr = TypeCheckExpr (exprPos expr) Transient typ expr
@@ -922,11 +923,11 @@ module Eval (
 				where ctx' = bindingsToContext ctxIndexRange [constantBinding { bindingValue = ExprDecl pos $
 					ValueExpr pos typ (IntValue int) }]
 			guards = map indexGuard $ concatMap impExpand flatMatches
-	
+
 			flatMatches = sort $ concatMap fromImp matches
 			fromImp (ImpCaseMatches _ impMatches) = impMatches
 			fromImp _ = error "evalMidCaseCmdGuard fromImp: not an ImpCaseMatches"
-			
+
 	evalMidCaseCmdGuard _ rn = rn
 
 	evalPostCaseCmdGuard :: Post CaseCmdGuard

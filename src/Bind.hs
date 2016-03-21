@@ -25,6 +25,7 @@ module Bind (
 	gatherPositions
 	) where
 
+        import Prelude hiding (traverse)
 	import ParseTree
 	import Context
 	import Traverse

@@ -31,6 +31,7 @@ module Traverse (
 	ParseTreeTraverse (traverse)
 	) where
 
+        import Prelude hiding (traverse)
 	import ParseTree
 	import Report
 	import Context
@@ -211,7 +212,7 @@ module Traverse (
 
 		post :: Apply context accum result -> ApplyPostFunc context result node
 		post _ = postId
-		
+
 		final :: Apply context accum result -> ApplyPostFunc context result node
 		final _ = postId
 
@@ -280,13 +281,13 @@ module Traverse (
 		skipD apply v2 . skipD apply v1 . innerD apply i . stepD apply e
 
 	-- Just N
-			
+
 	descendN :: ParseTreeTraverse e =>
 		Apply context accum result ->
 		(e -> node) -> e ->
 		Descend context accum result node
 	descendN apply cons e = descend apply cons $ stepD apply e
-			
+
 	descendNN :: (ParseTreeTraverse e1, ParseTreeTraverse e2) =>
 		Apply context accum result ->
 		(e1 -> e2 -> node) -> e1 -> e2 ->
@@ -420,7 +421,7 @@ module Traverse (
 		Descend context accum result node
 	descendNSN apply cons e1 str e2 = descend apply cons $
 		stepD apply e2 . stringD apply str . stepD apply e1
-			
+
 	descendNSNVV :: (ParseTreeTraverse e1, ParseTreeTraverse e2) =>
 		Apply context accum result ->
 		(e1 -> String -> e2 -> v1 -> v2 -> node) -> e1 -> String -> e2 -> v1 -> v2 ->

@@ -29,6 +29,7 @@ module Sim (
 	simulate
 	) where
 
+        import Prelude hiding (traverse)
 	import ParseTree
 	import Context
 	import Bits
@@ -494,7 +495,7 @@ module Sim (
 			body (CaseCmd pos _ _ cmds) (CaseState guard1 cmdStates1) (CaseState guard2 cmdStates2) =
 				[guardMsg] ++ selfs cmds cmdStates1 cmdStates2
 				where
-					guardMsg	
+					guardMsg
 						| guard1 /= guard2 = Just $ posStr pos ++ "case " ++ show guard1 ++ " -> " ++ show guard2
 						| otherwise = Nothing
 			body (InstanceCallCmd {}) (InstanceCallState _ cmdState1 cmd1) (InstanceCallState _ cmdState2 _) =
@@ -611,7 +612,7 @@ module Sim (
 			-- FIXME, use code from Expr.hs
 			result = case op of
 				BinAdd -> l + r
-				BinSub -> l - r 
+				BinSub -> l - r
 				BinLT -> ineq (<)
 				BinGT -> ineq (>)
 				BinLE -> ineq (<=)

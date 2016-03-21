@@ -35,6 +35,7 @@ module Call (
 
 	-- import Debug.Trace
 
+        import Prelude hiding (traverse)
 	import ParseTree
 	import Context
 	import Type
@@ -216,7 +217,7 @@ module Call (
 				(Complete, (ExprProcActual $ ConstCheckExpr pos $ TypeCheckExpr pos Transient typ expr, decl))
 			body (ExprProcActual expr) decl@(PortDecl {}) = exprToChan decl expr
 			body (ExprProcActual expr) decl@(ArrayedDecl {}) = exprToChan decl expr
-			{- FIXME, need to make conditional ports work	
+			{- FIXME, need to make conditional ports work
 			body actual@(ExprProcActual {}) decl@(CaseDecl {}) = whyToPairDefault (actual, decl) $ do
 				-- decl' <- pairToWhy $ evalDecl cs decl
 				let decl' = PortDecl NoPos Output (Bits 1)
@@ -545,4 +546,3 @@ module Call (
 		| isJust $ findAttr "reallyInstantiate" $ declAttrs proc = True
 		| otherwise = cmdIsPermanent cs $ declCmd proc
 	declIsPermanent _ _ = False
-
