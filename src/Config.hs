@@ -1,10 +1,10 @@
 module Config (
-	buildTeakHome,
-	teakVersion
-	) where
+    buildTeakHome,
+    teakVersion
+    ) where
 
-	buildTeakHome :: String
-	buildTeakHome = "/usr/local"
+    buildTeakHome :: String
+    buildTeakHome = "/usr/local"
 
-	teakVersion :: String
-	teakVersion = "0.4"
+    teakVersion :: String
+    teakVersion = "0.4"

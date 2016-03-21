@@ -1,15 +1,15 @@
 module Test (
-	A (..)
-	) where
+    A (..)
+    ) where
 
-	data A = A [Int]
-		| B { zz :: String }
-		| C Int Int
-		deriving MyTraverse
+    data A = A [Int]
+        | B { zz :: String }
+        | C Int Int
+        deriving MyTraverse
 
-	data B = C { a :: Int, b :: Bool }
-		deriving MyTraverse
+    data B = C { a :: Int, b :: Bool }
+        deriving MyTraverse
 
-	instance MyTraverse Z
+    instance MyTraverse Z
 
-	instance MyTraverse E F
+    instance MyTraverse E F
