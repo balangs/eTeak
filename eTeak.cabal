@@ -93,10 +93,10 @@ executable eTeak-runtime
   build-depends:       base >=4.7 && <5
   default-language:    Haskell2010
 
---executable aschem
---  main-is:             Main.hs
---  other-modules:       Patterns, Picture, Render, Types
---  other-extensions:    FlexibleInstances, FlexibleContexts, MultiParamTypeClasses, TypeSynonymInstances, RankNTypes, ExistentialQuantification
---  build-depends:       base, cairo >=0.13 && <0.14, directory >=1.2 && <1.3, mtl, filepath, array >=0.5 && <0.6
---  hs-source-dirs:      aschem
---  default-language:    Haskell2010
+executable aschem
+  main-is:             Main.hs
+  other-modules:       Patterns, Picture, Render, Types
+  other-extensions:    FlexibleInstances, FlexibleContexts, MultiParamTypeClasses, TypeSynonymInstances, RankNTypes, ExistentialQuantification
+  build-depends:       base, cairo >=0.13 && <0.14, directory >=1.2 && <1.3, mtl, filepath, array >=0.5 && <0.6
+  hs-source-dirs:      aschem
+  default-language:    Haskell2010

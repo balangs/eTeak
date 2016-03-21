@@ -23,11 +23,11 @@
 module Main (
 	main ) where
 
-	import Maybe
-	import List
-	import System
-	import Char (isAlpha, isAlphaNum)
-	import Monad
+	import Data.Maybe
+	import Data.List
+	import Data.Char (isAlpha, isAlphaNum)
+	import Control.Monad
+        import System.Environment (getArgs)
 	import Graphics.Rendering.Cairo
 
 	import Picture
@@ -212,7 +212,7 @@ module Main (
 			ports = patternPorts $ snd $ fromJust $ find (matchPattern (shape, orient)) patterns
 
 			follow (portRelPos, portOrient)
-				| not blocked = followWire picture [portPos] (orientToMove portOrient 1 portPos) portOrient 
+				| not blocked = followWire picture [portPos] (orientToMove portOrient 1 portPos) portOrient
 				| otherwise = []
 				where
 					portPos = addPos pos portRelPos

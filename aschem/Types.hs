@@ -32,7 +32,7 @@ module Types (
 	Pattern (..)
 	) where
 
-	import Array
+	import Data.Array
 
 	type Pos = (Int, Int)
 	type DPos = (Double, Double)
@@ -68,4 +68,3 @@ module Types (
 	data Orient = OrientN | OrientNE | OrientE | OrientSE
 		| OrientS | OrientSW | OrientW | OrientNW
 		deriving (Show, Eq)
-

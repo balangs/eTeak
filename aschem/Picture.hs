@@ -54,8 +54,8 @@ module Picture (
 	pictureMatchPattern
 	) where
 
-	import Maybe
-	import Array
+	import Data.Maybe
+	import Data.Array
 
 	import Types
 
@@ -139,7 +139,7 @@ module Picture (
 
 	moveSE :: Int -> Pos -> Pos
 	moveSE d = addPos (d,d)
-	
+
 	addPos :: Pos -> Pos -> Pos
 	addPos (x, y) (dx, dy) = (x + dx, y + dy)
 
@@ -208,4 +208,3 @@ module Picture (
 
 			charMatches matchPos = matchChar == '?' || at matchPos == matchChar
 				where matchChar = pictureAt match matchPos
-

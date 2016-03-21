@@ -26,8 +26,8 @@ module Render (
 	RenderOptions (..)
 	) where
 
-	import Ix
-	import List
+	import Data.Ix
+	import Data.List
 	import Graphics.Rendering.Cairo
 
 	import Types
@@ -265,7 +265,7 @@ module Render (
 
 	inLineWidth :: Double -> Render a -> Render ()
 	inLineWidth width body = do
-		oldWidth <- getLineWidth 
+		oldWidth <- getLineWidth
 		setLineWidth width
 		body
 		setLineWidth oldWidth
@@ -305,7 +305,7 @@ module Render (
 			chord = sqrt (dX ** 2 + dY ** 2)
 			r = chord / (2 * sin theta)
 
-			(startAngle, endAngle, centre) = if fromX < toX	
+			(startAngle, endAngle, centre) = if fromX < toX
 				then (pi * 1.5, (pi + 1.5) + (2 * theta), (fromX, fromY + r))
 				else (pi * 0.5 - (2 * theta), pi * 0.5, (toX, toY - r))
 
@@ -342,7 +342,7 @@ module Render (
 		(x-halfY,halfY), (0,halfY)]
 		where
 			halfY = (y * yScale) / 2
-			path = drawPath . map (\point -> subDPos point origin) 
+			path = drawPath . map (\point -> subDPos point origin)
 
 	showCompletion :: DPos -> Double -> Render ()
 	showCompletion pos angle = atRotate pos angle $ do
@@ -381,7 +381,7 @@ module Render (
 	normaliseAngle :: Double -> Double
 	normaliseAngle angle
 		| angle < 0 = normaliseAngle (2 * pi + angle)
-		| angle > (2 * pi) = normaliseAngle (angle - 2 * pi) 
+		| angle > (2 * pi) = normaliseAngle (angle - 2 * pi)
 		| otherwise = angle
 
 	arct :: DPos -> DPos -> Double -> Render ()
