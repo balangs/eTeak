@@ -111,7 +111,7 @@ module Context (
             bindings = indices $ contextBindings context
             completenesss = map (bindingCompleteness . (findBindingByIndex [context])) bindings
 
-    contextIndexRange :: BindingValue value => Context value -> (Int, Int)
+    contextIndexRange :: Context value -> (Int, Int)
     contextIndexRange EmptyContext = error "contextIndexRange: can't take range of an empty context"
     contextIndexRange context@(Context {}) = bounds $ contextBindings context
 

@@ -98,7 +98,9 @@ module Teak (
     teak :: NetworkIF network => [TeakOption] -> Context Decl -> Why [Part network]
     teak opts context = parts
         where
+            posArray :: Maybe PosArray
             posArray = contextToPosArray context
+            procs :: [Binding Decl]
             procs = filter isCompleteProcDeclBinding $ contextBindingsList context
             parts = gatherFail $ map (bindingToPart opts [context] posArray) procs
 
@@ -757,9 +759,16 @@ module Teak (
         Binding Decl -> Why (Part network)
     procBindingToPart opts cs posArray binding = part
         where
+            name :: String
             name = bindingName binding
+
+            formals :: Context Decl
+            pos :: Pos
+            attrs :: [Attr]
+            cmd :: Cmd
             ProcDecl pos formals attrs cmd = bindingValue binding
 
+            formalsBindings :: [Binding Decl]
             formalsBindings = contextBindingsList formals
 
             formalPorts = filter isPort formalsBindings

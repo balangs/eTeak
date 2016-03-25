@@ -22,7 +22,9 @@
 
 module Balsa (
     parseBalsaFile,
-    compileBalsaFile
+    compileBalsaFile,
+    parseFile,
+    printFile
     )
     where
 
@@ -37,10 +39,11 @@ module Balsa (
     import ParseTree
     import Parser
     import BalsaLexer
+    import Print (showTree)
     import Context
     import Bind
     import Eval
-    import Finish
+    import Finish (finish)
 
     findImportFilename :: [String] -> (Pos, ImportPath) -> WhyT IO String
     findImportFilename _ (pos, ImportFile file) = do
@@ -120,3 +123,8 @@ module Balsa (
             (\parsedContext -> WhyT $ return $ (return parsedContext) `connect`
                 bind `connect` evalContext `connect` (return . finish))
 
+
+    printFile :: String -> IO ()
+    printFile f = do
+      Why _ trees <- runWhyT $ parseFile f 0
+      mapM_ (putStrLn . showTree) trees
