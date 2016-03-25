@@ -1,5 +1,5 @@
 import Paths_eTeak
 
 main = do
-	runtime <- getDataFileName "runtime"
-	putStrLn runtime
+    runtime <- getDataFileName "runtime"
+    putStrLn runtime

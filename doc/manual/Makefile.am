@@ -16,8 +16,8 @@ EXTRA_DIST = \
 	traverse.svg \
 	files
 
-ASCHEM = $(top_builddir)/dist/build/aschem/aschem
-TEAK = $(top_builddir)/dist/build/eTeak/eTeak
+ASCHEM = stack exec aschem --
+TEAK = stack exec eTeak --
 PS2PDF = ps2pdf -sPAPERSIZE=a4
 PS2EPSI = ps2epsi
 DOT = dot
