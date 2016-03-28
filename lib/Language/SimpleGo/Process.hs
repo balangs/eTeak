@@ -39,7 +39,7 @@ toExpr (Go.GoPrim prim) = S.Prim <$> toPrim prim
 toExpr (Go.Go1Op (Go.GoOp op) e) = S.UnOp <$> parseUnOp op <*> toExpr e
 toExpr (Go.Go2Op (Go.GoOp op) e e') = S.BinOp <$> parseBinOp op <*> toExpr e <*> toExpr e
 
-toLit :: MonadError String m => Go.GoLit -> m S.Lit
+toLit :: MonadError String m => Go.GoLit -> m S.Prim
 toLit (Go.GoLitInt  _ i) = return $ S.LitInt i
 toLit (Go.GoLitReal _ f) = return $ S.LitReal f
 toLit (Go.GoLitImag _ f) = return $ S.LitImag f
@@ -47,7 +47,7 @@ toLit (Go.GoLitChar _ c) = return $ S.LitChar c
 toLit (Go.GoLitStr  _ s) = return $ S.LitStr s
 toLit s = throwError $ "unsupported literal: \"" ++ show s ++ "\""
 
-toPrim (Go.GoLiteral lit) = S.Literal <$> toLit lit
+toPrim (Go.GoLiteral lit) = toLit lit
 toPrim s = throwError $ "unsupported literal: \"" ++ show s ++ "\""
 
 asType :: MonadError String m => Go.GoType -> m S.Type

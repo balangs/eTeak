@@ -20,6 +20,6 @@ spec = do
     it "should compile a single const" $ do
       let Right a = goParse "main.go" "package main; const a uint32 = 4"
           expected = S.Program $ U.fromList [
-            S.Const (S.Id "a") (S.TypeName (S.Id "uint32")) (S.Prim (S.Literal (S.LitInt 4)))
+            S.Const (S.Id "a") (S.TypeName (S.Id "uint32")) (S.Prim (S.LitInt 4))
                                             ]
       runExcept (compile a) `shouldBe` Right expected
