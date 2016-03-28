@@ -49,8 +49,6 @@
             | RightShift       -- '>>'
             | BitwiseAnd       -- '&'
             | AndNot       -- '&^'
-            | Dec       -- '--'
-            | Inc       -- '++'
             deriving (Eq, Read, Show)
 
  -- Rec (= 'Receiver' = 'ReceiverType')
