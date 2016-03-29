@@ -87,6 +87,4 @@ parseBinOp "<<" = return S.LeftShift
 parseBinOp ">>" = return S.RightShift
 parseBinOp "&" = return S.BitwiseAnd
 parseBinOp "&^" = return S.AndNot
-parseBinOp "--" = return S.Dec
-parseBinOp "++" = return S.Inc
 parseBinOp o = throwError $ "unsupported binary operation \"" ++ o ++ "\""
