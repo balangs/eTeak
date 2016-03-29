@@ -11,7 +11,6 @@ import qualified Language.Go.Syntax.AST as Go
 import qualified Language.SimpleGo.AST  as S
 import qualified Data.Vector               as U
 import Data.String (fromString)
-import Control.Monad.Trans (lift)
 
 compile :: MonadError String m => Go.GoSource -> m S.Program
 compile = fmap (S.Program . join) . U.mapM compileDecl . U.fromList . Go.getTopLevelDecl
@@ -31,6 +30,7 @@ expandDeclarations ctor cs = runListT f
           e' <- mayToExpr e
           return $ ctor (S.Id $ fromString name) t' e'
 
+mayToExpr :: MonadError String m => Maybe Go.GoExpr -> m S.Expr
 mayToExpr Nothing = return S.Zero
 mayToExpr (Just e) = toExpr e
 
@@ -47,6 +47,7 @@ toLit (Go.GoLitChar _ c) = return $ S.LitChar c
 toLit (Go.GoLitStr  _ s) = return $ S.LitStr s
 toLit s = throwError $ "unsupported literal: \"" ++ show s ++ "\""
 
+toPrim :: MonadError String m => Go.GoPrim -> m S.Prim
 toPrim (Go.GoLiteral lit) = toLit lit
 toPrim s = throwError $ "unsupported literal: \"" ++ show s ++ "\""
 
@@ -56,6 +57,7 @@ asType s = throwError $ "unsupported type: \"" ++ show s ++ "\""
 
 compileDecl :: MonadError String m => Go.GoDecl -> m (U.Vector S.Declaration)
 compileDecl (Go.GoConst cs) = U.fromList <$> expandDeclarations S.Const cs
+compileDecl d = throwError $ "unsupported declaration: " ++ show d
 
 parseUnOp :: MonadError String m => String -> m  S.UnOp
 parseUnOp "+" = return S.Plus

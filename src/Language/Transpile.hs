@@ -23,13 +23,13 @@ transpileFile f = do
   let
     p = goParse f s
   case p of
-    Left s -> print s
+    Left s' -> print s'
     Right t -> do
-      let p = runExcept $ do
+      let p' = runExcept $ do
             simple <- compile t
             transpile simple
-      case p of
-        Left s -> print s
+      case p' of
+        Left s' -> print s'
         Right tree -> putStrLn $ showTree tree
 
 transpile :: MonadError String m => Program -> m (C.Context PT.Decl)
@@ -74,7 +74,7 @@ toBinding :: MonadError String m => Int -> Declaration -> m (C.Binding PT.Decl)
 toBinding i = bindings
   where
     namespace = C.OtherNamespace
-    bindings (Const (Id id) typ expr) = C.Binding i (unpack id) namespace R.Complete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
-    bindings (Var (Id id) typ expr) = C.Binding i (unpack id) namespace R.Complete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
-    bindings (Type (Id id) typ) = throwError "type declarations are not supported"
-    bindings (Func (Id id) sig block) = throwError "function declarations are not supported"
+    bindings (Const (Id id') _ expr) = C.Binding i (unpack id') namespace R.Complete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
+    bindings (Var (Id id') _ expr) = C.Binding i (unpack id') namespace R.Complete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
+    bindings (Type (Id _) _) = throwError "type declarations are not supported"
+    bindings (Func (Id _) _ _) = throwError "function declarations are not supported"
