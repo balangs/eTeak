@@ -37,7 +37,7 @@ mayToExpr (Just e) = toExpr e
 toExpr :: MonadError String m => Go.GoExpr -> m S.Expr
 toExpr (Go.GoPrim prim) = S.Prim <$> toPrim prim
 toExpr (Go.Go1Op (Go.GoOp op) e) = S.UnOp <$> parseUnOp op <*> toExpr e
-toExpr (Go.Go2Op (Go.GoOp op) e e') = S.BinOp <$> parseBinOp op <*> toExpr e <*> toExpr e
+toExpr (Go.Go2Op (Go.GoOp op) e e') = S.BinOp <$> parseBinOp op <*> toExpr e <*> toExpr e'
 
 toLit :: MonadError String m => Go.GoLit -> m S.Prim
 toLit (Go.GoLitInt  _ i) = return $ S.LitInt i
