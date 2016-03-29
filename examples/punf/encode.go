@@ -51,8 +51,8 @@ end
 func top (i chan byte, o chan byte) {
 	go func (o chan byte) {
 		for {
-			v:= <-o
-			fmt.Printf("%d",v)
+			v := <-o
+			//fmt.Printf("%d",v)
 		}
 	} (o)
 	go func(i chan byte) {
@@ -65,14 +65,16 @@ func top (i chan byte, o chan byte) {
 	onehot(i,o)
 }
 
+/*
 func main() {
-/*	var i Inst
+	var i Inst
 	i = 0xF000000F
 	
 	fmt.Printf("%d",i.op())
 	fmt.Printf("%d",i.low())
-*/
-	var i = make (chan byte)
-	var o = make (chan byte)
+
+	var i (chan byte) = make (chan byte)
+	var o (chan byte) = make (chan byte)
 	top (i,o)
 }
+*/

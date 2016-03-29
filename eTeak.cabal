@@ -92,6 +92,7 @@ library
                   , text
                   , vector
                   , mtl
+                  , transformers
 
   -- Directories containing source files.
   hs-source-dirs: lib

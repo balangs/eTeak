@@ -66,7 +66,7 @@
  -- Type (= 'Type' = 'TypeLit' = 'LiteralType')
  data Type = TypeName Id
            | ArrayType Expr Type
-           | ChannelType ChanKind Type
+           | Channel ChanKind Type
            | FunctionType Signature
            | MapType Type Type
            | PointerType Type
@@ -105,7 +105,8 @@
            | LitImag Float
            | LitChar Char
            | LitStr  String
-           | Qual (Maybe Id) Id -- 'PrimaryExpr/Operand/QualifiedIdent'
+           | LitFunc Signature Block
+           | Qual Id -- 'PrimaryExpr/Operand/QualifiedIdent'
            | Method Rec Id     -- 'PrimaryExpr/Operand/MethodExpr'
            | Paren Expr          -- 'PrimaryExpr/Operand/MethodExpr'
            | Cast Type Expr    -- 'PrimaryExpr/Conversion'
@@ -116,7 +117,7 @@
            | Index Prim Expr   -- 'PrimaryExpr/Index'
            | Slice Prim (Maybe Expr) (Maybe Expr) -- 'PrimaryExpr/Slice'
            | TA    Prim Type   -- 'PrimaryExpr/TypeAssertion'
-           | Call  Prim [Expr] Bool -- 'PrimaryExpr/Call'
+           | Call  Prim [Expr]
                deriving (Eq, Read, Show)
 
  -- For defining record literals, etc.
@@ -135,39 +136,34 @@
             | ValueComp Comp -- 'Value/LiteralValue'
             deriving (Eq, Read, Show)
 
- data Block = Block { getStmt::[Stmt] }
-            | NoBlock
-            deriving (Eq, Read, Show)
+ newtype Block = Block (U.Vector Statement)
+               deriving (Eq, Read, Show)
 
  data ForClause = ForWhile (Maybe Expr)
                 | ForThree Simp (Maybe Expr) Simp
                 | ForRange [Expr] Expr Bool -- True if AssignDecl
                 deriving (Eq, Read, Show)
 
- data Stmt = StmtDecl Declaration -- 'Statement/Declaration'
-           | StmtLabeled Id Stmt
-           | StmtSimple Simp
-           | Stmt Expr
-           | StmtReturn [Expr]
-           | StmtBreak    (Maybe Id)
-           | StmtContinue (Maybe Id)
-           | Stmtto Id
-           | StmtFallthrough
-           | StmtBlock Block
-           | StmtIf Cond Block (Maybe Stmt)
-           | StmtSelect            [Case Chan]
-           | StmtSwitch     Cond [Case Expr]
-           | StmtTypeSwitch Cond [Case Type] (Maybe Id)
-           | StmtFor ForClause Block
-           | StmtDefer Expr
-           deriving (Eq, Read, Show)
+ data Statement = StmtDecl Declaration -- 'Statement/Declaration'
+                | Simple Simp
+                | Go Expr
+                | Return [Expr]
+                | Break    (Maybe Id)
+                | Continue (Maybe Id)
+                | Fallthrough
+                | StmtBlock Block
+                | If Cond Block (Maybe Statement)
+                | StmtSelect  [Case Chan]
+                | Switch Cond [Case Expr]
+                | For ForClause Block
+                deriving (Eq, Read, Show)
 
- data Simp = SimpEmpty
-           | SimpSend Expr Expr
-           | SimpExpr Expr
-           | SimpInc  Expr
-           | SimpDec  Expr
-           | SimpVar [Id] [Expr]
+ data Simp = Empty
+           | Send Expr Expr
+           | SimpleExpr Expr
+           | Inc  Expr
+           | Dec  Expr
+           | SimpVar Id Expr
            deriving (Eq, Read, Show)
 
  data Chan = ChanRecv (Maybe (Expr, Maybe Expr, UnOp)) Expr
@@ -177,6 +173,6 @@
  data Cond = Cond (Maybe Simp) (Maybe Expr)
            deriving (Eq, Read, Show)
 
- data Case a = Case [a] [Stmt]
-             | Default  [Stmt]
+ data Case a = Case [a] [Statement]
+             | Default  [Statement]
              deriving (Eq, Read, Show)
