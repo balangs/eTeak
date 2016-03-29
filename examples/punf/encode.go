@@ -52,6 +52,7 @@ func top (i chan byte, o chan byte) {
 	go func (o chan byte) {
 		for {
 			v := <-o
+			// qualified identifiers are not supported at this time
 			//fmt.Printf("%d",v)
 		}
 	} (o)
@@ -73,6 +74,7 @@ func main() {
 	fmt.Printf("%d",i.op())
 	fmt.Printf("%d",i.low())
 
+    // make is not a supported construct at this time
 	var i (chan byte) = make (chan byte)
 	var o (chan byte) = make (chan byte)
 	top (i,o)
