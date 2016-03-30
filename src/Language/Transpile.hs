@@ -8,6 +8,7 @@ module Language.Transpile  (
   ) where
 
 import           Control.Monad.Except    (MonadError, throwError, runExcept)
+import Control.Monad (zipWithM)
 import qualified Context                   as C
 import           Language.Go.Parser        (goParse)
 import           Language.SimpleGo.AST
@@ -17,6 +18,11 @@ import           Print                     (showTree)
 import qualified Report                    as R
 import Data.Text (unpack)
 import qualified Data.Vector as U
+import qualified Data.Foldable as F
+
+
+type Binding = C.Binding PT.Decl
+type Context = C.Context PT.Decl
 
 transpileFile f = do
   s <- readFile f
@@ -32,26 +38,28 @@ transpileFile f = do
         Left s' -> print s'
         Right tree -> putStrLn $ showTree tree
 
-transpile :: MonadError String m => Program -> m (C.Context PT.Decl)
-transpile program = C.bindingsToContext1 <$> bindings
-  where
-    bindings = (toBindings . U.toList . declarations) program
+transpile :: MonadError String m => Program -> m Context
+transpile = buildContext toBinding . declarations
 
-toBindings :: forall m. MonadError String m => [Declaration] -> m [C.Binding PT.Decl]
-toBindings = sequence . binds
+buildContext :: forall m f a. (MonadError String m, Foldable f) =>
+              (Int -> a -> m Binding) -> f a -> m Context
+buildContext mb as = C.bindingsToContext1 <$> bindings
   where
-    binds :: [Declaration] -> [m (C.Binding PT.Decl)]
-    binds = zipWith toBinding [(0 :: Int)..]
-
+    bindings :: m [Binding]
+    bindings = zipWithM mb [0..] $ F.toList as
 
 toExpr :: MonadError String m => Expr -> m PT.Expr
 toExpr Zero = throwError "zero values are not supported"
-toExpr (Prim prim) = return $ PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue 1)
+toExpr (Prim prim) = fromPrim prim
 toExpr (UnOp Plus e) = PT.BinExpr R.PosTopLevel PT.NoType PT.BinAdd (PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue 0)) <$> toExpr e
 toExpr (UnOp Minus e) = PT.BinExpr R.PosTopLevel PT.NoType PT.BinSub (PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue 0)) <$> toExpr e
 toExpr (UnOp Not e) = PT.UnExpr R.PosTopLevel PT.NoType PT.UnNot <$> toExpr e
 toExpr (UnOp o _) = throwError $ "operator " ++ show o ++ " is not supported"
 toExpr (BinOp op e e') = PT.BinExpr R.PosTopLevel PT.NoType <$> binOp op <*> toExpr e <*> toExpr e'
+
+fromPrim :: MonadError String m => Prim -> m PT.Expr
+fromPrim (LitInt i) = return $ PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue i)
+fromPrim s = throwError $ "unsupported primitive" ++ show s
 
 binOp :: MonadError String m => BinOp -> m PT.BinOp
 binOp Multiply = return PT.BinMul
@@ -70,11 +78,42 @@ binOp NotEqual = return PT.BinNE
 binOp Equal  = return PT.BinEQ
 binOp o = throwError $ "operator " ++ show o ++ " is not supported"
 
-toBinding :: MonadError String m => Int -> Declaration -> m (C.Binding PT.Decl)
+unId :: Id -> String
+unId (Id id') = unpack id'
+
+toBinding :: MonadError String m => Int -> Declaration -> m Binding
 toBinding i = bindings
   where
     namespace = C.OtherNamespace
-    bindings (Const (Id id') _ expr) = C.Binding i (unpack id') namespace R.Complete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
-    bindings (Var (Id id') _ expr) = C.Binding i (unpack id') namespace R.Complete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
-    bindings (Type (Id _) _) = throwError "type declarations are not supported"
-    bindings (Func (Id _) _ _) = throwError "function declarations are not supported"
+    bindings (Const id' _ expr) = C.Binding i (unId id') namespace R.Incomplete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
+    bindings (Var id' _ expr) = C.Binding i (unId id') namespace R.Incomplete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
+    bindings (Type _ _) = throwError "type declarations are not supported"
+    bindings (Func id' sig block) = C.Binding i (unId id') C.ProcNamespace R.Incomplete <$> decl
+      where
+        decl = if isProc sig
+               then procedure
+               else throwError "non procedure functions are not supported"
+        isProc = const True
+        procedure = PT.ProcDecl R.PosTopLevel
+          <$> sigContext sig
+          <*> pure []  -- not sure what annotations are
+          <*> blockCmd block
+
+asType ::  MonadError String m => Type -> m PT.Type
+asType (TypeName id') = return $ PT.NameType R.PosTopLevel (unId id')
+asType t = throwError $ "usupported type " ++ show t
+
+sigTypeDecl :: MonadError String m => Type -> m PT.Decl
+sigTypeDecl (Channel Bidirectional typ) = PT.ChanDecl R.PosTopLevel <$> asType typ
+sigTypeDecl (Channel Input typ) = PT.PortDecl R.PosTopLevel PT.Input <$> asType typ
+sigTypeDecl (Channel Output typ) = PT.PortDecl R.PosTopLevel PT.Output <$> asType typ
+sigTypeDecl t = throwError $ "unsupported signature type " ++ show t
+
+paramBinding :: MonadError String m => Int -> Param -> m Binding
+paramBinding i (Param id' t) = C.Binding i (unId id') C.OtherNamespace R.Incomplete <$> sigTypeDecl t
+
+sigContext :: MonadError String m => Signature -> m Context
+sigContext (Signature inputs _) = buildContext paramBinding inputs
+
+blockCmd :: MonadError String m => Block -> m PT.Cmd
+blockCmd _ = return PT.NoCmd
