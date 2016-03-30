@@ -1,3 +1,6 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 -- |
@@ -36,8 +39,8 @@ transpileFile f = do
             simple <- compile t
             transpile simple
       case p' of
-        Left s' -> print s'
-        Right tree -> putStrLn $ showTree tree
+        Left s' -> putStrLn s'
+        Right tree -> writeFile (f ++ "-tree") $ showTree tree
 
 transpile :: MonadError String m => Program -> m Context
 transpile = buildContext toBinding . declarations
@@ -60,6 +63,8 @@ toExpr (BinOp op e e') = PT.BinExpr R.PosTopLevel PT.NoType <$> binOp op <*> toE
 
 fromPrim :: MonadError String m => Prim -> m PT.Expr
 fromPrim (LitInt i) = return $ PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue i)
+-- TODO maybe fix this parser? Should it be qual here?
+fromPrim (Qual id') = return $ PT.NameExpr R.PosTopLevel (unId id')
 fromPrim s = throwError $ "unsupported primitive" ++ show s
 
 binOp :: MonadError String m => BinOp -> m PT.BinOp
@@ -117,10 +122,10 @@ sigContext :: MonadError String m => Signature -> m Context
 sigContext (Signature inputs _) = buildContext paramBinding inputs
 
 blockCmd :: MonadError String m => Block -> m PT.Cmd
-blockCmd (Block statements) = PT.SeqCmd R.PosTopLevel . U.toList <$> U.mapM cmd statements
+blockCmd (Block statements) = seqCmd $ U.toList statements
 
 seqCmd :: MonadError String m => [Statement] -> m PT.Cmd
-seqCmd ss = PT.SeqCmd R.PosTopLevel <$> mapM cmd ss
+seqCmd ss = collapsePars <$> mapM parCmd ss
 
 caseCmds :: MonadError String m => [Case Expr] -> m ([PT.CaseCmdGuard], PT.Cmd)
 caseCmds cs = (,) <$> explicits <*> def
@@ -135,16 +140,79 @@ caseCmds cs = (,) <$> explicits <*> def
     match e = PT.ExprCaseMatch R.PosTopLevel <$> toExpr e
 
 
-cmd :: MonadError String m => Statement -> m PT.Cmd
+data Par a = Par a | Seq a
+
+parCmd :: MonadError String m => Statement -> m (Par PT.Cmd)
+parCmd c@(Go _) = Par <$> cmd c
+parCmd c = Seq <$> cmd c
+
+collapsePars :: [Par PT.Cmd] -> PT.Cmd
+collapsePars = go
+  where
+    isPar :: Par a -> Bool
+    isPar (Par _) = True
+    isPar _ = False
+
+    seqs :: [Par a] -> ([Par a], [Par a])
+    seqs = break isPar
+
+    pars :: [Par a] -> ([Par a], [Par a])
+    pars = span isPar
+
+    undo :: Par a -> a
+    undo (Par a) = a
+    undo (Seq a) = a
+
+    go  [] = PT.NoCmd
+    go [Par c] = c
+    go [Seq c] = c
+    go (Par c : next) = p
+      where
+        (ps, ss) = pars next
+        p = PT.ParCmd R.PosTopLevel (c:(map undo ps ++ [s]))
+        s = collapsePars ss
+    go (Seq c : next) = s
+      where
+        (ss, ps) = seqs next
+        s = PT.SeqCmd R.PosTopLevel (c:(map undo ss ++ [p]))
+        p = collapsePars ps
+
+cmd :: forall m . MonadError String m => Statement -> m PT.Cmd
 -- for { } construct is identical to loop ... end
 cmd (For (ForWhile Nothing) block) = PT.LoopCmd R.PosTopLevel <$> blockCmd block
+-- <var> <- <chan>
+cmd (For (ForThree (SimpVar id (Prim (LitInt start)))
+                   (Just (BinOp LessThan (Prim (Qual id')) (Prim (LitInt end))))
+                   (Inc (Prim (Qual id'')))) block)
+  | id' == id && id'' == id = PT.ForCmd R.PosTopLevel PT.Seq interval <$> c <*> blockCmd block
+  where
+    interval = (PT.Interval (start, end) PT.NoType)
+    c :: m Context
+    c = buildContext b [id]
+    b :: Int -> Id -> m Binding
+    b i id = return $ C.Binding 1 (unId id) C.OtherNamespace R.Incomplete (PT.ParamDecl R.PosTopLevel False PT.NoType)
+--cmd (For (ForThree s (Just e) s')) =
 cmd (Simple (SimpVar id' (UnOp Receive (Prim (Qual chan))))) = PT.InputCmd R.PosTopLevel
   <$> pure (PT.NameChan R.PosTopLevel (unId chan))
   <*> pure (PT.NameLvalue R.PosTopLevel (unId id'))
+-- <chan> <- <expr>
 cmd (Simple (Send (Prim (Qual chan)) prim)) = PT.OutputCmd R.PosTopLevel
      <$> pure (PT.NameChan R.PosTopLevel (unId chan))
      <*> toExpr prim
-cmd (Switch (Cond Nothing (Just (Prim (Qual id')))) cases) = do
+cmd (Switch (Cond Nothing (Just expr)) cases) = do
   (cs, def) <- caseCmds cases
-  return $ PT.CaseCmdE R.PosTopLevel (PT.NameExpr R.PosTopLevel (unId id')) cs def
+  PT.CaseCmdE R.PosTopLevel <$> toExpr expr <*> pure cs <*> pure def
+cmd (Go p) = exprCmd p
+cmd (Simple (SimpleExpr (Prim (Call (Qual (Id "print")) es)))) = PT.PrintCmd R.PosTopLevel <$> mapM toExpr es
+cmd (Simple (SimpleExpr (Prim (Call (Qual id') es)))) = (c . map PT.ExprProcActual)  <$> mapM toExpr es
+  where
+    c = PT.CallCmd R.PosTopLevel (PT.NameCallable R.PosTopLevel (unId id')) C.EmptyContext
 cmd s = throwError $ "unsupported statement " ++ show s
+
+exprCmd :: MonadError String m => Expr -> m PT.Cmd
+exprCmd (Prim (Call (LitFunc sig block) es)) = PT.BlockCmd R.PosTopLevel
+  <$> buildContext toBinding [Func (Id "$") sig block]
+  <*> call
+  where
+    call = PT.CallCmd R.PosTopLevel (PT.NameCallable R.PosTopLevel "$") C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
+exprCmd e = throwError $ "unsupported expression " ++ show e
