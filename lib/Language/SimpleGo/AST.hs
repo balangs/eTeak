@@ -153,6 +153,7 @@
                 | Fallthrough
                 | StmtBlock Block
                 | If Cond Block (Maybe Statement)
+                  -- TODO rewrite this to a more static case structure, with default
                 | StmtSelect  [Case Chan]
                 | Switch Cond [Case Expr]
                 | For ForClause Block
@@ -172,6 +173,7 @@
 
  data Cond = Cond (Maybe Simp) (Maybe Expr)
            deriving (Eq, Read, Show)
+
 
  data Case a = Case [a] [Statement]
              | Default  [Statement]

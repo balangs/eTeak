@@ -19,6 +19,7 @@ import qualified Report                    as R
 import Data.Text (unpack)
 import qualified Data.Vector as U
 import qualified Data.Foldable as F
+import qualified Bits as B
 
 
 type Binding = C.Binding PT.Decl
@@ -116,4 +117,34 @@ sigContext :: MonadError String m => Signature -> m Context
 sigContext (Signature inputs _) = buildContext paramBinding inputs
 
 blockCmd :: MonadError String m => Block -> m PT.Cmd
-blockCmd _ = return PT.NoCmd
+blockCmd (Block statements) = PT.SeqCmd R.PosTopLevel . U.toList <$> U.mapM cmd statements
+
+seqCmd :: MonadError String m => [Statement] -> m PT.Cmd
+seqCmd ss = PT.SeqCmd R.PosTopLevel <$> mapM cmd ss
+
+caseCmds :: MonadError String m => [Case Expr] -> m ([PT.CaseCmdGuard], PT.Cmd)
+caseCmds cs = (,) <$> explicits <*> def
+  where
+    isDefault (Default _) = True
+    isDefault _ = False
+    def = case (filter isDefault cs) of
+      [] -> return PT.NoCmd
+      (Default ss : _ ) -> seqCmd ss
+    explicits = mapM guard $ filter (not . isDefault) cs
+    guard (Case es ss) = PT.CaseCmdGuard R.PosTopLevel <$> mapM match es <*> seqCmd ss
+    match e = PT.ExprCaseMatch R.PosTopLevel <$> toExpr e
+
+
+cmd :: MonadError String m => Statement -> m PT.Cmd
+-- for { } construct is identical to loop ... end
+cmd (For (ForWhile Nothing) block) = PT.LoopCmd R.PosTopLevel <$> blockCmd block
+cmd (Simple (SimpVar id' (UnOp Receive (Prim (Qual chan))))) = PT.InputCmd R.PosTopLevel
+  <$> pure (PT.NameChan R.PosTopLevel (unId chan))
+  <*> pure (PT.NameLvalue R.PosTopLevel (unId id'))
+cmd (Simple (Send (Prim (Qual chan)) prim)) = PT.OutputCmd R.PosTopLevel
+     <$> pure (PT.NameChan R.PosTopLevel (unId chan))
+     <*> toExpr prim
+cmd (Switch (Cond Nothing (Just (Prim (Qual id')))) cases) = do
+  (cs, def) <- caseCmds cases
+  return $ PT.CaseCmdE R.PosTopLevel (PT.NameExpr R.PosTopLevel (unId id')) cs def
+cmd s = throwError $ "unsupported statement " ++ show s
