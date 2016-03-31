@@ -9,7 +9,7 @@ module Language.Transpile  (
   transpileFile
   ) where
 
-import           Control.Monad.Except (MonadError, throwError, runExcept, ExceptT(..), runExceptT)
+import           Control.Monad.Except (MonadError, throwError, ExceptT(..), runExceptT)
 import           Control.Monad (zipWithM)
 import           Control.Monad.State (modify', MonadState, runStateT)
 import           Control.Monad.Trans (liftIO)
@@ -18,7 +18,6 @@ import qualified Data.Foldable as F
 import qualified Data.Vector as U
 
 import qualified Context as C
-import           Language.Go.Parser (goParse)
 import           Language.Helpers (bind, eval, finish)
 import           Language.SimpleGo.AST
 import           Language.SimpleGo.Process (compileFile)
