@@ -9,36 +9,44 @@ module Language.Transpile  (
   transpileFile
   ) where
 
-import           Control.Monad.Except    (MonadError, throwError, runExcept)
+import           Control.Monad.Except    (MonadError, throwError, runExcept, ExceptT(..))
 import Control.Monad (zipWithM)
 import qualified Context                   as C
 import           Language.Go.Parser        (goParse)
 import           Language.SimpleGo.AST
-import           Language.SimpleGo.Process (compile)
+import           Language.SimpleGo.Process (compileFile)
 import qualified ParseTree                 as PT
 import           Print                     (showTree)
 import qualified Report                    as R
 import Data.Text (unpack)
 import qualified Data.Vector as U
 import qualified Data.Foldable as F
+import Language.Helpers (bind, eval, finish)
+import Control.Monad.Trans (liftIO)
+import Control.Monad.Except (runExceptT)
 
 type Binding = C.Binding PT.Decl
 type Context = C.Context PT.Decl
 
 transpileFile :: FilePath -> IO ()
 transpileFile f = do
-  s <- readFile f
-  let
-    p = goParse f s
-  case p of
-    Left s' -> print s'
-    Right t -> do
-      let p' = runExcept $ do
-            simple <- compile t
-            transpile simple
-      case p' of
-        Left s' -> putStrLn s'
-        Right tree -> writeFile (f ++ "-tree") $ showTree tree
+  e <- runExceptT go
+  case e of
+    Left s -> putStrLn s
+    Right a -> return a
+  where
+    write s t = liftIO $ writeFile (f ++ ".tree-" ++ s) $ showTree t
+    go = do
+      goSource <- ExceptT $ compileFile f
+      balsa <- transpile goSource
+      write "parse" balsa
+      bound <- bind balsa
+      write "bind" bound
+      evaled <- eval bound
+      write "eval" evaled
+      finished <- finish evaled
+      write "finish" finished
+
 
 transpile :: MonadError String m => Program -> m Context
 transpile = buildContext toBinding . declarations
