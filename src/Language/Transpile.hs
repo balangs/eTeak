@@ -1,8 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+
 -- |
 
 module Language.Transpile  (
@@ -22,12 +21,11 @@ import qualified Report                    as R
 import Data.Text (unpack)
 import qualified Data.Vector as U
 import qualified Data.Foldable as F
-import qualified Bits as B
-
 
 type Binding = C.Binding PT.Decl
 type Context = C.Context PT.Decl
 
+transpileFile :: FilePath -> IO ()
 transpileFile f = do
   s <- readFile f
   let
@@ -132,11 +130,13 @@ caseCmds cs = (,) <$> explicits <*> def
   where
     isDefault (Default _) = True
     isDefault _ = False
-    def = case (filter isDefault cs) of
+    def = case filter isDefault cs of
       [] -> return PT.NoCmd
       (Default ss : _ ) -> seqCmd ss
-    explicits = mapM guard $ filter (not . isDefault) cs
-    guard (Case es ss) = PT.CaseCmdGuard R.PosTopLevel <$> mapM match es <*> seqCmd ss
+      _ -> error "refactor `caseCmds` to be total"
+    explicits = mapM cmdGuard $ filter (not . isDefault) cs
+    cmdGuard (Case es ss) = PT.CaseCmdGuard R.PosTopLevel <$> mapM match es <*> seqCmd ss
+    cmdGuard _ = error "refactor `caseCmds` to be total"
     match e = PT.ExprCaseMatch R.PosTopLevel <$> toExpr e
 
 
@@ -180,18 +180,18 @@ collapsePars = go
 cmd :: forall m . MonadError String m => Statement -> m PT.Cmd
 -- for { } construct is identical to loop ... end
 cmd (For (ForWhile Nothing) block) = PT.LoopCmd R.PosTopLevel <$> blockCmd block
--- <var> <- <chan>
+-- for i := <start>; i < <end>; i++ { } is equivalent to a range
 cmd (For (ForThree (SimpVar id (Prim (LitInt start)))
                    (Just (BinOp LessThan (Prim (Qual id')) (Prim (LitInt end))))
                    (Inc (Prim (Qual id'')))) block)
   | id' == id && id'' == id = PT.ForCmd R.PosTopLevel PT.Seq interval <$> c <*> blockCmd block
   where
-    interval = (PT.Interval (start, end) PT.NoType)
+    interval = PT.Interval (start, pred end) PT.NoType
     c :: m Context
     c = buildContext b [id]
     b :: Int -> Id -> m Binding
-    b i id = return $ C.Binding 1 (unId id) C.OtherNamespace R.Incomplete (PT.ParamDecl R.PosTopLevel False PT.NoType)
---cmd (For (ForThree s (Just e) s')) =
+    b i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.ParamDecl R.PosTopLevel False PT.NoType)
+-- <var> <- <chan>
 cmd (Simple (SimpVar id' (UnOp Receive (Prim (Qual chan))))) = PT.InputCmd R.PosTopLevel
   <$> pure (PT.NameChan R.PosTopLevel (unId chan))
   <*> pure (PT.NameLvalue R.PosTopLevel (unId id'))
