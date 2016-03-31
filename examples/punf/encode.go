@@ -1,12 +1,11 @@
 package main
-import "fmt"
 
 /*procedure onehot (
 	input i : 2 bits;
 	output o : 4 bits
 ) is
 begin
-	loop	
+	loop
 		i -> then
 			case i of
 			| 0 then o <- 1
@@ -19,19 +18,23 @@ begin
 end
 */
 
-func onehot (i <-chan byte, o chan<- byte) {
+func onehot(i <-chan byte, o chan<- byte) {
 	for {
 		v := <-i
 		switch v {
-		case 0: o <- 1
-		case 1: o <- 2
-		case 2: o <- 4
-		case 4: o <- 8
+		case 0:
+			o <- 1
+		case 1:
+			o <- 2
+		case 2:
+			o <- 4
+		case 4:
+			o <- 8
 		}
 	}
 }
 
-		/*
+/*
 procedure top
 is
 	channel i : 2 bits
@@ -48,36 +51,35 @@ begin
 end
 */
 
-func top (i chan byte, o chan byte) {
-	go func (o chan byte) {
+func top(i chan byte, o chan byte) {
+	go func(o chan byte) {
 		for {
 			v := <-o
 			print(v)
 			// qualified identifiers are not supported at this time
 			//fmt.Printf("%d",v)
 		}
-	} (o)
+	}(o)
 	go func(i chan byte) {
 		for {
-			for j := 0; j < 4; j++ {
+			for j := byte(0); j < 4; j++ {
 				i <- j
 			}
 		}
-	} (i)
-	onehot(i,o)
+	}(i)
+	onehot(i, o)
 }
 
-/*
 func main() {
-	var i Inst
-	i = 0xF000000F
-	
-	fmt.Printf("%d",i.op())
-	fmt.Printf("%d",i.low())
+	/*	var i Inst
+		i = 0xF000000F
 
-    // make is not a supported construct at this time
-	var i (chan byte) = make (chan byte)
-	var o (chan byte) = make (chan byte)
-	top (i,o)
+		fmt.Printf("%d",i.op())
+		fmt.Printf("%d",i.low())
+
+	    // make is not a supported construct at this time
+		var i (chan byte) = make (chan byte)
+		var o (chan byte) = make (chan byte)
+		top (i,o)
+	*/
 }
-*/
