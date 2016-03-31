@@ -9,21 +9,22 @@ module Language.Transpile  (
   transpileFile
   ) where
 
-import           Control.Monad.Except    (MonadError, throwError, runExcept, ExceptT(..))
-import Control.Monad (zipWithM)
-import qualified Context                   as C
-import           Language.Go.Parser        (goParse)
+import           Control.Monad.Except (MonadError, throwError, runExcept, ExceptT(..), runExceptT)
+import           Control.Monad (zipWithM)
+import           Control.Monad.State (modify', MonadState, runStateT)
+import           Control.Monad.Trans (liftIO)
+import           Data.Text (unpack)
+import qualified Data.Foldable as F
+import qualified Data.Vector as U
+
+import qualified Context as C
+import           Language.Go.Parser (goParse)
+import           Language.Helpers (bind, eval, finish)
 import           Language.SimpleGo.AST
 import           Language.SimpleGo.Process (compileFile)
-import qualified ParseTree                 as PT
-import           Print                     (showTree)
-import qualified Report                    as R
-import Data.Text (unpack)
-import qualified Data.Vector as U
-import qualified Data.Foldable as F
-import Language.Helpers (bind, eval, finish)
-import Control.Monad.Trans (liftIO)
-import Control.Monad.Except (runExceptT)
+import qualified ParseTree as PT
+import           Print (showTree)
+import qualified Report as R
 
 type Binding = C.Binding PT.Decl
 type Context = C.Context PT.Decl
@@ -112,6 +113,7 @@ toBinding i = bindings
           <*> blockCmd block
 
 asType ::  MonadError String m => Type -> m PT.Type
+asType (TypeName (Id "byte")) = return $ PT.Bits 8
 asType (TypeName id') = return $ PT.NameType R.PosTopLevel (unId id')
 asType t = throwError $ "usupported type " ++ show t
 
@@ -131,7 +133,14 @@ blockCmd :: MonadError String m => Block -> m PT.Cmd
 blockCmd (Block statements) = seqCmd $ U.toList statements
 
 seqCmd :: MonadError String m => [Statement] -> m PT.Cmd
-seqCmd ss = collapsePars <$> mapM parCmd ss
+seqCmd ss = do
+  (cmd', bindings) <- runStateT (collapsePars <$> mapM parCmd ss) []
+  case bindings of
+    [] -> return cmd'
+    bs -> PT.BlockCmd R.PosTopLevel <$> c <*> pure cmd'
+      where
+        c = buildContext nameBinding bs
+
 
 caseCmds :: MonadError String m => [Case Expr] -> m ([PT.CaseCmdGuard], PT.Cmd)
 caseCmds cs = (,) <$> explicits <*> def
@@ -150,7 +159,7 @@ caseCmds cs = (,) <$> explicits <*> def
 
 data Par a = Par a | Seq a
 
-parCmd :: MonadError String m => Statement -> m (Par PT.Cmd)
+parCmd :: (MonadState [Id] m, MonadError String m) => Statement -> m (Par PT.Cmd)
 parCmd c@(Go _) = Par <$> cmd c
 parCmd c = Seq <$> cmd c
 
@@ -185,7 +194,10 @@ collapsePars = go
         s = PT.SeqCmd R.PosTopLevel (c:(map undo ss ++ [p]))
         p = collapsePars ps
 
-cmd :: forall m . MonadError String m => Statement -> m PT.Cmd
+nameBinding :: MonadError String m => Int -> Id -> m Binding
+nameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.VarDecl R.PosTopLevel PT.NoType)
+
+cmd :: forall m . (MonadState [Id] m, MonadError String m) => Statement -> m PT.Cmd
 -- for { } construct is identical to loop ... end
 cmd (For (ForWhile Nothing) block) = PT.LoopCmd R.PosTopLevel <$> blockCmd block
 -- for i := <start>; i < <end>; i++ { } is equivalent to a range
@@ -196,13 +208,11 @@ cmd (For (ForThree (SimpVar id (Prim (LitInt start)))
   where
     interval = PT.Interval (start, pred end) PT.NoType
     c :: m Context
-    c = buildContext b [id]
-    b :: Int -> Id -> m Binding
-    b i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.ParamDecl R.PosTopLevel False PT.NoType)
--- <var> <- <chan>
-cmd (Simple (SimpVar id' (UnOp Receive (Prim (Qual chan))))) = PT.InputCmd R.PosTopLevel
-  <$> pure (PT.NameChan R.PosTopLevel (unId chan))
-  <*> pure (PT.NameLvalue R.PosTopLevel (unId id'))
+    c = buildContext nameBinding [id]
+-- <var> := <- <chan>
+cmd (Simple (SimpVar id' (UnOp Receive (Prim (Qual chan))))) = do
+  modify' (`mappend` [id'])
+  return $ PT.InputCmd R.PosTopLevel (PT.NameChan R.PosTopLevel (unId chan)) (PT.NameLvalue R.PosTopLevel (unId id'))
 -- <chan> <- <expr>
 cmd (Simple (Send (Prim (Qual chan)) prim)) = PT.OutputCmd R.PosTopLevel
      <$> pure (PT.NameChan R.PosTopLevel (unId chan))
