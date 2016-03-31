@@ -16,7 +16,7 @@ type Context = C.Context PT.Decl
 
 whyToExcept :: Monad m => (a -> Why b) -> a -> ExceptT String m b
 whyToExcept f a = case c of
-  Wrong rs -> throwError $ show rs
+  Wrong rs -> throwError $ unlines $ map show rs
   _ -> return b
   where
     Why c b = f a
