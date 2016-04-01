@@ -240,4 +240,5 @@ exprCmd (Prim (Call (LitFunc sig block) es)) = PT.BlockCmd R.PosTopLevel
   <*> call
   where
     call = PT.CallCmd R.PosTopLevel (PT.NameCallable R.PosTopLevel "$") C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
+exprCmd (Prim (Call (Qual id') es)) = PT.CallCmd R.PosTopLevel (PT.NameCallable R.PosTopLevel (unId id')) C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
 exprCmd e = throwError $ "unsupported expression " ++ show e
