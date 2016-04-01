@@ -65,6 +65,7 @@ toPrim (Go.GoLiteral lit) = toLit lit
 toPrim (Go.GoQual Nothing i) = return $ S.Qual $ asId i
 toPrim (Go.GoCall _ _ True) = throwError "variadic calls are not supported"
 toPrim (Go.GoCall prim exprs _) = S.Call <$> toPrim prim <*> traverse toExpr exprs
+toPrim (Go.GoMake typ es) = S.Make <$> asType typ <*> traverse toExpr es
 toPrim s = throwError $ "unsupported primitive: \"" ++ show s ++ "\""
 
 asType :: MonadError String m => Go.GoType -> m S.Type
