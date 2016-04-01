@@ -13,7 +13,6 @@ module Language.SimpleGo.AST (
   Prim(..),
   Value(..),
   Block(..),
-  ForClause(..),
   Statement(..),
   Simp(..),
   Chan(..),
@@ -131,11 +130,6 @@ data Value = ValueExpr Expr -- 'Value/Expression'
 newtype Block = Block (U.Vector Statement)
               deriving (Eq, Read, Show)
 
-data ForClause = ForWhile (Maybe Expr)
-               | ForThree Simp (Maybe Expr) Simp
-               | ForRange [Expr] Expr Bool -- True if AssignDecl
-               deriving (Eq, Read, Show)
-
 data Statement = StmtDecl Declaration -- 'Statement/Declaration'
                | Simple Simp
                | Go Expr
@@ -148,7 +142,10 @@ data Statement = StmtDecl Declaration -- 'Statement/Declaration'
                  -- TODO rewrite this to a more static case structure, with default
                | StmtSelect  [Case Chan]
                | Switch Cond [Case Expr]
-               | For ForClause Block
+               | ForWhile (Maybe Expr) Block
+               | ForThree Simp (Maybe Expr) Simp Block
+                 -- True if AssignDecl
+               | ForRange [Expr] Expr Bool Block
                deriving (Eq, Read, Show)
 
 data Simp = Empty

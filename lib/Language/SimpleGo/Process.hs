@@ -115,7 +115,9 @@ asStatement (Go.GoStmtBreak i) = return $ return $ S.Break $ asId <$> i
 asStatement (Go.GoStmtContinue i) = return $ return $ S.Continue $ asId <$> i
 asStatement Go.GoStmtFallthrough = return $ return S.Fallthrough
 asStatement (Go.GoStmtBlock b) = return . S.StmtBlock <$> asBlock b
-asStatement (Go.GoStmtFor clause block) = return <$> (S.For <$> forClause clause <*> asBlock block)
+asStatement (Go.GoStmtFor clause block) = do
+  b <- asBlock block
+  return <$> forClause clause b
 asStatement (Go.GoStmtSwitch c cases) = return <$> (S.Switch <$> cond c <*> p)
   where
     p :: m [S.Case S.Expr]
@@ -145,9 +147,9 @@ asSimple (Go.GoSimpVar [i] [e]) = S.SimpVar (asId i) <$> toExpr e
 asSimple (Go.GoSimpVar _ _) = throwError "Simple vars only accept a single id and expr"
 asSimple s = throwError $ "unsupported simple expr" ++ show s
 
-forClause :: MonadError String m => Go.GoForClause -> m S.ForClause
-forClause (Go.GoForWhile mayExpr) = S.ForWhile <$> traverse toExpr mayExpr
-forClause (Go.GoForThree simp mayExpr simp') = S.ForThree <$> asSimple simp <*> traverse toExpr mayExpr <*> asSimple simp'
+forClause :: MonadError String m => Go.GoForClause -> S.Block -> m S.Statement
+forClause (Go.GoForWhile mayExpr) b = S.ForWhile <$> traverse toExpr mayExpr <*> pure b
+forClause (Go.GoForThree simp mayExpr simp') b = S.ForThree <$> asSimple simp <*> traverse toExpr mayExpr <*> asSimple simp' <*> pure b
 --forClause (Go.GoForRange [GoExpr] GoExpr Bool)
 
 parseUnOp :: MonadError String m => String -> m S.Unary

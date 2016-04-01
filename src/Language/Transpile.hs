@@ -198,11 +198,13 @@ nameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incompl
 
 cmd :: forall m . (MonadState [Id] m, MonadError String m) => Statement -> m PT.Cmd
 -- for { } construct is identical to loop ... end
-cmd (For (ForWhile Nothing) block) = PT.LoopCmd R.PosTopLevel <$> blockCmd block
+cmd (ForWhile Nothing block) = PT.LoopCmd R.PosTopLevel <$> blockCmd block
 -- for i := <start>; i < <end>; i++ { } is equivalent to a range
-cmd (For (ForThree (SimpVar id (Prim (LitInt start)))
-                   (Just (BinOp LessThan (Prim (Qual id')) (Prim (LitInt end))))
-                   (Inc (Prim (Qual id'')))) block)
+cmd (ForThree
+     (SimpVar id (Prim (LitInt start)))
+     (Just (BinOp LessThan (Prim (Qual id')) (Prim (LitInt end))))
+     (Inc (Prim (Qual id'')))
+     block)
   | id' == id && id'' == id = PT.ForCmd R.PosTopLevel PT.Seq interval <$> c <*> blockCmd block
   where
     interval = PT.Interval (start, pred end) PT.NoType
