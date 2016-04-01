@@ -179,18 +179,24 @@ collapsePars = go
     undo (Par a) = a
     undo (Seq a) = a
 
+
+    justCmds = filter (not . isNoCmd)
+      where
+        isNoCmd PT.NoCmd = True
+        isNoCmd _ = False
+
     go  [] = PT.NoCmd
     go [Par c] = c
     go [Seq c] = c
     go (Par c : next) = p
       where
         (ps, ss) = pars next
-        p = PT.ParCmd R.PosTopLevel (c:(map undo ps ++ [s]))
+        p = PT.ParCmd R.PosTopLevel $ justCmds (c:(map undo ps ++ [s]))
         s = collapsePars ss
     go (Seq c : next) = s
       where
         (ss, ps) = seqs next
-        s = PT.SeqCmd R.PosTopLevel (c:(map undo ss ++ [p]))
+        s = PT.SeqCmd R.PosTopLevel $ justCmds (c:(map undo ss ++ [p]))
         p = collapsePars ps
 
 nameBinding :: MonadError String m => Int -> Id -> m Binding
