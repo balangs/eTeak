@@ -150,7 +150,7 @@ forClause (Go.GoForWhile mayExpr) = S.ForWhile <$> traverse toExpr mayExpr
 forClause (Go.GoForThree simp mayExpr simp') = S.ForThree <$> asSimple simp <*> traverse toExpr mayExpr <*> asSimple simp'
 --forClause (Go.GoForRange [GoExpr] GoExpr Bool)
 
-parseUnOp :: MonadError String m => String -> m S.UnOp
+parseUnOp :: MonadError String m => String -> m S.Unary
 parseUnOp "+" = return S.Plus
 parseUnOp "-" = return S.Minus
 parseUnOp "^" = return S.Complement
@@ -160,7 +160,7 @@ parseUnOp "&" = return S.Reference
 parseUnOp "<-" = return S.Receive
 parseUnOp s = throwError $ "unsupported unary operator \"" ++ s ++ "\""
 
-parseBinOp :: MonadError String m => String -> m S.BinOp
+parseBinOp :: MonadError String m => String -> m S.Binary
 parseBinOp "||" = return S.LogicalOr
 parseBinOp "&&" = return S.LogicalAnd
 parseBinOp "==" = return S.Equal

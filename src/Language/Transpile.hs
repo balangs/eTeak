@@ -73,7 +73,7 @@ fromPrim (LitInt i) = return $ PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue
 fromPrim (Qual id') = return $ PT.NameExpr R.PosTopLevel (unId id')
 fromPrim s = throwError $ "unsupported primitive" ++ show s
 
-binOp :: MonadError String m => BinOp -> m PT.BinOp
+binOp :: MonadError String m => Binary -> m PT.BinOp
 binOp Multiply = return PT.BinMul
 binOp Quotient = return PT.BinDiv
 binOp Remainder = return PT.BinMod

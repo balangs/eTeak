@@ -80,6 +80,7 @@ library
   -- Modules exported by the library.
   exposed-modules: Language.SimpleGo.AST
                    Language.SimpleGo.Process
+                   Language.SimpleGo.AST.Operators
   -- Modules included in this library but not exported.
   -- other-modules:
 
