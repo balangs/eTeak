@@ -29,7 +29,6 @@ import qualified Language.SimpleGo.AST.Operators as Operators
 
 newtype PackageName = PackageName { unPackage :: T.Text } deriving (Eq, Show)
 
--- | Go Language source start
 data Program = Program {
       declarations :: U.Vector Declaration
       } deriving (Eq, Show, Read)
@@ -40,11 +39,10 @@ data Declaration = Const Id Type Expr
                  | Var Id Type Expr
                  | Type Id Type
                  | Func Id Signature Block
-                deriving (Eq, Read, Show)
+                 deriving (Eq, Read, Show)
 
--- Rec (= 'Receiver' = 'ReceiverType')
 data Rec = Rec Bool (Maybe Id) Type
-                deriving (Eq, Read, Show)
+         deriving (Eq, Read, Show)
 
 data Signature = Signature {
   input  :: U.Vector Param,
@@ -54,7 +52,6 @@ data Signature = Signature {
 data Param = Param Id Type
            deriving (Eq, Read, Show)
 
--- Type (= 'Type' = 'TypeLit' = 'LiteralType')
 data Type = TypeName Id
           | ArrayType Expr Type
           | Channel ChanKind Type
@@ -62,27 +59,15 @@ data Type = TypeName Id
           | MapType Type Type
           | PointerType Type
           | SliceType Type
-          | StructType [FieldType]
-          | EllipsisType Type  -- only in Literals
-          | VariadicType Type  -- only in Funcs
+          | EllipsisType Type -- only in Literals
+          | VariadicType Type -- only in Funcs
           deriving (Eq, Read, Show)
 
 
-data ChanKind = Input  -- <-chan
-              | Output  -- chan<-
+data ChanKind = Input         -- <-chan
+              | Output        -- chan<-
               | Bidirectional -- chan
               deriving (Eq, Read, Show)
-
--- FieldType
-data FieldType = FieldType {
-      getFieldTag  :: Maybe String,
-      getFieldId   :: [Id],
-      getFieldType :: Type }
-                 | FieldAnon {
-      getFieldTag  :: Maybe String,
-      getFieldPtr  :: Bool,
-      getFieldType :: Type } -- MUST be typename
-                deriving (Eq, Read, Show)
 
 data Expr = Zero
           | Prim Prim
@@ -90,28 +75,26 @@ data Expr = Zero
           | BinOp Operators.Binary Expr Expr
           deriving (Eq, Read, Show)
 
--- PrimExpr (= 'PrimaryExpr')
 data Prim = LitInt  Integer
           | LitReal Float
           | LitImag Float
           | LitChar Char
           | LitStr  String
           | LitFunc Signature Block
-          | Qual Id -- 'PrimaryExpr/Operand/QualifiedIdent'
-          | Method Rec Id     -- 'PrimaryExpr/Operand/MethodExpr'
-          | Paren Expr          -- 'PrimaryExpr/Operand/MethodExpr'
-          | Cast Type Expr    -- 'PrimaryExpr/Conversion'
-          | New  Type           -- 'PrimaryExpr/BuiltinCall/new'
-          | Make Type [Expr]  -- 'PrimaryExpr/BuiltinCall/make'
---          | BI Id Type [Expr]  -- 'PrimaryExpr/BuiltinCall'
-          | Select Prim Id    -- 'PrimaryExpr/Selector'
-          | Index Prim Expr   -- 'PrimaryExpr/Index'
+          | Qual Id                              -- 'PrimaryExpr/Operand/QualifiedIdent'
+          | Method Rec Id                        -- 'PrimaryExpr/Operand/MethodExpr'
+          | Paren Expr                           -- 'PrimaryExpr/Operand/MethodExpr'
+          | Cast Type Expr                       -- 'PrimaryExpr/Conversion'
+          | New  Type                            -- 'PrimaryExpr/BuiltinCall/new'
+          | Make Type [Expr]                     -- 'PrimaryExpr/BuiltinCall/make'
+                                                 --          | BI Id Type [Expr]  -- 'PrimaryExpr/BuiltinCall'
+          | Select Prim Id                       -- 'PrimaryExpr/Selector'
+          | Index Prim Expr                      -- 'PrimaryExpr/Index'
           | Slice Prim (Maybe Expr) (Maybe Expr) -- 'PrimaryExpr/Slice'
-          | TA    Prim Type   -- 'PrimaryExpr/TypeAssertion'
+          | TA    Prim Type                      -- 'PrimaryExpr/TypeAssertion'
           | Call  Prim [Expr]
-              deriving (Eq, Read, Show)
+          deriving (Eq, Read, Show)
 
--- For defining record literals, etc.
 data Comp = Comp [Element]
           deriving (Eq, Read, Show)
 
