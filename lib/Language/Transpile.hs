@@ -36,7 +36,7 @@ transpileFile f = do
     Right a -> return a
   where
     write s t = liftIO $ do
-      print $ "running " ++ s
+      putStrLn $ "running " ++ s
       writeFile (f ++ ".tree-" ++ s) $ showTree t
     go = do
       goSource <- ExceptT $ compileFile f
