@@ -1,21 +1,24 @@
 -- |
 
 module Language.Helpers
-       (bind, eval, finish, teak, writeTeak)
+       (bind, eval, finish, teak, writeTeak, writeGates)
        where
 
 import qualified Bind                   as B
 import qualified Context                as C
 import           Control.Monad.Except   (ExceptT, throwError)
-import           Control.Monad.IO.Class (MonadIO)
-import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Eval                   as E
 import qualified Finish                 as F
-import           NetParts               (Part, writeNetworkFile)
+import           Gen                    (TechMapping, genMakeGatesFile)
+import           NetParts               (NetworkIF, Part, writeNetworkFile)
 import qualified Network                as Net
 import qualified ParseTree              as PT
-import           Report                 (Completeness (..), Why (..))
+import           Report                 (Completeness (..), Why (..), runWhyT)
 import qualified Teak
+import           ToolOptions            (ToolOptions, defaultToolOptions,
+                                         optGenPartToGate, optTech,
+                                         teakFindTechMapping)
 
 type Context = C.Context PT.Decl
 
@@ -40,4 +43,16 @@ teak :: Monad m => [Teak.TeakOption] -> Context -> ExceptT String m [Part Net.Ne
 teak = whyToExcept . Teak.teak
 
 writeTeak :: MonadIO m => String -> [Part Net.Network] -> ExceptT String m ()
-writeTeak f p = liftIO $ writeNetworkFile True "go-teak" f p
+writeTeak f p = liftIO $ writeNetworkFile False "go-teak" f p
+
+writeGates :: MonadIO m => String -> [Part Net.Network] -> ExceptT String m ()
+writeGates f parts = do
+  tech <- techMapping opts (optTech opts)
+  liftIO $ genMakeGatesFile True [] f tech (f ++ ".v") parts
+  where
+    opts :: ToolOptions Net.Network
+    opts = defaultToolOptions
+    techMapping :: (MonadIO m) => ToolOptions Net.Network -> String -> ExceptT String m TechMapping
+    techMapping a b = do
+      w <- liftIO $ runWhyT $ teakFindTechMapping a b
+      whyToExcept id w

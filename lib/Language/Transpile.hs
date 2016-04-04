@@ -18,7 +18,7 @@ import qualified Data.Foldable as F
 import qualified Data.Vector as U
 
 import qualified Context as C
-import           Language.Helpers (bind, eval, finish, teak, writeTeak)
+import           Language.Helpers (bind, eval, finish, teak, writeTeak, writeGates)
 import           Language.SimpleGo.AST
 import           Language.SimpleGo.Process (compileFile)
 import qualified ParseTree as PT
@@ -50,6 +50,7 @@ transpileFile f = do
       write "finish" finished
       teak' <- teak [] finished
       writeTeak (f ++ ".teak") teak'
+      writeGates f teak'
 
 
 transpile :: MonadError String m => Program -> m Context
