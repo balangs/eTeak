@@ -51,17 +51,30 @@ transpileFile f = do
 
 
 transpile :: MonadError String m => Program -> m Context
-transpile = buildContext toBinding . declarations
-
-buildContext :: forall m f a. (MonadError String m, Foldable f) =>
-              (Int -> a -> m Binding) -> f a -> m Context
-buildContext mb as = C.bindingsToContext1 <$> bindings
+transpile program = C.bindingsToContext1 <$> all
   where
-    bindings :: m [Binding]
-    bindings = zipWithM mb [0..] $ F.toList as
+    all = do
+      d <- declared
+      return $ builtins ++ d
+    declared = (buildBindings toBinding . declarations) program
+    builtins :: [C.Binding PT.Decl]
+    builtins = [
+      (C.Binding 4 "token" C.TypeNamespace R.Incomplete (PT.TypeDecl R.PosTopLevel (PT.AliasType R.PosTopLevel (PT.NumType R.PosTopLevel (PT.ValueExpr R.PosTopLevel (PT.Bits 1) (PT.IntValue 0)) False)))),
+      (C.Binding 6 "bit" C.TypeNamespace R.Incomplete (PT.TypeDecl R.PosTopLevel (PT.AliasType R.PosTopLevel (PT.NumType R.PosTopLevel (PT.ValueExpr R.PosTopLevel (PT.Bits 1) (PT.IntValue 1)) False)))),
+      (C.Binding 7 "String" C.TypeNamespace R.Incomplete (PT.TypeDecl R.PosTopLevel (PT.AliasType R.PosTopLevel (PT.BuiltinType "String"))))
+      ]
+
+
+buildBindings :: (MonadError String m, Foldable f) =>
+                (Int -> a -> m Binding) -> f a -> m [Binding]
+buildBindings mb as = zipWithM mb [0..] $ F.toList as
+
+buildContext :: (MonadError String m, Foldable f) =>
+              (Int -> a -> m Binding) -> f a -> m Context
+buildContext mb as = C.bindingsToContext1 <$> buildBindings mb as
 
 byte :: PT.Type
-byte = PT.NumType R.PosTopLevel (PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue 8)) False
+byte = PT.NumType R.PosTopLevel (PT.ValueExpr R.PosTopLevel (PT.Bits 4) (PT.IntValue 8)) False
 
 toExpr :: MonadError String m => Expr -> m PT.Expr
 toExpr Zero = throwError "zero values are not supported"
