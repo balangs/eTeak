@@ -35,7 +35,9 @@ transpileFile f = do
     Left s -> putStrLn s
     Right a -> return a
   where
-    write s t = liftIO $ writeFile (f ++ ".tree-" ++ s) $ showTree t
+    write s t = liftIO $ do
+      print $ "running " ++ s
+      writeFile (f ++ ".tree-" ++ s) $ showTree t
     go = do
       goSource <- ExceptT $ compileFile f
       balsa <- transpile goSource
