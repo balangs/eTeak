@@ -41,7 +41,7 @@ is
 	channel o : 4 bits
 begin
 	loop
-		o -> then print o end
+ 		o -> then print o end
 	end ||
 	loop
 		for ; j in 0..3 then i <- j end
@@ -52,7 +52,7 @@ end
 */
 
 func top(i chan byte, o chan byte) {
-	go func(o chan byte) {
+	go func(o <-chan byte) {
 		for {
 			v := <-o
 			print(v)
@@ -60,9 +60,9 @@ func top(i chan byte, o chan byte) {
 			//fmt.Printf("%d",v)
 		}
 	}(o)
-	go func(i chan byte) {
+	go func(i chan<- byte) {
 		for {
-			for j := byte(0); j < 4; j++ {
+			for j := 0; j < 4; j++ {
 				i <- j
 			}
 		}
@@ -72,14 +72,14 @@ func top(i chan byte, o chan byte) {
 
 func main() {
 	/*	var i Inst
-		i = 0xF000000F
+			i = 0xF000000F
 
-		fmt.Printf("%d",i.op())
-		fmt.Printf("%d",i.low())
+			fmt.Printf("%d",i.op())
+			fmt.Printf("%d",i.low())
 
-	    // make is not a supported construct at this time
-		var i (chan byte) = make (chan byte)
-		var o (chan byte) = make (chan byte)
-		top (i,o)
+		    // make is not a supported construct at this time
+			var i (chan byte) = make (chan byte)
+			var o (chan byte) = make (chan byte)
+			top (i,o)
 	*/
 }
