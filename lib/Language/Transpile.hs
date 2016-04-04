@@ -223,6 +223,10 @@ collapsePars = go
 nameBinding :: MonadError String m => Int -> Id -> m Binding
 nameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.VarDecl R.PosTopLevel byte)
 
+paramNameBinding :: MonadError String m => Int -> Id -> m Binding
+paramNameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.ParamDecl R.PosTopLevel False byte)
+
+
 cmd :: forall m . (MonadState [Id] m, MonadError String m) => Statement -> m PT.Cmd
 -- for { } construct is identical to loop ... end
 cmd (ForWhile Nothing block) = PT.LoopCmd R.PosTopLevel <$> blockCmd block
@@ -236,7 +240,7 @@ cmd (ForThree
   where
     interval = PT.Interval (start, pred end) byte
     c :: m Context
-    c = buildContext nameBinding [id]
+    c = buildContext paramNameBinding [id]
 -- <var> := <- <chan>
 cmd (Simple (SimpVar id' (UnOp Receive (Prim (Qual chan))))) = do
   modify' (`mappend` [id'])
