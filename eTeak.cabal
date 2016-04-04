@@ -183,7 +183,7 @@ executable eTeak
 
 executable go-teak
   build-depends:       base
-                     , language-go >= 0.9 && < 0.10
+                     , eTeak
   hs-source-dirs:      go-teak
   main-is:             Main.hs
   default-language:    Haskell2010
