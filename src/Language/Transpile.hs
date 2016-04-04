@@ -60,17 +60,20 @@ buildContext mb as = C.bindingsToContext1 <$> bindings
     bindings :: m [Binding]
     bindings = zipWithM mb [0..] $ F.toList as
 
+byte :: PT.Type
+byte = PT.NumType R.PosTopLevel (PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue 8)) False
+
 toExpr :: MonadError String m => Expr -> m PT.Expr
 toExpr Zero = throwError "zero values are not supported"
 toExpr (Prim prim) = fromPrim prim
-toExpr (UnOp Plus e) = PT.BinExpr R.PosTopLevel PT.NoType PT.BinAdd (PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue 0)) <$> toExpr e
-toExpr (UnOp Minus e) = PT.BinExpr R.PosTopLevel PT.NoType PT.BinSub (PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue 0)) <$> toExpr e
+toExpr (UnOp Plus e) = PT.BinExpr R.PosTopLevel PT.NoType PT.BinAdd (PT.ValueExpr R.PosTopLevel byte (PT.IntValue 0)) <$> toExpr e
+toExpr (UnOp Minus e) = PT.BinExpr R.PosTopLevel PT.NoType PT.BinSub (PT.ValueExpr R.PosTopLevel byte (PT.IntValue 0)) <$> toExpr e
 toExpr (UnOp Not e) = PT.UnExpr R.PosTopLevel PT.NoType PT.UnNot <$> toExpr e
 toExpr (UnOp o _) = throwError $ "operator " ++ show o ++ " is not supported"
 toExpr (BinOp op e e') = PT.BinExpr R.PosTopLevel PT.NoType <$> binOp op <*> toExpr e <*> toExpr e'
 
 fromPrim :: MonadError String m => Prim -> m PT.Expr
-fromPrim (LitInt i) = return $ PT.ValueExpr R.PosTopLevel PT.NoType (PT.IntValue i)
+fromPrim (LitInt i) = return $ PT.ValueExpr R.PosTopLevel byte (PT.IntValue i)
 -- TODO maybe fix this parser? Should it be qual here?
 fromPrim (Qual id') = return $ PT.NameExpr R.PosTopLevel (unId id')
 fromPrim s = throwError $ "unsupported primitive" ++ show s
@@ -114,7 +117,7 @@ toBinding i = bindings
           <*> blockCmd block
 
 asType ::  MonadError String m => Type -> m PT.Type
-asType (TypeName (Id "byte")) = return $ PT.Bits 8
+asType (TypeName (Id "byte")) = return byte
 asType (TypeName id') = return $ PT.NameType R.PosTopLevel (unId id')
 asType t = throwError $ "usupported type " ++ show t
 
@@ -202,7 +205,7 @@ collapsePars = go
         p = collapsePars ps
 
 nameBinding :: MonadError String m => Int -> Id -> m Binding
-nameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.VarDecl R.PosTopLevel PT.NoType)
+nameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.VarDecl R.PosTopLevel byte)
 
 cmd :: forall m . (MonadState [Id] m, MonadError String m) => Statement -> m PT.Cmd
 -- for { } construct is identical to loop ... end
@@ -215,7 +218,7 @@ cmd (ForThree
      block)
   | id' == id && id'' == id = PT.ForCmd R.PosTopLevel PT.Seq interval <$> c <*> blockCmd block
   where
-    interval = PT.Interval (start, pred end) PT.NoType
+    interval = PT.Interval (start, pred end) byte
     c :: m Context
     c = buildContext nameBinding [id]
 -- <var> := <- <chan>
