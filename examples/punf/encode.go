@@ -51,7 +51,7 @@ begin
 end
 */
 
-func top(i chan byte, o chan byte) {
+func top(i_out <-chan byte, i_in chan<- byte, o_out <-chan byte, o_in chan<- byte) {
 	go func(o <-chan byte) {
 		for {
 			v := <-o
@@ -59,15 +59,15 @@ func top(i chan byte, o chan byte) {
 			// qualified identifiers are not supported at this time
 			//fmt.Printf("%d",v)
 		}
-	}(o)
+	}(o_out)
 	go func(i chan<- byte) {
 		for {
 			for j := 0; j < 4; j++ {
 				i <- j
 			}
 		}
-	}(i)
-	onehot(i, o)
+	}(i_in)
+	onehot(i_out, o_in)
 }
 
 func main() {
