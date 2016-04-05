@@ -100,7 +100,7 @@ library
                    Language.SimpleGo.AST
                    Language.SimpleGo.AST.Operators
                    Language.SimpleGo.Process
-                   Language.Transpile
+                   Language.SimpleGo.Balsa
                    Latch
                    Layout
                    Lexer

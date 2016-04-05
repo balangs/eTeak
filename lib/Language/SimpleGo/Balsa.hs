@@ -4,9 +4,9 @@
 
 -- |
 
-module Language.Transpile  (
-  transpile,
-  transpileFile
+module Language.SimpleGo.Balsa  (
+  compile,
+  synthesizeFile
   ) where
 
 import           Control.Monad.Except (MonadError, throwError, ExceptT(..), runExceptT)
@@ -28,8 +28,8 @@ import qualified Report as R
 type Binding = C.Binding PT.Decl
 type Context = C.Context PT.Decl
 
-transpileFile :: FilePath -> IO ()
-transpileFile f = do
+synthesizeFile :: FilePath -> IO ()
+synthesizeFile f = do
   e <- runExceptT go
   case e of
     Left s -> putStrLn s
@@ -40,7 +40,7 @@ transpileFile f = do
       writeFile (f ++ ".tree-" ++ s) $ showTree t
     go = do
       goSource <- ExceptT $ compileFile f
-      balsa <- transpile goSource
+      balsa <- compile goSource
       write "parse" balsa
       bound <- bind balsa
       write "bind" bound
@@ -53,8 +53,8 @@ transpileFile f = do
       writeGates f teak'
 
 
-transpile :: MonadError String m => Program -> m Context
-transpile program = C.bindingsToContext1 <$> all
+compile :: MonadError String m => Program -> m Context
+compile program = C.bindingsToContext1 <$> all
   where
     all = do
       d <- declared
