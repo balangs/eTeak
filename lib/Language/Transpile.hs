@@ -138,7 +138,6 @@ asType (TypeName id') = return $ PT.NameType R.PosTopLevel (unId id')
 asType t = throwError $ "usupported type " ++ show t
 
 sigTypeDecl :: MonadError String m => Type -> m PT.Decl
-sigTypeDecl (Channel Bidirectional typ) = PT.ChanDecl R.PosTopLevel <$> asType typ
 sigTypeDecl (Channel Input typ) = PT.PortDecl R.PosTopLevel PT.Input <$> asType typ
 sigTypeDecl (Channel Output typ) = PT.PortDecl R.PosTopLevel PT.Output <$> asType typ
 sigTypeDecl t = throwError $ "unsupported signature type " ++ show t
