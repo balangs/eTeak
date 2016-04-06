@@ -51,7 +51,9 @@ begin
 end
 */
 
-func top(i_out <-chan byte, i_in chan<- byte, o_out <-chan byte, o_in chan<- byte) {
+func top() {
+	var i (chan byte) = make(chan byte)
+	var o (chan byte) = make(chan byte)
 	go func(o <-chan byte) {
 		for {
 			v := <-o
@@ -59,27 +61,13 @@ func top(i_out <-chan byte, i_in chan<- byte, o_out <-chan byte, o_in chan<- byt
 			// qualified identifiers are not supported at this time
 			//fmt.Printf("%d",v)
 		}
-	}(o_out)
+	}(o)
 	go func(i chan<- byte) {
 		for {
 			for j := 0; j < 4; j++ {
 				i <- j
 			}
 		}
-	}(i_in)
-	onehot(i_out, o_in)
-}
-
-func main() {
-	/*	var i Inst
-			i = 0xF000000F
-
-			fmt.Printf("%d",i.op())
-			fmt.Printf("%d",i.low())
-
-		    // make is not a supported construct at this time
-			var i (chan byte) = make (chan byte)
-			var o (chan byte) = make (chan byte)
-			top (i,o)
-	*/
+	}(i)
+	onehot(i, o)
 }
