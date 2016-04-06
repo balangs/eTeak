@@ -119,6 +119,8 @@ toBinding i = bindings
   where
     namespace = C.OtherNamespace
     bindings (Const id' _ expr) = C.Binding i (unId id') namespace R.Incomplete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
+    bindings (Var id' typ Zero) = C.Binding i (unId id') namespace R.Incomplete . PT.VarDecl R.PosTopLevel <$> asType typ
+    bindings (Var id' _ (Prim (Make (Channel Bidirectional typ) []))) = C.Binding i (unId id') namespace R.Incomplete . PT.ChanDecl R.PosTopLevel <$> asType typ
     bindings (Var id' _ expr) = C.Binding i (unId id') namespace R.Incomplete . PT.ExprDecl R.PosTopLevel <$> toExpr expr
     bindings (Type _ _) = throwError "type declarations are not supported"
     bindings (Func id' sig block) = C.Binding i (unId id') C.ProcNamespace R.Incomplete <$> decl
@@ -158,7 +160,7 @@ seqCmd ss = do
     [] -> return cmd'
     bs -> PT.BlockCmd R.PosTopLevel <$> c <*> pure cmd'
       where
-        c = buildContext nameBinding bs
+        c = buildContext toBinding bs
 
 
 caseCmds :: MonadError String m => [Case Expr] -> m ([PT.CaseCmdGuard], PT.Cmd)
@@ -178,7 +180,7 @@ caseCmds cs = (,) <$> explicits <*> def
 
 data Par a = Par a | Seq a
 
-parCmd :: (MonadState [Id] m, MonadError String m) => Statement -> m (Par PT.Cmd)
+parCmd :: (MonadState [Declaration] m, MonadError String m) => Statement -> m (Par PT.Cmd)
 parCmd c@(Go _) = Par <$> cmd c
 parCmd c = Seq <$> cmd c
 
@@ -219,14 +221,13 @@ collapsePars = go
         s = PT.SeqCmd R.PosTopLevel $ justCmds (c:(map undo ss ++ [p]))
         p = collapsePars ps
 
-nameBinding :: MonadError String m => Int -> Id -> m Binding
-nameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.VarDecl R.PosTopLevel byte)
-
 paramNameBinding :: MonadError String m => Int -> Id -> m Binding
 paramNameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.ParamDecl R.PosTopLevel False byte)
 
+declare :: (MonadState [a] m) => a -> m ()
+declare d = modify' (`mappend` [d])
 
-cmd :: forall m . (MonadState [Id] m, MonadError String m) => Statement -> m PT.Cmd
+cmd :: forall m . (MonadState [Declaration] m, MonadError String m) => Statement -> m PT.Cmd
 -- for { } construct is identical to loop ... end
 cmd (ForWhile Nothing block) = PT.LoopCmd R.PosTopLevel <$> blockCmd block
 -- for i := <start>; i < <end>; i++ { } is equivalent to a range
@@ -242,7 +243,8 @@ cmd (ForThree
     c = buildContext paramNameBinding [id]
 -- <var> := <- <chan>
 cmd (Simple (SimpVar id' (UnOp Receive (Prim (Qual chan))))) = do
-  modify' (`mappend` [id'])
+  -- need actual type checking here :/
+  declare $ Var id' (TypeName (Id "byte")) Zero
   return $ PT.InputCmd R.PosTopLevel (PT.NameChan R.PosTopLevel (unId chan)) (PT.NameLvalue R.PosTopLevel (unId id'))
 -- <chan> <- <expr>
 cmd (Simple (Send (Prim (Qual chan)) prim)) = PT.OutputCmd R.PosTopLevel
@@ -256,6 +258,9 @@ cmd (Simple (SimpleExpr (Prim (Call (Qual (Id "print")) es)))) = PT.PrintCmd R.P
 cmd (Simple (SimpleExpr (Prim (Call (Qual id') es)))) = (c . map PT.ExprProcActual)  <$> mapM toExpr es
   where
     c = PT.CallCmd R.PosTopLevel (PT.NameCallable R.PosTopLevel (unId id')) C.EmptyContext
+cmd (StmtDecl decl) = do
+  declare decl
+  return PT.NoCmd
 cmd s = throwError $ "unsupported statement " ++ show s
 
 exprCmd :: MonadError String m => Expr -> m PT.Cmd
