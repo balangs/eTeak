@@ -169,7 +169,7 @@ module top;
 		@(posedge &(oin_0r0 | oin_0r1));
 		#`HS_PERIOD;
 		$display ("oin");
-		$fwrite(out_file,"out: %h\n",res_r1, );
+		$fwrite(out_file,"out: %h\n",oin_0r1);
 		oin_0a = 1;
 		@(negedge &(oin_0r0 | oin_0r1));
 		#`HS_PERIOD;
@@ -193,11 +193,9 @@ module top;
 		`ifdef HAS_GO
 		.go_0r(go_r), .go_0a(go_a),
 		`endif
-		`ifdef HAS_DONE
-		.done_0r(done_r), .done_0a(done_a),
-		`endif
+
           	`ifdef HAS_INOUT
- 	  	.iout_0r0(iout_0r0), .iout_0r0(iout_0r1), .iout_0a(iout_0a),
+ 	  	.iout_0r0(iout_0r0), .iout_0r1(iout_0r1), .iout_0a(iout_0a),
 	  	.iin_0r0(iin_0r0), .iin_0r1(iin_0r1), .iin_0a(iin_0a),
          	.oout_0r0(oout_0r0), .oout_0r1(oout_0r1), .oout_0a(oout_0a),
           	.oin_0r0(oin_0r0), .oin_0r1(oin_0r1), .oin_0a(oin_0a),
