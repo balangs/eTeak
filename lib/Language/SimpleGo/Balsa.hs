@@ -66,7 +66,9 @@ compile program = C.bindingsToContext1 <$> all
     builtins = [
       (C.Binding 4 "token" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos (PT.NumType pos (PT.ValueExpr pos (PT.Bits 1) (PT.IntValue 0)) False)))),
       (C.Binding 6 "bit" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos (PT.NumType pos (PT.ValueExpr pos (PT.Bits 1) (PT.IntValue 1)) False)))),
-      (C.Binding 7 "String" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos (PT.BuiltinType "String"))))
+      (C.Binding 7 "String" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos (PT.BuiltinType "String")))),
+      (C.Binding 8 "byte" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos byte))),
+      (C.Binding 8 "bool" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos bool)))
       ]
 
 
@@ -151,8 +153,6 @@ toBinding i = bindings
           <*> blockCmd block
 
 asType ::  MonadError String m => Type -> m PT.Type
-asType (TypeName (Id "byte")) = return byte
-asType (TypeName (Id "bool")) = return bool
 asType (TypeName id') = return $ PT.NameType pos (unId id')
 asType t = throwError $ "usupported type " ++ show t
 
