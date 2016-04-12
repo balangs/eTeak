@@ -20,6 +20,7 @@ import qualified Data.Vector as U
 import qualified Context as C
 import           Language.Helpers (bind, eval, finish, teak, writeTeak, writeGates)
 import           Language.SimpleGo.AST
+import qualified Language.SimpleGo.AST.Operators as Operators
 import qualified Language.SimpleGo.Balsa.Builtins as Builtins
 import Language.SimpleGo.Balsa.Builtins (byte, bool, string)
 import Language.SimpleGo.Balsa.Declarations (Binding, Context, typeBinding, buildBindings, buildContext)
@@ -86,6 +87,10 @@ fromPrim (LitInt i) = return $ PT.ValueExpr pos byte (PT.IntValue i)
 fromPrim (LitStr s) = return $ PT.ValueExpr pos string (PT.StringValue s)
 -- TODO maybe fix this parser? Should it be qual here?
 fromPrim (Qual id') = return $ PT.NameExpr pos (unId id')
+-- special case type coercions
+fromPrim c@(Call (Qual id') [arg]) = case lookup (unId id') Builtins.types of
+  Just typ -> PT.CastExpr pos typ <$> toExpr arg
+  Nothing -> throwError $ "unupported call expression " ++ show c
 fromPrim s = throwError $ "unsupported primitive" ++ show s
 
 binOp :: MonadError String m => Binary -> m PT.BinOp
@@ -226,7 +231,11 @@ declare d = modify' (`mappend` [d])
 
 cmd :: forall m . (MonadState [Declaration] m, MonadError String m) => Statement -> m PT.Cmd
 -- for { } construct is identical to loop ... end
+cmd (Go p) = exprCmd p
+cmd (Simple s) = simpleCmd s
+cmd (StmtBlock block) = blockCmd block
 cmd (ForWhile Nothing block) = PT.LoopCmd pos <$> blockCmd block
+cmd (ForWhile (Just e) block) = PT.WhileCmd pos PT.NoCmd <$> toExpr e <*> blockCmd block
 -- for i := <start>; i < <end>; i++ { } is equivalent to a range
 cmd (ForThree
      (SimpVar id (Prim (LitInt start)))
@@ -242,28 +251,12 @@ cmd (If (Cond Nothing (Just expr)) block s) = PT.CaseCmdE pos <$> toExpr expr <*
   where
     s' = maybe (return PT.NoCmd) cmd s
     trueBlock = PT.CaseCmdGuard pos [PT.ExprCaseMatch pos (PT.ValueExpr pos bool true)] <$> blockCmd block
-
--- <var> := <- <chan>
-cmd (Simple (SimpVar id' (UnOp Receive (Prim (Qual chan))))) = do
-  -- need actual type checking here :/
-  declare $ Var id' (TypeName (Id "byte")) Zero
-  return $ PT.InputCmd pos (PT.NameChan pos (unId chan)) (PT.NameLvalue pos (unId id'))
--- <chan> <- <expr>
-cmd (Simple (Send (Prim (Qual chan)) prim)) = PT.OutputCmd pos
-     <$> pure (PT.NameChan pos (unId chan))
-     <*> toExpr prim
 cmd (Switch (Cond Nothing (Just expr)) cases) = do
   (cs, def) <- caseCmds cases
   PT.CaseCmdE pos <$> toExpr expr <*> pure cs <*> pure def
-cmd (Go p) = exprCmd p
-cmd (Simple (SimpleExpr (Prim (Call (Qual (Id "print")) es)))) = PT.PrintCmd pos <$> mapM toExpr es
-cmd (Simple (SimpleExpr (Prim (Call (Qual id') es)))) = (c . map PT.ExprProcActual)  <$> mapM toExpr es
-  where
-    c = PT.CallCmd pos (PT.NameCallable pos (unId id')) C.EmptyContext
 cmd (StmtDecl decl) = do
   declare decl
   return PT.NoCmd
-cmd (StmtBlock block) = blockCmd block
 cmd (StmtSelect cases) = PT.SelectCmd pos False <$> traverse chanCase cases
   where
     chanCase (Case as stmnts) = PT.ChanGuard pos <$> traverse chanGuard as <*> pure C.EmptyContext <*> seqCmd stmnts
@@ -273,11 +266,28 @@ cmd (StmtSelect cases) = PT.SelectCmd pos False <$> traverse chanCase cases
     chanCase (Default _) = throwError "default select not supported"
 cmd s = throwError $ "unsupported statement " ++ show s
 
+simpleCmd :: forall m . (MonadState [Declaration] m, MonadError String m) =>
+            Simp -> m PT.Cmd
+simpleCmd Empty = return PT.NoCmd
+simpleCmd (Inc e@(Prim (Qual id'))) = simpleCmd $ SimpVar id' $ BinOp Operators.Add e (Prim (LitInt 1))
+simpleCmd (Dec e@(Prim (Qual id'))) = simpleCmd $ SimpVar id' $ BinOp Operators.Subtract e (Prim (LitInt 1))
+simpleCmd (Send (Prim (Qual chan)) prim) = PT.OutputCmd pos
+  <$> pure (PT.NameChan pos (unId chan))
+  <*> toExpr prim
+simpleCmd (SimpVar id' (UnOp Receive (Prim (Qual chan)))) = do
+  -- need actual type checking here :/
+  declare $ Var id' (TypeName (Id "byte")) Zero
+  return $ PT.InputCmd pos (PT.NameChan pos (unId chan)) (PT.NameLvalue pos (unId id'))
+simpleCmd (SimpleExpr e) = exprCmd e
+simpleCmd s = throwError $ "unsupported simple expression " ++ show s
+
 exprCmd :: MonadError String m => Expr -> m PT.Cmd
 exprCmd (Prim (Call (LitFunc sig block) es)) = PT.BlockCmd pos
   <$> buildContext toBinding [Func (Id "$") sig block]
   <*> call
   where
     call = PT.CallCmd pos (PT.NameCallable pos "$") C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
+exprCmd (Prim (Call (Qual (Id "print")) es)) = PT.PrintCmd pos <$> mapM toExpr es
+exprCmd (Prim (Call (Qual (Id "println")) es)) = PT.PrintCmd pos <$> mapM toExpr es
 exprCmd (Prim (Call (Qual id') es)) = PT.CallCmd pos (PT.NameCallable pos (unId id')) C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
 exprCmd e = throwError $ "unsupported expression " ++ show e
