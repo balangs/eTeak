@@ -21,8 +21,9 @@ type Context = C.Context PT.Decl
 pos :: R.Pos
 pos = R.NoPos
 
-typeBinding :: Int -> String -> PT.Type -> C.Binding PT.Decl
+typeBinding :: Int -> String -> PT.Type -> Binding
 typeBinding i name typ' = C.Binding i name C.TypeNamespace R.Incomplete $ PT.TypeDecl pos $ PT.AliasType pos typ'
+
 
 buildBindings :: (MonadError String m, Foldable f) =>
                 (Int -> a -> m Binding) -> f a -> m [Binding]
