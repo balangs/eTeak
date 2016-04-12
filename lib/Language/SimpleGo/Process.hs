@@ -123,11 +123,26 @@ asStatement (Go.GoStmtSwitch c cases) = return <$> (S.Switch <$> cond c <*> p)
   where
     p :: m [S.Case S.Expr]
     p = traverse (asCase toExpr) cases
---asStatement (Go.GoStmtIf cond GoBlock (Maybe GoStmt)) =
---asStatement (Go.GoStmtSelect            [GoCase GoChan]) =
+asStatement (Go.GoStmtIf c block stmt') = return <$> (S.If <$> cond c <*> asBlock block <*> traverse stmt stmt')
+asStatement (Go.GoStmtSelect cases) =return <$> S.StmtSelect <$> traverse (asCase asChan) cases
 --asStatement (Go.GoStmtTypeSwitch GoCond [GoCase GoType] (Maybe GoId)) =
 --asStatement (Go.GoStmtDefer GoExpr) =
 asStatement s = throwError $ "unsupported statement: " ++ show s
+
+asChan :: forall m . MonadError String m => Go.GoChan -> m S.Chan
+asChan (Go.GoChanRecv m e') = S.ChanRecv <$> traverse f m  <*> toExpr e'
+  where
+    f (e, may, Go.GoOp op) = (,,) <$> toExpr e <*> traverse toExpr may <*> parseUnOp op
+asChan (Go.GoChanSend e e') = S.ChanSend <$> toExpr e <*> toExpr e'
+
+-- Wrap a statement in a block if there are multiple of them
+stmt :: forall m . MonadError String m => Go.GoStmt -> m S.Statement
+stmt s = do
+  statements <- asStatement s
+  case statements of
+    [a] -> return a
+    as -> return $ S.StmtBlock $ S.Block $ U.fromList as
+
 
 cond :: MonadError String m => Go.GoCond -> m S.Cond
 cond (Go.GoCond maySimp mayExpr) = S.Cond <$> traverse asSimple maySimp
