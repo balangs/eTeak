@@ -20,13 +20,12 @@ import qualified Data.Vector as U
 import qualified Context as C
 import           Language.Helpers (bind, eval, finish, teak, writeTeak, writeGates)
 import           Language.SimpleGo.AST
+import qualified Language.SimpleGo.Balsa.Builtins as Builtins
+import Language.SimpleGo.Balsa.Declarations (Binding, Context, typeBinding, buildBindings, buildContext)
 import           Language.SimpleGo.Process (compileFile)
 import qualified ParseTree as PT
 import           Print (showTree)
 import qualified Report as R
-
-type Binding = C.Binding PT.Decl
-type Context = C.Context PT.Decl
 
 pos = R.PosTopLevel
 
@@ -56,35 +55,20 @@ synthesizeFile f = do
 
 
 compile :: MonadError String m => Program -> m Context
-compile program = C.bindingsToContext1 <$> all
+compile program = C.bindingsToContext1 <$> buildBindings toBinding' allBindings
   where
-    all = do
-      d <- declared
-      return $ builtins ++ d
-    declared = (buildBindings toBinding . declarations) program
-    builtins :: [C.Binding PT.Decl]
-    builtins = [
-      (C.Binding 4 "token" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos (PT.NumType pos (PT.ValueExpr pos (PT.Bits 1) (PT.IntValue 0)) False)))),
-      (C.Binding 6 "bit" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos (PT.NumType pos (PT.ValueExpr pos (PT.Bits 1) (PT.IntValue 1)) False)))),
-      (C.Binding 7 "String" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos (PT.BuiltinType "String")))),
-      (C.Binding 8 "byte" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos byte))),
-      (C.Binding 8 "bool" C.TypeNamespace R.Incomplete (PT.TypeDecl pos (PT.AliasType pos bool)))
-      ]
-
-
-buildBindings :: (MonadError String m, Foldable f) =>
-                (Int -> a -> m Binding) -> f a -> m [Binding]
-buildBindings mb as = zipWithM mb [0..] $ F.toList as
-
-buildContext :: (MonadError String m, Foldable f) =>
-              (Int -> a -> m Binding) -> f a -> m Context
-buildContext mb as = C.bindingsToContext1 <$> buildBindings mb as
+    allBindings = builtins ++ declared
+    builtins = map Left $ ("String", string) : Builtins.types
+    declared = map Right $ F.toList $ declarations program
+    toBinding' :: MonadError String m =>
+                 Int -> Either (String, PT.Type) Declaration -> m Binding
+    toBinding' i = either (return . uncurry (typeBinding i)) (toBinding i)
 
 byte :: PT.Type
-byte = PT.NumType pos (PT.ValueExpr pos (PT.Bits 4) (PT.IntValue 8)) False
+byte = Builtins.byte
 
 bool :: PT.Type
-bool = PT.Bits 1
+bool = Builtins.bool
 
 true :: PT.Value
 true = PT.IntValue 1
@@ -93,7 +77,7 @@ false :: PT.Value
 false = PT.IntValue 0
 
 string :: PT.Type
-string = PT.NameType pos "String"
+string = Builtins.string
 
 
 toExpr :: MonadError String m => Expr -> m PT.Expr
@@ -166,7 +150,7 @@ sigTypeDecl t = throwError $ "unsupported signature type " ++ show t
 paramBinding :: MonadError String m => Int -> Param -> m Binding
 paramBinding i (Param id' t) = C.Binding i (unId id') C.OtherNamespace R.Incomplete <$> sigTypeDecl t
 
-sigContext :: MonadError String m => Signature -> m Context
+
 sigContext (Signature inputs _) = buildContext paramBinding inputs
 
 blockCmd :: MonadError String m => Block -> m PT.Cmd
@@ -291,6 +275,7 @@ cmd (StmtSelect cases) = PT.SelectCmd pos False <$> traverse chanCase cases
     chanCase (Case as stmnts) = PT.ChanGuard pos <$> traverse chanGuard as <*> pure C.EmptyContext <*> seqCmd stmnts
       where
         chanGuard (ChanRecv Nothing (UnOp Receive (Prim (Qual id')))) = return $ PT.NameChan pos (unId id')
+        chanGuard c = throwError $ "can't make a guard for " ++ show c
     chanCase (Default _) = throwError "default select not supported"
 cmd s = throwError $ "unsupported statement " ++ show s
 
