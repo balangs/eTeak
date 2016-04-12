@@ -81,6 +81,9 @@ compileDecl :: MonadError String m => Go.GoDecl -> m (U.Vector S.Declaration)
 compileDecl (Go.GoConst cs) = U.fromList <$> expandDeclarations S.Const cs
 compileDecl (Go.GoVar cs) = U.fromList <$> expandDeclarations S.Var cs
 compileDecl (Go.GoFunc (Go.GoFuncDecl i s block)) = U.singleton <$> (S.Func (asId i) <$> asSig s <*> asBlock block)
+compileDecl (Go.GoType cs) = U.fromList <$> traverse typeDeclaration cs
+  where
+    typeDeclaration (Go.GoTypeSpec id' typ) = S.Type (asId id') <$> asType typ
 compileDecl d = throwError $ "unsupported declaration: " ++ show d
 
 asId :: Go.GoId -> S.Id

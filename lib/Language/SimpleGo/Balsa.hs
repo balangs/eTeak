@@ -21,6 +21,7 @@ import qualified Context as C
 import           Language.Helpers (bind, eval, finish, teak, writeTeak, writeGates)
 import           Language.SimpleGo.AST
 import qualified Language.SimpleGo.Balsa.Builtins as Builtins
+import Language.SimpleGo.Balsa.Builtins (byte, bool, string)
 import Language.SimpleGo.Balsa.Declarations (Binding, Context, typeBinding, buildBindings, buildContext)
 import           Language.SimpleGo.Process (compileFile)
 import qualified ParseTree as PT
@@ -58,27 +59,18 @@ compile :: MonadError String m => Program -> m Context
 compile program = C.bindingsToContext1 <$> buildBindings toBinding' allBindings
   where
     allBindings = builtins ++ declared
+    -- Implementation bug: "String" must be defined
     builtins = map Left $ ("String", string) : Builtins.types
     declared = map Right $ F.toList $ declarations program
     toBinding' :: MonadError String m =>
                  Int -> Either (String, PT.Type) Declaration -> m Binding
     toBinding' i = either (return . uncurry (typeBinding i)) (toBinding i)
 
-byte :: PT.Type
-byte = Builtins.byte
-
-bool :: PT.Type
-bool = Builtins.bool
-
 true :: PT.Value
 true = PT.IntValue 1
 
 false :: PT.Value
 false = PT.IntValue 0
-
-string :: PT.Type
-string = Builtins.string
-
 
 toExpr :: MonadError String m => Expr -> m PT.Expr
 toExpr Zero = throwError "zero values are not supported"
@@ -124,7 +116,9 @@ toBinding i = bindings
     bindings (Var id' typ Zero) = C.Binding i (unId id') namespace R.Incomplete . PT.VarDecl pos <$> asType typ
     bindings (Var id' _ (Prim (Make (Channel Bidirectional typ) []))) = C.Binding i (unId id') namespace R.Incomplete . PT.ChanDecl pos <$> asType typ
     bindings (Var id' _ expr) = C.Binding i (unId id') namespace R.Incomplete . PT.ExprDecl pos <$> toExpr expr
-    bindings (Type _ _) = throwError "type declarations are not supported"
+    bindings (Type id' typ) = C.Binding i (unId id') C.TypeNamespace R.Incomplete . PT.TypeDecl pos <$> typeBody typ
+      where
+        typeBody t = PT.AliasType pos <$> asType t
     bindings (Func id' sig block) = C.Binding i (unId id') C.ProcNamespace R.Incomplete <$> decl
       where
         decl = if isProc sig
