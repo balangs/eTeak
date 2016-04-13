@@ -98,9 +98,12 @@ library
                    GuiSupport
                    Language.Helpers
                    Language.SimpleGo.AST
+                   Language.SimpleGo.Env
+                   Language.SimpleGo.Monad
                    Language.SimpleGo.AST.Operators
                    Language.SimpleGo.Process
                    Language.SimpleGo.Balsa
+                   Language.SimpleGo.Balsa.Declarations
                    Latch
                    Layout
                    Lexer

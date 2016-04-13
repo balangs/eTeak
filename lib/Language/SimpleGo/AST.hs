@@ -33,7 +33,8 @@ data Program = Program {
       declarations :: U.Vector Declaration
       } deriving (Eq, Show, Read)
 
-newtype Id = Id T.Text deriving (Eq, Show, Read)
+newtype Id = Id { idText :: T.Text } deriving (Eq, Show, Read)
+
 
 data Declaration = Const Id Type Expr
                  | Var Id Type Expr

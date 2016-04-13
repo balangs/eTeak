@@ -1,33 +1,46 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- |
 
 module Language.SimpleGo.Balsa  (
-  compile,
   synthesizeFile
   ) where
 
-import           Control.Monad.Except (MonadError, throwError, ExceptT(..), runExceptT)
-import           Control.Monad (zipWithM)
-import           Control.Monad.State (modify', MonadState, runStateT)
-import           Control.Monad.Trans (liftIO)
-import           Data.Text (unpack)
-import qualified Data.Foldable as F
-import qualified Data.Vector as U
+import           Control.Monad                        (zipWithM)
+import           Control.Monad.Except                 (ExceptT (..), MonadError,
+                                                       runExceptT, throwError,
+                                                       withExceptT)
+import           Control.Monad.State                  (MonadState, modify',
+                                                       runStateT)
+import           Control.Monad.Trans                  (liftIO)
+import qualified Data.Foldable                        as F
+import           Data.Text                            (unpack)
+import qualified Data.Vector                          as U
 
-import qualified Context as C
-import           Language.Helpers (bind, eval, finish, teak, writeTeak, writeGates)
+import qualified Context                              as C
+import           Control.Monad                        (forM_)
+import           Data.Text                            (pack)
+import           Language.Helpers                     (bind, eval, finish, teak,
+                                                       writeGates, writeTeak)
 import           Language.SimpleGo.AST
-import qualified Language.SimpleGo.AST.Operators as Operators
-import qualified Language.SimpleGo.Balsa.Builtins as Builtins
-import Language.SimpleGo.Balsa.Builtins (byte, bool, string)
-import Language.SimpleGo.Balsa.Declarations (Binding, Context, typeBinding, buildBindings, buildContext)
-import           Language.SimpleGo.Process (compileFile)
-import qualified ParseTree as PT
-import           Print (showTree)
-import qualified Report as R
+import qualified Language.SimpleGo.AST.Operators      as Operators
+import           Language.SimpleGo.Balsa.Builtins     (bool, byte, string)
+import qualified Language.SimpleGo.Balsa.Builtins     as Builtins
+import           Language.SimpleGo.Balsa.Declarations (Binding, Context, Decl,
+                                                       buildBindings,
+                                                       buildContext,
+                                                       typeBinding)
+import qualified Language.SimpleGo.Balsa.Declarations as D
+import           Language.SimpleGo.Monad              (declare, unsupported)
+import qualified Language.SimpleGo.Monad              as M
+import           Language.SimpleGo.Process            (compileFile)
+import qualified ParseTree                            as PT
+import           Print                                (showTree)
+import qualified Report                               as R
+
+type TranslateM = M.TranslateT IO Decl
 
 pos = R.PosTopLevel
 
@@ -43,7 +56,7 @@ synthesizeFile f = do
       writeFile (f ++ ".tree-" ++ s) $ showTree t
     go = do
       goSource <- ExceptT $ compileFile f
-      balsa <- compile goSource
+      balsa <- withExceptT show $ ExceptT $ M.runTranslateT $ asBalsa goSource
       write "parse" balsa
       bound <- bind balsa
       write "bind" bound
@@ -55,17 +68,75 @@ synthesizeFile f = do
       writeTeak (f ++ ".teak") teak'
       writeGates f teak'
 
+asBalsa :: Program -> TranslateM Context
+asBalsa program = do
+  root' program
+  -- Implementation bug: "String" must be defined
+  -- declared here so that declaration checking can happen earlier
+  declare "String" $ D.Type string
+  D.declContext <$> M.popContext
 
-compile :: MonadError String m => Program -> m Context
-compile program = C.bindingsToContext1 <$> buildBindings toBinding' allBindings
+root' :: Program -> TranslateM ()
+root' program = do
+  forM_ Builtins.types $ \(n,t) -> declare (pack n) $ D.Type t
+  forM_ (declarations program) declareTopLevel
+
+
+
+balsaType :: Type -> TranslateM PT.Type
+balsaType (TypeName id') = return $ PT.NameType pos (unId id')
+balsaType t = M.unsupported "type" t
+
+typedExpr :: Type -> Expr -> TranslateM PT.Expr
+typedExpr t e = do
+  t' <- balsaType t
+  typedExpr' t' e
+
+
+-- deprecated
+toExpr = typedExpr' PT.NoType
+
+typedExpr' :: PT.Type -> Expr -> TranslateM PT.Expr
+typedExpr' t (Prim prim) = fromPrim prim
+typedExpr' t (UnOp Plus e) = PT.BinExpr pos t PT.BinAdd (PT.ValueExpr pos t (PT.IntValue 0)) <$> typedExpr' t e
+typedExpr' t (UnOp Minus e) = PT.BinExpr pos t PT.BinSub (PT.ValueExpr pos t (PT.IntValue 0)) <$> toExpr e
+typedExpr' t (UnOp Not e) = PT.UnExpr pos t PT.UnNot <$> typedExpr' t e
+typedExpr' t (BinOp op e e') = PT.BinExpr pos t <$> binOp op <*> typedExpr' t e <*> typedExpr' t e'
+typedExpr' t e = M.unsupported "expr" e
+
+declareTopLevel :: Declaration -> TranslateM ()
+declareTopLevel (Const (Id id') typ e) = do
+  e' <- typedExpr typ e
+  declare id' $ D.Const e'
+declareTopLevel (Var (Id id') typ (Prim (Make (Channel Bidirectional typ') []))) = do
+  t' <- balsaType typ'
+  declare id' $ D.Chan t'
+declareTopLevel (Var (Id id') typ e) = case e of
+  Zero -> do
+    t <- balsaType typ
+    declare id' $ D.Var t Nothing
+  _  -> do
+    t <- balsaType typ
+    e <- typedExpr' t e
+    declare id' $ D.Var t (Just e)
+declareTopLevel (Type (Id id') typ) = do
+  t <- balsaType typ
+  declare id' $ D.Type t
+--declareTopLevel f = M.unsupported "top level binding" f
+declareTopLevel f@(Func (Id id') sig block) = do
+  f <- decl
+  declare id' f
   where
-    allBindings = builtins ++ declared
-    -- Implementation bug: "String" must be defined
-    builtins = map Left $ ("String", string) : Builtins.types
-    declared = map Right $ F.toList $ declarations program
-    toBinding' :: MonadError String m =>
-                 Int -> Either (String, PT.Type) Declaration -> m Binding
-    toBinding' i = either (return . uncurry (typeBinding i)) (toBinding i)
+    decl = if isProc sig
+           then procedure
+           else M.unsupported "function" f
+    isProc = const True
+    procedure = do
+      M.newContext
+      declareSig sig
+      b <- blockCmd block
+      sigDecl <- M.popContext
+      return $ D.Proc (D.declContext sigDecl) b
 
 true :: PT.Value
 true = PT.IntValue 1
@@ -73,16 +144,7 @@ true = PT.IntValue 1
 false :: PT.Value
 false = PT.IntValue 0
 
-toExpr :: MonadError String m => Expr -> m PT.Expr
-toExpr Zero = throwError "zero values are not supported"
-toExpr (Prim prim) = fromPrim prim
-toExpr (UnOp Plus e) = PT.BinExpr pos PT.NoType PT.BinAdd (PT.ValueExpr pos byte (PT.IntValue 0)) <$> toExpr e
-toExpr (UnOp Minus e) = PT.BinExpr pos PT.NoType PT.BinSub (PT.ValueExpr pos byte (PT.IntValue 0)) <$> toExpr e
-toExpr (UnOp Not e) = PT.UnExpr pos PT.NoType PT.UnNot <$> toExpr e
-toExpr (UnOp o _) = throwError $ "operator " ++ show o ++ " is not supported"
-toExpr (BinOp op e e') = PT.BinExpr pos PT.NoType <$> binOp op <*> toExpr e <*> toExpr e'
-
-fromPrim :: MonadError String m => Prim -> m PT.Expr
+fromPrim :: Prim -> TranslateM PT.Expr
 fromPrim (LitInt i) = return $ PT.ValueExpr pos byte (PT.IntValue i)
 fromPrim (LitStr s) = return $ PT.ValueExpr pos string (PT.StringValue s)
 -- TODO maybe fix this parser? Should it be qual here?
@@ -90,10 +152,10 @@ fromPrim (Qual id') = return $ PT.NameExpr pos (unId id')
 -- special case type coercions
 fromPrim c@(Call (Qual id') [arg]) = case lookup (unId id') Builtins.types of
   Just typ -> PT.CastExpr pos typ <$> toExpr arg
-  Nothing -> throwError $ "unupported call expression " ++ show c
-fromPrim s = throwError $ "unsupported primitive" ++ show s
+  Nothing -> M.unsupported "call expression" c
+fromPrim s = M.unsupported  "primitive" s
 
-binOp :: MonadError String m => Binary -> m PT.BinOp
+binOp :: Binary -> TranslateM PT.BinOp
 binOp Multiply = return PT.BinMul
 binOp Quotient = return PT.BinDiv
 binOp Remainder = return PT.BinMod
@@ -108,64 +170,38 @@ binOp LessThanEqual = return PT.BinLE
 binOp GreaterThanEqual = return PT.BinGE
 binOp NotEqual = return PT.BinNE
 binOp Equal  = return PT.BinEQ
-binOp o = throwError $ "operator " ++ show o ++ " is not supported"
+binOp o = M.unsupported "operator" o
 
 unId :: Id -> String
 unId (Id id') = unpack id'
 
-toBinding :: MonadError String m => Int -> Declaration -> m Binding
-toBinding i = bindings
-  where
-    namespace = C.OtherNamespace
-    bindings (Const id' _ expr) = C.Binding i (unId id') namespace R.Incomplete . PT.ExprDecl pos <$> toExpr expr
-    bindings (Var id' typ Zero) = C.Binding i (unId id') namespace R.Incomplete . PT.VarDecl pos <$> asType typ
-    bindings (Var id' _ (Prim (Make (Channel Bidirectional typ) []))) = C.Binding i (unId id') namespace R.Incomplete . PT.ChanDecl pos <$> asType typ
-    bindings (Var id' _ expr) = C.Binding i (unId id') namespace R.Incomplete . PT.ExprDecl pos <$> toExpr expr
-    bindings (Type id' typ) = C.Binding i (unId id') C.TypeNamespace R.Incomplete . PT.TypeDecl pos <$> typeBody typ
-      where
-        typeBody t = PT.AliasType pos <$> asType t
-    bindings (Func id' sig block) = C.Binding i (unId id') C.ProcNamespace R.Incomplete <$> decl
-      where
-        decl = if isProc sig
-               then procedure
-               else throwError "non procedure functions are not supported"
-        isProc = const True
-        procedure = PT.ProcDecl pos
-          <$> sigContext sig
-          <*> pure []  -- not sure what annotations are
-          <*> blockCmd block
+sigDecl :: Type -> TranslateM D.Decl
+sigDecl (Channel Input typ) = D.In <$> balsaType typ
+sigDecl (Channel Output typ) = D.Out <$> balsaType typ
+--sigDecl (Channel Bidirectional typ) = PT.ChanDecl pos <$> balsaType typ
+sigDecl t@(TypeName _) = D.Param <$> balsaType t
+sigDecl t = unsupported "signature type" t
 
-asType ::  MonadError String m => Type -> m PT.Type
-asType (TypeName id') = return $ PT.NameType pos (unId id')
-asType t = throwError $ "usupported type " ++ show t
+declareParam :: Param -> TranslateM ()
+declareParam (Param (Id id') t) = do
+  t' <- sigDecl t
+  declare id' t'
 
-sigTypeDecl :: MonadError String m => Type -> m PT.Decl
-sigTypeDecl (Channel Input typ) = PT.PortDecl pos PT.Input <$> asType typ
-sigTypeDecl (Channel Output typ) = PT.PortDecl pos PT.Output <$> asType typ
-sigTypeDecl (Channel Bidirectional typ) = PT.ChanDecl pos <$> asType typ
-sigTypeDecl t@(TypeName _) = PT.VarDecl pos <$> asType t
-sigTypeDecl t = throwError $ "unsupported signature type " ++ show t
+declareSig :: Signature -> TranslateM ()
+declareSig (Signature inputs _) = U.forM_ inputs declareParam
 
-paramBinding :: MonadError String m => Int -> Param -> m Binding
-paramBinding i (Param id' t) = C.Binding i (unId id') C.OtherNamespace R.Incomplete <$> sigTypeDecl t
+blockCmd :: Block -> TranslateM PT.Cmd
+blockCmd (Block statements) = do
+  M.newContext
+  cmd <- seqCmd $ U.toList statements
+  c <- D.declContext <$> M.popContext
+  return $ PT.BlockCmd pos c cmd
+
+seqCmd :: [Statement] -> TranslateM PT.Cmd
+seqCmd ss = PT.SeqCmd pos <$> traverse cmd ss
 
 
-sigContext (Signature inputs _) = buildContext paramBinding inputs
-
-blockCmd :: MonadError String m => Block -> m PT.Cmd
-blockCmd (Block statements) = seqCmd $ U.toList statements
-
-seqCmd :: MonadError String m => [Statement] -> m PT.Cmd
-seqCmd ss = do
-  (cmd', bindings) <- runStateT (collapsePars <$> mapM parCmd ss) []
-  case bindings of
-    [] -> return cmd'
-    bs -> PT.BlockCmd pos <$> c <*> pure cmd'
-      where
-        c = buildContext toBinding bs
-
-
-caseCmds :: MonadError String m => [Case Expr] -> m ([PT.CaseCmdGuard], PT.Cmd)
+caseCmds :: [Case Expr] -> TranslateM ([PT.CaseCmdGuard], PT.Cmd)
 caseCmds cs = (,) <$> explicits <*> def
   where
     isDefault (Default _) = True
@@ -182,7 +218,7 @@ caseCmds cs = (,) <$> explicits <*> def
 
 data Par a = Par a | Seq a
 
-parCmd :: (MonadState [Declaration] m, MonadError String m) => Statement -> m (Par PT.Cmd)
+parCmd :: Statement -> TranslateM (Par PT.Cmd)
 parCmd c@(Go _) = Par <$> cmd c
 parCmd c = Seq <$> cmd c
 
@@ -223,13 +259,10 @@ collapsePars = go
         s = PT.SeqCmd pos $ justCmds (c:(map undo ss ++ [p]))
         p = collapsePars ps
 
-paramNameBinding :: MonadError String m => Int -> Id -> m Binding
+paramNameBinding :: Int -> Id -> TranslateM Binding
 paramNameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.ParamDecl pos False byte)
 
-declare :: (MonadState [a] m) => a -> m ()
-declare d = modify' (`mappend` [d])
-
-cmd :: forall m . (MonadState [Declaration] m, MonadError String m) => Statement -> m PT.Cmd
+cmd :: Statement -> TranslateM PT.Cmd
 -- for { } construct is identical to loop ... end
 cmd (Go p) = exprCmd p
 cmd (Simple s) = simpleCmd s
@@ -242,11 +275,13 @@ cmd (ForThree
      (Just (BinOp LessThan (Prim (Qual id')) (Prim (LitInt end))))
      (Inc (Prim (Qual id'')))
      block)
-  | id' == id && id'' == id = PT.ForCmd pos PT.Seq interval <$> c <*> blockCmd block
+  | id' == id && id'' == id = do
+      M.newContext
+      declare (idText id') (D.Param Builtins.int)
+      c <- D.declContext <$> M.popContext
+      PT.ForCmd pos PT.Seq interval c <$> blockCmd block
   where
-    interval = PT.Interval (start, pred end) byte
-    c :: m Context
-    c = buildContext paramNameBinding [id]
+    interval = PT.Interval (start, pred end) Builtins.int
 cmd (If (Cond Nothing (Just expr)) block s) = PT.CaseCmdE pos <$> toExpr expr <*> fmap return trueBlock <*> s'
   where
     s' = maybe (return PT.NoCmd) cmd s
@@ -255,39 +290,50 @@ cmd (Switch (Cond Nothing (Just expr)) cases) = do
   (cs, def) <- caseCmds cases
   PT.CaseCmdE pos <$> toExpr expr <*> pure cs <*> pure def
 cmd (StmtDecl decl) = do
-  declare decl
+  declareTopLevel decl
   return PT.NoCmd
 cmd (StmtSelect cases) = PT.SelectCmd pos False <$> traverse chanCase cases
   where
     chanCase (Case as stmnts) = PT.ChanGuard pos <$> traverse chanGuard as <*> pure C.EmptyContext <*> seqCmd stmnts
       where
         chanGuard (ChanRecv Nothing (UnOp Receive (Prim (Qual id')))) = return $ PT.NameChan pos (unId id')
-        chanGuard c = throwError $ "can't make a guard for " ++ show c
-    chanCase (Default _) = throwError "default select not supported"
-cmd s = throwError $ "unsupported statement " ++ show s
+        chanGuard c = unsupported "guard" c
+    chanCase d@(Default _) = unsupported "select" d
+cmd s = unsupported "statment" s
 
-simpleCmd :: forall m . (MonadState [Declaration] m, MonadError String m) =>
-            Simp -> m PT.Cmd
+simpleCmd :: Simp -> TranslateM PT.Cmd
 simpleCmd Empty = return PT.NoCmd
 simpleCmd (Inc e@(Prim (Qual id'))) = simpleCmd $ SimpVar id' $ BinOp Operators.Add e (Prim (LitInt 1))
 simpleCmd (Dec e@(Prim (Qual id'))) = simpleCmd $ SimpVar id' $ BinOp Operators.Subtract e (Prim (LitInt 1))
 simpleCmd (Send (Prim (Qual chan)) prim) = PT.OutputCmd pos
   <$> pure (PT.NameChan pos (unId chan))
   <*> toExpr prim
-simpleCmd (SimpVar id' (UnOp Receive (Prim (Qual chan)))) = do
-  -- need actual type checking here :/
-  declare $ Var id' (TypeName (Id "byte")) Zero
-  return $ PT.InputCmd pos (PT.NameChan pos (unId chan)) (PT.NameLvalue pos (unId id'))
-simpleCmd (SimpleExpr e) = exprCmd e
-simpleCmd s = throwError $ "unsupported simple expression " ++ show s
+simpleCmd (SimpVar (Id id') (UnOp Receive (Prim (Qual (Id chan))))) = do
+  chan' <- M.lookup chan
+  case chan' of
+    Nothing -> M.notDefined (unpack chan)
+    Just t -> do
+      r <- receiveType t
+      declare id' (D.Var r Nothing)
+      return $ PT.InputCmd pos (PT.NameChan pos (unpack chan)) (PT.NameLvalue pos (unpack id'))
+    where
+      receiveType :: D.Decl -> TranslateM PT.Type
+      receiveType (D.In t) = return t
+      receiveType (D.Chan t) = return t
+      receiveType s = M.typeError "chan or <-chan" (show s)
 
-exprCmd :: MonadError String m => Expr -> m PT.Cmd
-exprCmd (Prim (Call (LitFunc sig block) es)) = PT.BlockCmd pos
-  <$> buildContext toBinding [Func (Id "$") sig block]
-  <*> call
+simpleCmd (SimpleExpr e) = exprCmd e
+simpleCmd s = unsupported "simple expression " s
+
+exprCmd :: Expr -> TranslateM PT.Cmd
+exprCmd (Prim (Call (LitFunc sig block) es)) = do
+      M.newContext
+      declareTopLevel $ Func (Id "$") sig block
+      c <- D.declContext <$> M.popContext
+      PT.BlockCmd pos c <$> call
   where
     call = PT.CallCmd pos (PT.NameCallable pos "$") C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
 exprCmd (Prim (Call (Qual (Id "print")) es)) = PT.PrintCmd pos <$> mapM toExpr es
 exprCmd (Prim (Call (Qual (Id "println")) es)) = PT.PrintCmd pos <$> mapM toExpr es
 exprCmd (Prim (Call (Qual id') es)) = PT.CallCmd pos (PT.NameCallable pos (unId id')) C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
-exprCmd e = throwError $ "unsupported expression " ++ show e
+exprCmd e = unsupported "expression" e
