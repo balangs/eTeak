@@ -8,7 +8,7 @@ module Language.SimpleGo.Balsa  (
   synthesizeFile
   ) where
 
-import           Control.Monad                        (zipWithM)
+import           Control.Monad                        (forM_, zipWithM)
 import           Control.Monad.Except                 (ExceptT (..), MonadError,
                                                        runExceptT, throwError,
                                                        withExceptT)
@@ -16,12 +16,10 @@ import           Control.Monad.State                  (MonadState, modify',
                                                        runStateT)
 import           Control.Monad.Trans                  (liftIO)
 import qualified Data.Foldable                        as F
-import           Data.Text                            (unpack)
+import           Data.Text                            (pack, unpack)
 import qualified Data.Vector                          as U
 
 import qualified Context                              as C
-import           Control.Monad                        (forM_)
-import           Data.Text                            (pack)
 import           Language.Helpers                     (bind, eval, finish, teak,
                                                        writeGates, writeTeak)
 import           Language.SimpleGo.AST
@@ -42,6 +40,7 @@ import qualified Report                               as R
 
 type TranslateM = M.TranslateT IO Decl
 
+pos :: R.Pos
 pos = R.PosTopLevel
 
 synthesizeFile :: FilePath -> IO ()
@@ -82,7 +81,6 @@ root' program = do
   forM_ (declarations program) declareTopLevel
 
 
-
 balsaType :: Type -> TranslateM PT.Type
 balsaType (TypeName id') = return $ PT.NameType pos (unId id')
 balsaType t = M.unsupported "type" t
@@ -91,7 +89,6 @@ typedExpr :: Type -> Expr -> TranslateM PT.Expr
 typedExpr t e = do
   t' <- balsaType t
   typedExpr' t' e
-
 
 -- deprecated
 toExpr = typedExpr' PT.NoType
@@ -258,9 +255,6 @@ collapsePars = go
         (ss, ps) = seqs next
         s = PT.SeqCmd pos $ justCmds (c:(map undo ss ++ [p]))
         p = collapsePars ps
-
-paramNameBinding :: Int -> Id -> TranslateM Binding
-paramNameBinding i name = return $ C.Binding i (unId name) C.OtherNamespace R.Incomplete (PT.ParamDecl pos False byte)
 
 cmd :: Statement -> TranslateM PT.Cmd
 -- for { } construct is identical to loop ... end
