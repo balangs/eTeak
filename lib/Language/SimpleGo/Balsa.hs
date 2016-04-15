@@ -31,6 +31,7 @@ import           Language.SimpleGo.Balsa.Declarations (Binding, Context, Decl,
                                                        buildContext,
                                                        typeBinding)
 import qualified Language.SimpleGo.Balsa.Declarations as D
+import qualified Language.SimpleGo.Eval               as Eval
 import           Language.SimpleGo.Monad              (declare, unsupported)
 import qualified Language.SimpleGo.Monad              as M
 import           Language.SimpleGo.Process            (compileFile)
@@ -264,18 +265,34 @@ cmd (StmtBlock block) = blockCmd block
 cmd (ForWhile Nothing block) = PT.LoopCmd pos <$> blockCmd block
 cmd (ForWhile (Just e) block) = PT.WhileCmd pos PT.NoCmd <$> toExpr e <*> blockCmd block
 -- for i := <start>; i < <end>; i++ { } is equivalent to a range
-cmd (ForThree
-     (SimpVar id (Prim (LitInt start)))
-     (Just (BinOp LessThan (Prim (Qual id')) (Prim (LitInt end))))
-     (Inc (Prim (Qual id'')))
-     block)
-  | id' == id && id'' == id = do
-      M.newContext
-      declare (idText id') (D.Param Builtins.int)
-      c <- D.declContext <$> M.popContext
-      PT.ForCmd pos PT.Seq interval c <$> blockCmd block
+cmd f@(ForThree
+       (SimpVar id' start)
+       (Just (BinOp LessThan (Prim (Qual id'')) end))
+       (Inc (Prim (Qual id''')))
+       block)
+  | id' == id'' && id' == id''' = b interval
   where
-    interval = PT.Interval (start, pred end) Builtins.int
+    b (Just i@(PT.Interval _ typ')) = do
+       M.newContext
+       declare (idText id') (D.Param typ')
+       c <- D.declContext <$> M.popContext
+       PT.ForCmd pos PT.Seq i c <$> blockCmd block
+    b _ = unsupported "ForLoop" f
+    interval = do
+      (start', end') <- (,) <$> Eval.eval start <*> Eval.eval end
+      case (start', end') of
+        (Eval.IntegralR t s, Eval.IntegralR _ e) ->
+          return $ PT.Interval (s, pred e) $ lookupType t
+    lookupType Eval.Int8 = Builtins.int8
+    lookupType Eval.Int16 = Builtins.int16
+    lookupType Eval.Int32 = Builtins.int32
+    lookupType Eval.Int64 = Builtins.int64
+    lookupType Eval.Uint8 = Builtins.uint8
+    lookupType Eval.Uint16 = Builtins.uint16
+    lookupType Eval.Uint32 = Builtins.uint32
+    lookupType Eval.Uint64 = Builtins.uint64
+    lookupType Eval.GoInt = Builtins.int
+    lookupType Eval.GoUint = Builtins.uint
 cmd (If (Cond Nothing (Just expr)) block s) = PT.CaseCmdE pos <$> toExpr expr <*> fmap return trueBlock <*> s'
   where
     s' = maybe (return PT.NoCmd) cmd s

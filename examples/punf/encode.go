@@ -57,14 +57,14 @@ func top() {
 	go func(o <-chan byte) {
 		for {
 			v := <-o
-			print(v)
 			// qualified identifiers are not supported at this time
-			//fmt.Printf("%d",v)
+			print(v)
+			//fmt.Printf("%d", v)
 		}
 	}(o)
 	go func(i chan<- byte) {
 		for {
-			for j := 0; j < 4; j++ {
+			for j := byte(0); j < 4; j++ {
 				i <- j
 			}
 		}
