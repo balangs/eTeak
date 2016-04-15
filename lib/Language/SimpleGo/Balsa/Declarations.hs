@@ -58,7 +58,7 @@ declContext decls = C.bindingsToContext1 $ zipWith binding [0..] decls
     -- For parameters
     b (In t) = (C.OtherNamespace, PT.PortDecl pos PT.Input t)
     b (Out t) = (C.OtherNamespace, PT.PortDecl pos PT.Output t)
-    b (Param t) = (C.OtherNamespace, PT.VarDecl pos t)
+    b (Param t) = (C.OtherNamespace, PT.ParamDecl pos True t)
     binding i (n, a) = C.Binding i (T.unpack n) namespace R.Incomplete decl
       where
         (namespace, decl) = b a

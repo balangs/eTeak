@@ -70,10 +70,9 @@ synthesizeFile f = do
 
 asBalsa :: Program -> TranslateM Context
 asBalsa program = do
-  root' program
   -- Implementation bug: "String" must be defined
-  -- declared here so that declaration checking can happen earlier
   declare "String" $ D.Type string
+  root' program
   D.declContext <$> M.popContext
 
 root' :: Program -> TranslateM ()
@@ -196,7 +195,7 @@ blockCmd (Block statements) = do
   return $ PT.BlockCmd pos c cmd
 
 seqCmd :: [Statement] -> TranslateM PT.Cmd
-seqCmd ss = PT.SeqCmd pos <$> traverse cmd ss
+seqCmd ss = collapsePars <$> traverse parCmd ss
 
 
 caseCmds :: [Case Expr] -> TranslateM ([PT.CaseCmdGuard], PT.Cmd)
@@ -212,6 +211,8 @@ caseCmds cs = (,) <$> explicits <*> def
     cmdGuard (Case es ss) = PT.CaseCmdGuard pos <$> mapM match es <*> seqCmd ss
     cmdGuard _ = error "refactor `caseCmds` to be total"
     match e = PT.ExprCaseMatch pos <$> toExpr e
+
+
 
 
 data Par a = Par a | Seq a
@@ -258,10 +259,10 @@ collapsePars = go
         p = collapsePars ps
 
 cmd :: Statement -> TranslateM PT.Cmd
--- for { } construct is identical to loop ... end
 cmd (Go p) = exprCmd p
 cmd (Simple s) = simpleCmd s
 cmd (StmtBlock block) = blockCmd block
+-- for { } construct is identical to loop ... end
 cmd (ForWhile Nothing block) = PT.LoopCmd pos <$> blockCmd block
 cmd (ForWhile (Just e) block) = PT.WhileCmd pos PT.NoCmd <$> toExpr e <*> blockCmd block
 -- for i := <start>; i < <end>; i++ { } is equivalent to a range
