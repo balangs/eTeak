@@ -56,7 +56,7 @@ toLit (Go.GoLitInt  _ i) = return $ S.LitInt i
 toLit (Go.GoLitReal _ f) = return $ S.LitReal f
 toLit (Go.GoLitImag _ f) = return $ S.LitImag f
 toLit (Go.GoLitChar _ c) = return $ S.LitChar c
-toLit (Go.GoLitStr  _ s) = return $ S.LitStr s
+toLit (Go.GoLitStr  _ s) = return $ S.LitStr (fromString s)
 toLit (Go.GoLitFunc (Go.GoFuncExpr sig block)) = S.LitFunc <$> asSig sig <*> asBlock block
 toLit s = throwError $ "unsupported literal: \"" ++ show s ++ "\""
 

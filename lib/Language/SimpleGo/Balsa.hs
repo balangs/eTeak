@@ -143,7 +143,7 @@ false = PT.IntValue 0
 
 fromPrim :: Prim -> TranslateM PT.Expr
 fromPrim (LitInt i) = return $ PT.ValueExpr pos byte (PT.IntValue i)
-fromPrim (LitStr s) = return $ PT.ValueExpr pos string (PT.StringValue s)
+fromPrim (LitStr s) = return $ PT.ValueExpr pos string (PT.StringValue (unpack s))
 -- TODO maybe fix this parser? Should it be qual here?
 fromPrim (Qual id') = return $ PT.NameExpr pos (unId id')
 -- special case type coercions

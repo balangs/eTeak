@@ -76,11 +76,11 @@ data Expr = Zero
           | BinOp Operators.Binary Expr Expr
           deriving (Eq, Read, Show)
 
-data Prim = LitInt  Integer
-          | LitReal Float
-          | LitImag Float
-          | LitChar Char
-          | LitStr  String
+data Prim = LitInt  !Integer
+          | LitReal !Float
+          | LitImag !Float
+          | LitChar !Char
+          | LitStr  !T.Text
           | LitFunc Signature Block
           | Qual Id                              -- 'PrimaryExpr/Operand/QualifiedIdent'
           | Method Rec Id                        -- 'PrimaryExpr/Operand/MethodExpr'
