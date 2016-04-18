@@ -144,3 +144,7 @@ script:
         (cd dist && cabal install --force-reinstalls "$SRC_TGZ")
       ;;
   esac
+
+notifications:
+  slack:
+    secure: SoHVD3jVfaszHzl4BV4/n+kHL5d7Arq3LoSCFoFAMkimyi7VRdfI/qhSyNunz4czdMB8fBLbZYsBbk4IA7pLSApIqI1MuigW5jSJNojr8n1ERgvNIlqRZi+H6hhljfUk0AeXuJizzIkZ8PxgoQQwfi6HJ2BuwnP+H3EUyUZrRuUFexYZywqJQgVyXVap3l1MHwDMUQKdfOd2GWoKP75dwu8Gxt11jpx5NcbkFfGwxXBiLobLUSEaqTD3J5q7Y8aXMM/5QX+gbAYCjvUfbgjDaN1SfI3qrx431E3dSaW04iUDLtq8vqneWaECl/NMBwTXgLf3r/3RGJiShbRDSpc74NtMXGmOh8QjezYp4mWeeJ4METYkq4nyCGqB8HcXZrk97kYrf8Bu1ip9+gMeZeQKpCjkX0R/cVmC/59qA+PLd8ORuyk53Qe1yNTdC6Omj0j/lU0lYzXc54ZA+zPXKOEbapRl9/JTE+OGYtJInsGYW2RKjowCUw4q9OOymkNS9KW3REeBy5LVO2MdVOKwd0gU1Kw0hnWrH2o6FqZWHl94NaeI3An5QKNpRFGALYuvu1xYS2fvsdr6IWRCQQ/j0iCMI6KMZYZ9UtwwzRTbQVXm0fNFsCMYanBLhsfFTk8NCy/V7ipQCw3ePEN2E4Qh7c4n+xW8AbLnoUpDnzXhNXH2gq0=
