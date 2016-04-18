@@ -8,17 +8,50 @@ import [types]
 */
 
 package main
-import "fmt"
-/*
-type ShiftDirection is enumeration left, right end
 
-type ShiftOp is record
-	direction : ShiftDirection;
-	fill : bit
-end
-*/
+import "fmt"
+
+func smashU8(v byte) []bool {
+	var bits []bool
+	for i := 7; i >= 0; i-- {
+		b := (v & byte(1<<uint(i))) != 0
+		bits = append([]bool{bool(b)}, bits...)
+	}
+	return bits
+}
+
+func smashU32(v uint32) []bool {
+	var bits []bool
+	for i := 31; i >= 0; i-- {
+		b := (v & uint32(1<<uint(i))) != 0
+		bits = append([]bool{bool(b)}, bits...)
+	}
+	return bits
+}
+
+func smashI32(v int32) []bool {
+	return smashU32(uint32(v))
+}
+
+func unsmashU32(bits []bool) uint32 {
+	ret := uint32(0)
+	off := uint(0)
+
+	for _, b := range bits {
+		if b {
+			ret = ret | (1 << off)
+		}
+		off++
+	}
+	return ret
+}
+
+func unsmashI32(bits []bool) int32 {
+	return int32(unsmashU32(bits))
+}
 
 type ShiftDirection int
+
 const (
 	left ShiftDirection = iota
 	right
@@ -26,101 +59,77 @@ const (
 
 type ShiftOp struct {
 	direction ShiftDirection
-	fill bool
+	fill      bool
 }
 
-/*
-* function PackWordLeft (lsw : distance bits; msw : remaining bits) = (#lsw @ #msw as Word)
-* function PackWordRight (lsw : remaining bits; msw : distance bits) = (#lsw @ #msw as Word)
-*/
-
-func PackWord (lsw uint32, leastBits int, msw uint32, mostBits int) uint32 {
-	fmt.Printf("lsw:%x, leastBits:%v, msw:%x, mostbits:%v\n", lsw, leastBits, msw, mostBits)
+func PackWord(lsw uint32, leastBits int, msw uint32, mostBits int) uint32 {
 	bitsL := smashU32(lsw)[leastBits:]
-	bitsR := smashU32(msw)[(32-mostBits):]
-	fmt.Printf("bitsL:%v\nbitsR:%v\n", bitsL, bitsR)
-	return unsmashU32(append(bitsR,bitsL...))
+	bitsR := smashU32(msw)[(32 - mostBits):]
+	return unsmashU32(append(bitsR, bitsL...))
 }
 
-/*
-procedure Shifter (
-	input shift : ShiftOp;
-	input distanceI : 5 bits;
-	output result : Word;
-	input arg : Word
-) is
-begin
-*/
+func shift_n(dI byte, s ShiftOp, distanceBit uint32, distance uint32, i <-chan uint32, o chan<- uint32) {
+	remaining := 32 - distance
+	c := make(chan uint32)
 
-func Shifter (
-	shift chan ShiftOp,
-	distanceI chan byte,
-	result chan uint32,
-	arg chan uint32) {
-/*
-	loop
-		distanceI, shift -> then
-			local
-				procedure shift_n (
-					parameter distanceBit : cardinal;
-					parameter distance : cardinal;
-					input i : Word;
-					output o : Word
-				) is
-*/
-//	dI := <-distanceI
-//	s := <-shift
-
-//	shift_n := func (distanceBit cardinal, distance cardinal, i <-chan uint32, o chan<- uint32) {
-/*
-				local
-					constant remaining = 32 - distance
-
-					function PackWordLeft (lsw : distance bits; msw : remaining bits) = (#lsw @ #msw as Word)
-					function PackWordRight (lsw : remaining bits; msw : distance bits) = (#lsw @ #msw as Word)
-
-					channel c : Word
-*/
-
-//		remaining := 32 - distance
-
+	shift_body := func(o chan<- uint32) {
+		_i := <-i
+		if smashU8(dI)[distanceBit] {
+			switch s.direction {
+			case left:
+				o <- PackWord(0, int(distance), _i, int(remaining))
+			case right:
+				if s.fill {
+					o <- PackWord(_i, int(remaining), 0, int(distance))
+				} else {
+					o <- PackWord(_i, int(remaining), uint32(1<<32-1), int(distance))
+				}
+			}
+		} else {
+			o <- _i
+		}
 	}
-/*
-					procedure shift_body (
-						output o : Word
-					) is
-					begin
-						i -> then
-							local
-								function i_lswLeft = (#i[remaining-1..0] as remaining bits)
-								function i_mswRight = (#i[31..distance] as remaining bits)
-							begin
-								if #distanceI[distanceBit] then
-									case shift of
-									  {left, ?} then o <- PackWordLeft (0, i_lswLeft ())
-									| {right, 0} then o <- PackWordRight (i_mswRight (), 0)
-									| {right, 1} then o <- PackWordRight (i_mswRight (), ( -1 as distance bits))
-									end
-								else o <- i
-								end
-							end
-						end
-					end
-				begin
-					if distance > 1 then
-						shift_n (distanceBit - 1, distance / 2, c, o) ||
-						shift_body (c)
-					else
-						shift_body (o)
-					end
-				end
-			begin
-				shift_n (4, 16, arg, result)
-			end
-		end
-	end
-end
-*/
+	if distance > 1 {
+		go shift_n(dI, s, distanceBit-1, distance/2, c, o)
+		shift_body(c)
+	} else {
+		shift_body(o)
+	}
+}
 
-//}
+func Shifter(
+	shift <-chan ShiftOp,
+	distanceI <-chan byte,
+	result chan<- uint32,
+	arg <-chan uint32) {
 
+	for {
+		dI := <-distanceI
+		s := <-shift
+
+		shift_n(dI, s, 4, 16, arg, result)
+	}
+}
+
+func ShiftF(shift ShiftOp, distance byte, d uint32) uint32 {
+	s := make(chan ShiftOp)
+	distanceI := make(chan byte)
+	r := make(chan uint32)
+	arg := make(chan uint32)
+
+	go Shifter(s, distanceI, r, arg)
+	distanceI <- distance
+	s <- shift
+	arg <- d
+	return <-r
+
+}
+
+func main() {
+	var j = uint32(1<<32 - 1)
+	for i := byte(0); i < 32; i++ {
+		result := ShiftF(ShiftOp{right, true}, i, j)
+		fmt.Printf("%d >> %d, Shift -> %d, %d\n", j, i, result, j<<i)
+	}
+	print()
+}
