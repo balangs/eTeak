@@ -34,3 +34,10 @@ spec = do
             S.Const (S.Id "b") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 1))
             ]
       runExcept (Process.compileDecl a) `shouldBe` Right expected
+    it "should repeat the last expression" $ do
+      let Right a = Helpers.parseDecl "const (a int = iota \n b)"
+          expected = U.fromList [
+            S.Const (S.Id "a") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 0)),
+            S.Const (S.Id "b") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 1))
+            ]
+      runExcept (Process.compileDecl a) `shouldBe` Right expected

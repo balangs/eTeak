@@ -13,7 +13,7 @@ import qualified Language.SimpleGo.AST  as S
 import qualified Language.SimpleGo.Transforms  as Transforms
 import qualified Data.Vector               as U
 import Data.String (fromString)
-import Control.Monad.State.Strict (get, evalStateT, modify', StateT)
+import Control.Monad.State.Strict (get, evalStateT, put, modify', StateT)
 
 compileFile :: String -> IO (Either String S.Program)
 compileFile f = do
@@ -28,20 +28,29 @@ compile :: MonadError String m => Go.GoSource -> m S.Program
 compile = fmap (S.Program . join) . U.mapM compileDecl . U.fromList . Go.getTopLevelDecl
 
 constDeclarations :: forall m. MonadError String m => [Go.GoCVSpec] -> m [S.Declaration]
-constDeclarations cs = evalStateT (runListT f) 0
+constDeclarations cs = evalStateT (runListT f) (Nothing, 0)
   where
-    f :: ListT (StateT Integer m) S.Declaration
+    mkDecl c@(Go.GoCVSpec _ Nothing _) =
+      throwError $ "explicit types are required " ++ show c
+    mkDecl c@(Go.GoCVSpec ids (Just t) exprs) = do
+      t' <- asType t
+      (i, e) <- ListT $ return $ zip ids (map Just exprs ++ repeat Nothing)
+      e' <- mayToExpr e
+      (_, iota) <- get
+      put (Just c, succ iota)
+      return $ S.Const (asId i) t' (Transforms.replaceIota iota e')
+
+    f :: ListT (StateT (Maybe Go.GoCVSpec, Integer) m) S.Declaration
     f = do
-      c@(Go.GoCVSpec ids typ exprs) <- ListT $ return cs
-      iota <- get
-      modify' succ
-      case typ of
-        Nothing -> throwError $ "explicit types are required " ++ show c
-        Just t -> do
-          t' <- asType t
-          (i, e) <- ListT $ return $ zip ids (map Just exprs ++ repeat Nothing)
-          e' <- mayToExpr e
-          return $ S.Const (asId i) t' (Transforms.replaceIota iota e')
+      c <- ListT $ return cs
+      (prev, _) <- get
+      case (prev, c) of
+        -- Use the previous expressions declararion
+        (Just (Go.GoCVSpec ids' typ' exprs'), Go.GoCVSpec ids Nothing []) ->
+          if length ids == length ids'
+          then mkDecl (Go.GoCVSpec ids typ' exprs')
+          else throwError "need the same number if ids if using blank expressions in a constant declaration"
+        _ -> mkDecl c
 
 varDeclarations :: forall m. MonadError String m => [Go.GoCVSpec] -> m [S.Declaration]
 varDeclarations cs = runListT f
