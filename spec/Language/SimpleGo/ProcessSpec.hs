@@ -8,18 +8,29 @@ import qualified Data.Vector               as U
 import           Language.Go.Parser        (goParse)
 import qualified Language.Go.Syntax.AST    as Go
 import qualified Language.SimpleGo.AST     as S
-import           Language.SimpleGo.Process (compile)
+import qualified Language.SimpleGo.Helpers as Helpers
+import qualified Language.SimpleGo.Process as Process
 import           Test.Hspec
+
+
 
 spec :: Spec
 spec = do
   describe "compile" $ do
     it "should compile the trivial program" $ do
       let p = Go.GoSource (Go.GoId "main") [] []
-      runExcept (compile p) `shouldBe` (Right $ S.Program U.empty)
-    it "should compile a single const" $ do
-      let Right a = goParse "main.go" "package main; const a uint32 = 4"
-          expected = S.Program $ U.fromList [
+      runExcept (Process.compile p) `shouldBe` (Right $ S.Program U.empty)
+  describe "compileDecl" $ do
+    it "should compile a trivial single const" $ do
+      let Right a = Helpers.parseDecl "const a uint32 = 4"
+          expected = U.fromList [
             S.Const (S.Id "a") (S.TypeName (S.Id "uint32")) (S.Prim (S.LitInt 4))
-                                            ]
-      runExcept (compile a) `shouldBe` Right expected
+            ]
+      runExcept (Process.compileDecl a) `shouldBe` Right expected
+    it "should substitute iota" $ do
+      let Right a = Helpers.parseDecl "const (a int = iota \n b int = iota)"
+          expected = U.fromList [
+            S.Const (S.Id "a") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 0)),
+            S.Const (S.Id "b") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 1))
+            ]
+      runExcept (Process.compileDecl a) `shouldBe` Right expected

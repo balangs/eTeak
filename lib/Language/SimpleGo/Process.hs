@@ -6,14 +6,16 @@ module Language.SimpleGo.Process where
 
 import Control.Monad (join)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.Except    (MonadError, throwError, runExcept)
+import           Control.Monad.Except    (MonadError, throwError, runExcept, catchError)
 import           Control.Monad.List    (runListT, ListT(..))
 import           Language.Go.Parser        (goParse)
 import qualified Language.Go.Syntax.AST as Go
 import qualified Language.SimpleGo.AST  as S
+import qualified Language.SimpleGo.Transforms  as Transforms
 import qualified Data.Vector               as U
 import Data.String (fromString)
-import Data.Traversable (traverse)
+import Control.Monad.State.Strict (get, evalStateT, modify', StateT)
+import Control.Monad.Trans (lift)
 
 compileFile :: String -> IO (Either String S.Program)
 compileFile f = do
@@ -27,11 +29,25 @@ compileFile f = do
 compile :: MonadError String m => Go.GoSource -> m S.Program
 compile = fmap (S.Program . join) . U.mapM compileDecl . U.fromList . Go.getTopLevelDecl
 
-expandDeclarations :: forall m c. MonadError String m =>
-                     (S.Id -> S.Type -> S.Expr -> c) -> [Go.GoCVSpec] -> m [c]
-expandDeclarations ctor cs = runListT f
+constDeclarations :: forall m. MonadError String m => [Go.GoCVSpec] -> m [S.Declaration]
+constDeclarations cs = evalStateT (runListT f) 0
   where
-    f :: ListT m c
+    f :: ListT (StateT Integer m) S.Declaration
+    f = do
+      c@(Go.GoCVSpec ids typ exprs) <- ListT $ return cs
+      iota <- get
+      modify' succ
+      case typ of
+        Nothing -> throwError $ "explicit types are required " ++ show c
+        Just t -> do
+          t' <- asType t
+          (i, e) <- ListT $ return $ zip ids (map Just exprs ++ repeat Nothing)
+          e' <- mayToExpr e
+          return $ S.Const (asId i) t' (Transforms.replaceIota iota e')
+
+varDeclarations :: forall m. MonadError String m => [Go.GoCVSpec] -> m [S.Declaration]
+varDeclarations cs = runListT f
+  where
     f = do
       c@(Go.GoCVSpec ids typ exprs) <- ListT $ return cs
       case typ of
@@ -40,7 +56,7 @@ expandDeclarations ctor cs = runListT f
           t' <- asType t
           (i, e) <- ListT $ return $ zip ids (map Just exprs ++ repeat Nothing)
           e' <- mayToExpr e
-          return $ ctor (asId i) t' e'
+          return $ S.Var (asId i) t' e'
 
 mayToExpr :: MonadError String m => Maybe Go.GoExpr -> m S.Expr
 mayToExpr Nothing = return S.Zero
@@ -66,21 +82,27 @@ toPrim (Go.GoQual Nothing i) = return $ S.Qual $ asId i
 toPrim (Go.GoCall _ _ True) = throwError "variadic calls are not supported"
 toPrim (Go.GoCall prim exprs _) = S.Call <$> toPrim prim <*> traverse toExpr exprs
 toPrim (Go.GoMake typ es) = S.Make <$> asType typ <*> traverse toExpr es
+toPrim (Go.GoParen e) = S.Paren <$> toExpr e
 toPrim s = throwError $ "unsupported primitive: \"" ++ show s ++ "\""
 
 asType :: MonadError String m => Go.GoType -> m S.Type
 asType (Go.GoTypeName _ i) = return $ S.TypeName $ asId i
 asType (Go.GoChannelType kind typ) = S.Channel (asKind kind) <$> asType typ
+asType (Go.GoSliceType typ) = S.SliceType <$> asType typ
 asType s = throwError $ "unsupported type: \"" ++ show s ++ "\""
 
+asKind :: Go.GoChanKind -> S.ChanKind
 asKind Go.GoIChan = S.Input
 asKind Go.GoOChan = S.Output
 asKind Go.GoIOChan = S.Bidirectional
 
 compileDecl :: MonadError String m => Go.GoDecl -> m (U.Vector S.Declaration)
-compileDecl (Go.GoConst cs) = U.fromList <$> expandDeclarations S.Const cs
-compileDecl (Go.GoVar cs) = U.fromList <$> expandDeclarations S.Var cs
-compileDecl (Go.GoFunc (Go.GoFuncDecl i s block)) = U.singleton <$> (S.Func (asId i) <$> asSig s <*> asBlock block)
+compileDecl (Go.GoConst cs) = U.fromList <$> constDeclarations cs
+compileDecl (Go.GoVar cs) = U.fromList <$> varDeclarations cs
+compileDecl (Go.GoFunc (Go.GoFuncDecl i s block)) = U.singleton <$> g
+  where
+    f = S.Func (asId i) <$> asSig s <*> asBlock block
+    g = f `catchError` \e -> throwError $ "error compiling declaration " ++ show i ++ " :" ++ e
 compileDecl (Go.GoType cs) = U.fromList <$> traverse typeDeclaration cs
   where
     typeDeclaration (Go.GoTypeSpec id' typ) = S.Type (asId id') <$> asType typ
@@ -96,8 +118,8 @@ toParams :: forall m. MonadError String m => [Go.GoParam] -> m (U.Vector S.Param
 toParams ps = U.fromList <$> mapM toParam ps
   where
     toParam :: Go.GoParam -> m S.Param
-    toParam (Go.GoParam [] typ) = throwError "an id must be specified"
-    toParam (Go.GoParam [i] typ) = S.Param (asId i) <$> asType typ
+    toParam (Go.GoParam [] typ) = S.Param Nothing <$> asType typ
+    toParam (Go.GoParam [i] typ) = S.Param (Just $ asId i) <$> asType typ
     toParam (Go.GoParam _ _) = throwError "only parameters of exactly one identifier are supported"
 
 asBlock :: forall m. MonadError String m => Go.GoBlock -> m S.Block

@@ -50,7 +50,7 @@ data Signature = Signature {
   output :: U.Vector Param
   } deriving (Eq, Read, Show)
 
-data Param = Param Id Type
+data Param = Param (Maybe Id) Type
            deriving (Eq, Read, Show)
 
 data Type = TypeName Id

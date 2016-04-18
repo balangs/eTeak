@@ -98,14 +98,15 @@ library
                    GuiSupport
                    Language.Helpers
                    Language.SimpleGo.AST
-                   Language.SimpleGo.Env
-                   Language.SimpleGo.Monad
-                   Language.SimpleGo.Eval
                    Language.SimpleGo.AST.Operators
-                   Language.SimpleGo.Process
                    Language.SimpleGo.Balsa
-                   Language.SimpleGo.Balsa.Declarations
                    Language.SimpleGo.Balsa.Builtins
+                   Language.SimpleGo.Balsa.Declarations
+                   Language.SimpleGo.Env
+                   Language.SimpleGo.Eval
+                   Language.SimpleGo.Monad
+                   Language.SimpleGo.Process
+                   Language.SimpleGo.Transforms
                    Latch
                    Layout
                    Lexer
@@ -213,7 +214,8 @@ Test-Suite spec
   hs-source-dirs: spec
   main-is:        Main.hs
 
-  other-modules:  Language.SimpleGo.ProcessSpec
+  other-modules:  Language.SimpleGo.Helpers
+                  Language.SimpleGo.ProcessSpec
 
   build-depends:  base >= 4.8 && < 5
                 , eTeak

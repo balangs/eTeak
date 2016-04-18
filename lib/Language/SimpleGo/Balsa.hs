@@ -180,9 +180,12 @@ sigDecl t@(TypeName _) = D.Param <$> balsaType t
 sigDecl t = unsupported "signature type" t
 
 declareParam :: Param -> TranslateM ()
-declareParam (Param (Id id') t) = do
+declareParam (Param (Just (Id id')) t) = do
   t' <- sigDecl t
   declare id' t'
+declareParam (Param Nothing t) = do
+  t' <- sigDecl t
+  declare "_" t'
 
 declareSig :: Signature -> TranslateM ()
 declareSig (Signature inputs _) = U.forM_ inputs declareParam
