@@ -5,7 +5,6 @@
 module Language.SimpleGo.Process where
 
 import Control.Monad (join)
-import Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Except    (MonadError, throwError, runExcept, catchError)
 import           Control.Monad.List    (runListT, ListT(..))
 import           Language.Go.Parser        (goParse)
@@ -15,7 +14,6 @@ import qualified Language.SimpleGo.Transforms  as Transforms
 import qualified Data.Vector               as U
 import Data.String (fromString)
 import Control.Monad.State.Strict (get, evalStateT, modify', StateT)
-import Control.Monad.Trans (lift)
 
 compileFile :: String -> IO (Either String S.Program)
 compileFile f = do
