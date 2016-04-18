@@ -2,7 +2,7 @@ NOTE: eTeak's GALS/synchronous backend is not available to public yet. Please fe
 
 #eTeak
 
-[![Build Status](https://travis-ci.org/joshbohde/eTeak.svg?branch=type-checking)](https://travis-ci.org/joshbohde/eTeak)
+[![Build Status](https://travis-ci.org/Nerabus/eTeak.svg?branch=type-checking)](https://travis-ci.org/Nerabus/eTeak)
 
 This is the eTeak system. A synchronous/asycnhronous synthesis backend for the Balsa language.
 
