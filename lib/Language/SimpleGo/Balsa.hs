@@ -5,7 +5,9 @@
 -- |
 
 module Language.SimpleGo.Balsa  (
-  synthesizeFile
+  synthesizeFile,
+  typeDecl,
+  TranslateM, M.runTranslateT, pos
   ) where
 
 import           Control.Monad                        (forM_)
@@ -34,8 +36,9 @@ import qualified Report                               as R
 
 type TranslateM = M.TranslateT IO Decl
 
+
 pos :: R.Pos
-pos = R.PosTopLevel
+pos = D.pos
 
 synthesizeFile :: FilePath -> IO ()
 synthesizeFile f = do
@@ -64,19 +67,28 @@ synthesizeFile f = do
 asBalsa :: Program -> TranslateM Context
 asBalsa program = do
   -- Implementation bug: "String" must be defined
-  declare "String" $ D.Type string
+  declare "String" $ D.alias string
   root' program
   D.declContext <$> M.popContext
 
 root' :: Program -> TranslateM ()
 root' program = do
-  forM_ Builtins.types $ \(n,t) -> declare (pack n) $ D.Type t
+  forM_ Builtins.types $ \(n,t) -> declare (pack n) $ D.alias t
   forM_ (declarations program) declareTopLevel
 
 
 balsaType :: Type -> TranslateM PT.Type
 balsaType (TypeName id') = return $ PT.NameType pos (unId id')
 balsaType t = M.unsupported "type" t
+
+typeDecl :: Type -> TranslateM D.Decl
+typeDecl t@(TypeName _) = D.alias <$> balsaType t
+typeDecl (Struct fields) = D.Type <$> record
+  where
+    record = PT.RecordType D.pos <$> traverse fieldDecl fields <*> pure PT.NoType
+    fieldDecl :: (Id, Type) -> TranslateM PT.RecordElem
+    fieldDecl (id', typ) = PT.RecordElem D.pos (unId id') <$> balsaType typ
+typeDecl t = unsupported "type declaration" t
 
 typedExpr :: Type -> Expr -> TranslateM PT.Expr
 typedExpr t e = do
@@ -111,8 +123,8 @@ declareTopLevel (Var (Id id') typ e) = case e of
     e' <- typedExpr' t e
     declare id' $ D.Var t (Just e')
 declareTopLevel (Type (Id id') typ) = do
-  t <- balsaType typ
-  declare id' $ D.Type t
+  t <- typeDecl typ
+  declare id' t
 --declareTopLevel f = M.unsupported "top level binding" f
 declareTopLevel f@(Func (Id id') sig block) = declare id' =<< decl
   where

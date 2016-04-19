@@ -214,7 +214,8 @@ Test-Suite spec
   hs-source-dirs: spec
   main-is:        Main.hs
 
-  other-modules:  Language.SimpleGo.Helpers
+  other-modules:  Language.SimpleGo.BalsaSpec
+                  Language.SimpleGo.Helpers
                   Language.SimpleGo.ProcessSpec
 
   build-depends:  base >= 4.8 && < 5

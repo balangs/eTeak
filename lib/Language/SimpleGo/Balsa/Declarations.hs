@@ -5,7 +5,7 @@ module Language.SimpleGo.Balsa.Declarations (
   Binding, Context,
   typeBinding,
   buildBindings, buildContext,
-  Decl(..), declContext
+  Decl(..), declContext, alias, pos
   ) where
 
 import           Control.Monad.Except (MonadError)
@@ -20,7 +20,7 @@ import qualified Report    as R
 type Binding = C.Binding PT.Decl
 type Context = C.Context PT.Decl
 
-data Decl = Type PT.Type
+data Decl = Type PT.TypeBody
           | Const PT.Expr
           | Var PT.Type (Maybe PT.Expr)
           | Chan PT.Type
@@ -30,6 +30,9 @@ data Decl = Type PT.Type
           | Out PT.Type
           | Param PT.Type
           deriving (Show, Eq)
+
+alias :: PT.Type -> Decl
+alias = Type . PT.AliasType pos
 
 pos :: R.Pos
 pos = R.NoPos
@@ -49,7 +52,7 @@ buildContext mb as = C.bindingsToContext1 <$> buildBindings mb as
 declContext :: [(T.Text, Decl)] -> Context
 declContext decls = C.bindingsToContext1 $ zipWith binding [0..] decls
   where
-    b (Type t) = (C.TypeNamespace, PT.TypeDecl pos $ PT.AliasType pos t)
+    b (Type t) = (C.TypeNamespace, PT.TypeDecl pos t)
     b (Const e) = (C.OtherNamespace, PT.ExprDecl pos e)
     b (Var _ (Just e)) = (C.OtherNamespace, PT.ExprDecl pos e)
     b (Var t Nothing) = (C.OtherNamespace, PT.VarDecl pos t)
