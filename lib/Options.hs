@@ -98,13 +98,13 @@ module Options (
             optionList = optionOptions options
 
             body [] = return (state, [])
-            body ("--":args) = return (state, args)
-            body (name@('-':'-':longArg):args) = takeOption name args foundArg
+            body ("--":args') = return (state, args')
+            body (name@('-':'-':longArg):args') = takeOption name args' foundArg
                 where foundArg = find (matchLong longArg) optionList
-            body (name@['-', shortArg]:args) = takeOption name args foundArg
+            body (name@['-', shortArg]:args') = takeOption name args' foundArg
                 where foundArg = find (matchShort shortArg) optionList
-            body (name@('-':_:_):args) = takeOption name args Nothing
-            body args = return (state, args)
+            body (name@('-':_:_):args') = takeOption name args' Nothing
+            body args' = return (state, args')
 
             matchLong arg option@(CommandLineOption {}) = longNameGiven option && optionLongName option == arg
             matchLong _ _ = False
@@ -112,10 +112,10 @@ module Options (
             matchShort arg option@(CommandLineOption {}) = shortNameGiven option && optionShortName option == arg
             matchShort _ _ = False
 
-            takeOption name args Nothing = do
+            takeOption name args' Nothing = do
                 optionUsage options $ "unrecognised command line option `" ++ name ++ "'"
-                body args
-            takeOption name args (Just option)
+                body args'
+            takeOption name args' (Just option)
                 | optionCount > argCount = do
                     optionUsage options $ "too few arguments for option `" ++ name ++ "', "
                         ++ show optionCount ++ " needed, only " ++ show argCount ++ " given"
@@ -125,7 +125,7 @@ module Options (
                     parseOptions options state' restArgs
                 where
                     argCount = length args
-                    (theseArgs, restArgs) = splitAt optionCount args
+                    (theseArgs, restArgs) = splitAt optionCount args'
                     optionCount = length $ optionArgNames option
 
     parseNameValuePairs :: String -> Maybe [(String, Maybe String)]
