@@ -83,7 +83,8 @@ data Prim = LitInt  !Integer
           | LitChar !Char
           | LitStr  !T.Text
           | LitFunc Signature Block
-          | Qual Id                              -- 'PrimaryExpr/Operand/QualifiedIdent'
+          | LitComp Type [Expr]
+          | Qual (Maybe Id) Id                              -- 'PrimaryExpr/Operand/QualifiedIdent'
           | Method Rec Id                        -- 'PrimaryExpr/Operand/MethodExpr'
           | Paren Expr                           -- 'PrimaryExpr/Operand/MethodExpr'
           | Cast Type Expr                       -- 'PrimaryExpr/Conversion'
@@ -94,7 +95,7 @@ data Prim = LitInt  !Integer
           | Index Prim Expr                      -- 'PrimaryExpr/Index'
           | Slice Prim (Maybe Expr) (Maybe Expr) -- 'PrimaryExpr/Slice'
           | TA    Prim Type                      -- 'PrimaryExpr/TypeAssertion'
-          | Call  Prim [Expr]
+          | Call  Prim [Expr] (Maybe Expr) -- The final expression is a variadic call
           deriving (Eq, Read, Show)
 
 data Comp = Comp [Element]
@@ -139,6 +140,7 @@ data Simp = Empty
           | Inc  Expr
           | Dec  Expr
           | SimpVar Id Expr
+          | Assign Expr Expr
           deriving (Eq, Read, Show)
 
 data Chan = ChanRecv (Maybe (Expr, Maybe Expr, Operators.Unary)) Expr

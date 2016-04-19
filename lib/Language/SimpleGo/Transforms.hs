@@ -26,7 +26,7 @@ exprM ma e = f e >>= ma
         prim' l@(LitChar _) = pure l
         prim' l@(LitStr _) = pure l
         prim' l@(LitFunc _ _) = pure l
-        prim' l@(Qual _) = pure l
+        prim' l@(Qual _ _) = pure l
         prim' l@(Method _ _) = pure l
         prim' (Paren ex) = Paren <$> go ex
         prim' (Cast t ex) = Cast t <$> go ex
@@ -36,7 +36,7 @@ exprM ma e = f e >>= ma
         prim' (Index p ex) = Index <$> prim' p <*> go ex
         prim' (Slice p me me') = Slice <$> prim' p <*> traverse go me <*> traverse go me'
         prim' (TA p t) = TA <$> prim' p <*> pure t
-        prim' (Call p exs) = Call <$> prim' p <*> traverse go exs
+        prim' (Call p exs final) = Call <$> prim' p <*> traverse go exs <*> traverse go final
 
 expr :: (Expr -> Expr) -> Expr -> Expr
 expr f ex = runIdentity (exprM (return . f) ex)
@@ -44,5 +44,5 @@ expr f ex = runIdentity (exprM (return . f) ex)
 replaceIota :: Integer -> Expr -> Expr
 replaceIota i = expr f
   where
-    f (Prim (Qual (Id "iota"))) = Prim (LitInt i)
+    f (Prim (Qual Nothing (Id "iota"))) = Prim (LitInt i)
     f x = x

@@ -88,15 +88,29 @@ toLit (Go.GoLitImag _ f) = return $ S.LitImag f
 toLit (Go.GoLitChar _ c) = return $ S.LitChar c
 toLit (Go.GoLitStr  _ s) = return $ S.LitStr (fromString s)
 toLit (Go.GoLitFunc (Go.GoFuncExpr sig block)) = S.LitFunc <$> asSig sig <*> asBlock block
+toLit (Go.GoLitComp typ (Go.GoComp comps)) = S.LitComp <$> asType typ <*> traverse compExpr comps
+  where
+    compExpr (Go.GoElement Go.GoKeyNone (Go.GoValueExpr e)) = toExpr e
+    compExpr c = throwError $ "unsupported composite literal element: " ++ show c
 toLit s = throwError $ "unsupported literal: \"" ++ show s ++ "\""
 
 toPrim :: MonadError String m => Go.GoPrim -> m S.Prim
 toPrim (Go.GoLiteral lit) = toLit lit
-toPrim (Go.GoQual Nothing i) = return $ S.Qual $ asId i
-toPrim (Go.GoCall _ _ True) = throwError "variadic calls are not supported"
-toPrim (Go.GoCall prim exprs _) = S.Call <$> toPrim prim <*> traverse toExpr exprs
+toPrim (Go.GoQual qual i) = return $ S.Qual (asId <$> qual) (asId i)
+toPrim c@(Go.GoCall prim exprs variadic) = do
+  (args', finalArg) <- args
+  S.Call <$> toPrim prim <*> traverse toExpr args' <*> traverse toExpr finalArg
+  where
+    args = if not variadic
+           then return (exprs, Nothing)
+           else
+             case exprs of
+               []  -> throwError $ "impossible variadic call with no expressions: " ++ show c
+               es -> return (init es, Just $ last es)
 toPrim (Go.GoMake typ es) = S.Make <$> asType typ <*> traverse toExpr es
 toPrim (Go.GoParen e) = S.Paren <$> toExpr e
+toPrim (Go.GoSlice prim e e') = S.Slice <$> toPrim prim <*> traverse toExpr e <*> traverse toExpr e'
+toPrim (Go.GoIndex prim e) = S.Index <$> toPrim prim <*> toExpr e
 toPrim s = throwError $ "unsupported primitive: \"" ++ show s ++ "\""
 
 asType :: MonadError String m => Go.GoType -> m S.Type
@@ -109,6 +123,7 @@ asType (Go.GoStructType fields) = S.Struct . concat <$> traverse fromField field
       typ' <- asType typ
       return $ map (\i -> (asId i, typ')) ids
     fromField f = throwError $ "anonymous fields are not supported: " ++ show f
+asType (Go.GoFunctionType sig) = S.FunctionType <$> asSig sig
 asType s = throwError $ "unsupported type: \"" ++ show s ++ "\""
 
 asKind :: Go.GoChanKind -> S.ChanKind

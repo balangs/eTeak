@@ -42,7 +42,7 @@ evalPrim (LitInt i) = return $ IntegralR GoInt i
 evalPrim (LitReal f) = return $ FloatR GoFloat f
 evalPrim (LitChar c) = return $ CharR c
 evalPrim (LitStr t) = return $ StringR t
-evalPrim (Call (Qual (Id "byte")) [e]) = do
+evalPrim (Call (Qual Nothing (Id "byte")) [e] _) = do
   a <- eval e
   case a of
     IntegralR _ i -> return $ IntegralR Uint8 i

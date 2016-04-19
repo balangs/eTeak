@@ -1,7 +1,7 @@
 -- |
 
 module Language.SimpleGo.Balsa.Builtins (
-  types,
+  types, functions,
   bool,
   byte, rune, int, uint,
   uint8, uint16, uint32, uint64,
@@ -86,4 +86,18 @@ types = [
   ("byte", alias "uint8"),
   ("rune", alias "int32"),
   ("string", string)
+  ]
+
+smash :: PT.Type -> PT.Expr -> PT.Expr
+smash = PT.CastExpr pos
+
+unsmash :: PT.Expr -> PT.Expr
+unsmash = PT.UnExpr pos PT.NoType PT.UnSmash
+
+functions :: [(String, PT.Expr -> PT.Expr)]
+functions = [
+  ("smashU32", smash uint32),
+  ("smashU8", smash uint8),
+  ("unsmashU8", unsmash),
+  ("unsmashU32", unsmash)
   ]
