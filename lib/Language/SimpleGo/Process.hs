@@ -9,8 +9,7 @@ import           Control.Monad                (join)
 import           Control.Monad.Except         (MonadError, catchError,
                                                runExcept, throwError)
 import           Control.Monad.List           (ListT (..), runListT)
-import           Control.Monad.State.Strict   (StateT, evalStateT, get, gets,
-                                               put)
+import           Control.Monad.State.Strict   (StateT, evalStateT, gets, put)
 import           Data.String                  (fromString)
 import qualified Data.Vector                  as U
 import           Language.Go.Parser           (goParse)

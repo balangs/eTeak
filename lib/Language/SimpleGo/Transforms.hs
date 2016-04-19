@@ -16,8 +16,8 @@ exprM ma e = f e >>= ma
   where
     go = exprM ma
     f Zero = ma Zero
-    f (UnOp o e) = UnOp o <$> go e
-    f (BinOp o e e') = BinOp o <$> go e <*> go e'
+    f (UnOp o ex) = UnOp o <$> go ex
+    f (BinOp o ex ex') = BinOp o <$> go ex <*> go ex'
     f (Prim prim) = Prim <$> prim' prim
       where
         prim' l@(LitInt  _) = pure l
@@ -28,18 +28,18 @@ exprM ma e = f e >>= ma
         prim' l@(LitFunc _ _) = pure l
         prim' l@(Qual _) = pure l
         prim' l@(Method _ _) = pure l
-        prim' (Paren e) = Paren <$> go e
-        prim' (Cast t e) = Cast t <$> go e
+        prim' (Paren ex) = Paren <$> go ex
+        prim' (Cast t ex) = Cast t <$> go ex
         prim' l@(New _) = pure l
-        prim' (Make t es) = Make t <$> traverse go es
+        prim' (Make t exs) = Make t <$> traverse go exs
         prim' l@(Select _ _) = pure l
-        prim' (Index p e) = Index <$> prim' p <*> go e
+        prim' (Index p ex) = Index <$> prim' p <*> go ex
         prim' (Slice p me me') = Slice <$> prim' p <*> traverse go me <*> traverse go me'
         prim' (TA p t) = TA <$> prim' p <*> pure t
-        prim' (Call p es) = Call <$> prim' p <*> traverse go es
+        prim' (Call p exs) = Call <$> prim' p <*> traverse go exs
 
 expr :: (Expr -> Expr) -> Expr -> Expr
-expr f expr = runIdentity (exprM (return . f) expr)
+expr f ex = runIdentity (exprM (return . f) ex)
 
 replaceIota :: Integer -> Expr -> Expr
 replaceIota i = expr f

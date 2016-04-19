@@ -8,14 +8,10 @@ module Language.SimpleGo.Balsa  (
   synthesizeFile
   ) where
 
-import           Control.Monad                        (forM_, zipWithM)
-import           Control.Monad.Except                 (ExceptT (..), MonadError,
-                                                       runExceptT, throwError,
+import           Control.Monad                        (forM_)
+import           Control.Monad.Except                 (ExceptT (..), runExceptT,
                                                        withExceptT)
-import           Control.Monad.State                  (MonadState, modify',
-                                                       runStateT)
 import           Control.Monad.Trans                  (liftIO)
-import qualified Data.Foldable                        as F
 import           Data.Text                            (pack, unpack)
 import qualified Data.Vector                          as U
 
@@ -26,10 +22,7 @@ import           Language.SimpleGo.AST
 import qualified Language.SimpleGo.AST.Operators      as Operators
 import           Language.SimpleGo.Balsa.Builtins     (bool, byte, string)
 import qualified Language.SimpleGo.Balsa.Builtins     as Builtins
-import           Language.SimpleGo.Balsa.Declarations (Binding, Context, Decl,
-                                                       buildBindings,
-                                                       buildContext,
-                                                       typeBinding)
+import           Language.SimpleGo.Balsa.Declarations (Context, Decl)
 import qualified Language.SimpleGo.Balsa.Declarations as D
 import qualified Language.SimpleGo.Eval               as Eval
 import           Language.SimpleGo.Monad              (declare, unsupported)
@@ -91,21 +84,22 @@ typedExpr t e = do
   typedExpr' t' e
 
 -- deprecated
+toExpr :: Expr -> TranslateM PT.Expr
 toExpr = typedExpr' PT.NoType
 
 typedExpr' :: PT.Type -> Expr -> TranslateM PT.Expr
-typedExpr' t (Prim prim) = fromPrim prim
+typedExpr' _ (Prim prim) = fromPrim prim
 typedExpr' t (UnOp Plus e) = PT.BinExpr pos t PT.BinAdd (PT.ValueExpr pos t (PT.IntValue 0)) <$> typedExpr' t e
 typedExpr' t (UnOp Minus e) = PT.BinExpr pos t PT.BinSub (PT.ValueExpr pos t (PT.IntValue 0)) <$> toExpr e
 typedExpr' t (UnOp Not e) = PT.UnExpr pos t PT.UnNot <$> typedExpr' t e
 typedExpr' t (BinOp op e e') = PT.BinExpr pos t <$> binOp op <*> typedExpr' t e <*> typedExpr' t e'
-typedExpr' t e = M.unsupported "expr" e
+typedExpr' _ e = M.unsupported "expr" e
 
 declareTopLevel :: Declaration -> TranslateM ()
 declareTopLevel (Const (Id id') typ e) = do
   e' <- typedExpr typ e
   declare id' $ D.Const e'
-declareTopLevel (Var (Id id') typ (Prim (Make (Channel Bidirectional typ') []))) = do
+declareTopLevel (Var (Id id') _ (Prim (Make (Channel Bidirectional typ') []))) = do
   t' <- balsaType typ'
   declare id' $ D.Chan t'
 declareTopLevel (Var (Id id') typ e) = case e of
@@ -114,15 +108,13 @@ declareTopLevel (Var (Id id') typ e) = case e of
     declare id' $ D.Var t Nothing
   _  -> do
     t <- balsaType typ
-    e <- typedExpr' t e
-    declare id' $ D.Var t (Just e)
+    e' <- typedExpr' t e
+    declare id' $ D.Var t (Just e')
 declareTopLevel (Type (Id id') typ) = do
   t <- balsaType typ
   declare id' $ D.Type t
 --declareTopLevel f = M.unsupported "top level binding" f
-declareTopLevel f@(Func (Id id') sig block) = do
-  f <- decl
-  declare id' f
+declareTopLevel f@(Func (Id id') sig block) = declare id' =<< decl
   where
     decl = if isProc sig
            then procedure
@@ -132,14 +124,11 @@ declareTopLevel f@(Func (Id id') sig block) = do
       M.newContext
       declareSig sig
       b <- blockCmd block
-      sigDecl <- M.popContext
-      return $ D.Proc (D.declContext sigDecl) b
+      sigDecl' <- M.popContext
+      return $ D.Proc (D.declContext sigDecl') b
 
 true :: PT.Value
 true = PT.IntValue 1
-
-false :: PT.Value
-false = PT.IntValue 0
 
 fromPrim :: Prim -> TranslateM PT.Expr
 fromPrim (LitInt i) = return $ PT.ValueExpr pos byte (PT.IntValue i)
@@ -193,9 +182,9 @@ declareSig (Signature inputs _) = U.forM_ inputs declareParam
 blockCmd :: Block -> TranslateM PT.Cmd
 blockCmd (Block statements) = do
   M.newContext
-  cmd <- seqCmd $ U.toList statements
+  cmd' <- seqCmd $ U.toList statements
   c <- D.declContext <$> M.popContext
-  return $ PT.BlockCmd pos c cmd
+  return $ PT.BlockCmd pos c cmd'
 
 seqCmd :: [Statement] -> TranslateM PT.Cmd
 seqCmd ss = collapsePars <$> traverse parCmd ss
@@ -287,6 +276,7 @@ cmd f@(ForThree
       case (start', end') of
         (Eval.IntegralR t s, Eval.IntegralR _ e) ->
           return $ PT.Interval (s, pred e) $ lookupType t
+        _ -> Nothing
     lookupType Eval.Int8 = Builtins.int8
     lookupType Eval.Int16 = Builtins.int16
     lookupType Eval.Int32 = Builtins.int32
