@@ -5,11 +5,12 @@ module Language.SimpleGo.ProcessSpec where
 
 import           Control.Monad.Except      (runExcept)
 import qualified Data.Vector               as U
+import           Test.Hspec
+
 import qualified Language.Go.Syntax.AST    as Go
 import qualified Language.SimpleGo.AST     as S
 import qualified Language.SimpleGo.Helpers as Helpers
 import qualified Language.SimpleGo.Process as Process
-import           Test.Hspec
 
 
 shouldParseDecl :: String -> [S.Declaration] -> Expectation
