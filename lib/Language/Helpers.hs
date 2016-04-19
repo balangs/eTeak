@@ -11,14 +11,13 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Eval                   as E
 import qualified Finish                 as F
 import           Gen                    (TechMapping, genMakeGatesFile)
-import           NetParts               (NetworkIF, Part, writeNetworkFile)
+import           NetParts               (Part, writeNetworkFile)
 import qualified Network                as Net
 import qualified ParseTree              as PT
 import           Report                 (Completeness (..), Why (..), runWhyT)
 import qualified Teak
 import           ToolOptions            (ToolOptions, defaultToolOptions,
-                                         optGenPartToGate, optTech,
-                                         teakFindTechMapping)
+                                         optTech, teakFindTechMapping)
 
 type Context = C.Context PT.Decl
 
