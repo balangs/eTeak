@@ -12,31 +12,35 @@ import qualified Language.SimpleGo.Process as Process
 import           Test.Hspec
 
 
+shouldParseDecl :: String -> [S.Declaration] -> Expectation
+source `shouldParseDecl` ds = do
+  let processed = Helpers.parseDecl source >>= (runExcept . Process.compileDecl)
+  processed `shouldBe` (Right $ U.fromList ds)
 
 spec :: Spec
 spec = do
-  describe "compile" $ do
+  describe "compile" $
     it "should compile the trivial program" $ do
       let p = Go.GoSource (Go.GoId "main") [] []
       runExcept (Process.compile p) `shouldBe` (Right $ S.Program U.empty)
+
   describe "compileDecl" $ do
-    it "should compile a trivial single const" $ do
-      let Right a = Helpers.parseDecl "const a uint32 = 4"
-          expected = U.fromList [
-            S.Const (S.Id "a") (S.TypeName (S.Id "uint32")) (S.Prim (S.LitInt 4))
-            ]
-      runExcept (Process.compileDecl a) `shouldBe` Right expected
-    it "should substitute iota" $ do
-      let Right a = Helpers.parseDecl "const (a int = iota \n b int = iota)"
-          expected = U.fromList [
-            S.Const (S.Id "a") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 0)),
-            S.Const (S.Id "b") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 1))
-            ]
-      runExcept (Process.compileDecl a) `shouldBe` Right expected
-    it "should repeat the last expression" $ do
-      let Right a = Helpers.parseDecl "const (a int = iota \n b)"
-          expected = U.fromList [
-            S.Const (S.Id "a") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 0)),
-            S.Const (S.Id "b") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 1))
-            ]
-      runExcept (Process.compileDecl a) `shouldBe` Right expected
+    describe "const decls" $ do
+      it "should compile a trivial single const" $
+        "const a uint32 = 4" `shouldParseDecl` [
+          S.Const (S.Id "a") (S.TypeName (S.Id "uint32")) (S.Prim (S.LitInt 4))
+          ]
+      it "should substitute iota" $
+        "const (a int = iota \n b int = iota)" `shouldParseDecl` [
+              S.Const (S.Id "a") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 0)),
+              S.Const (S.Id "b") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 1))
+              ]
+      it "should repeat the last expression" $
+        "const (a int = iota \n b)" `shouldParseDecl` [
+              S.Const (S.Id "a") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 0)),
+              S.Const (S.Id "b") (S.TypeName (S.Id "int")) (S.Prim (S.LitInt 1))
+              ]
+
+    describe "type decls" $ do
+      it "should compile a type alias" $
+        "type a byte" `shouldParseDecl` [S.Type (S.Id "a") (S.TypeName (S.Id "byte"))]
