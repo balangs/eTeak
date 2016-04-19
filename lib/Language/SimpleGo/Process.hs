@@ -1,19 +1,22 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 -- | Probably need to make this an internal module at some point instead
 
 module Language.SimpleGo.Process where
 
-import Control.Monad (join)
-import           Control.Monad.Except    (MonadError, throwError, runExcept, catchError)
-import           Control.Monad.List    (runListT, ListT(..))
-import           Language.Go.Parser        (goParse)
-import qualified Language.Go.Syntax.AST as Go
-import qualified Language.SimpleGo.AST  as S
-import qualified Language.SimpleGo.Transforms  as Transforms
-import qualified Data.Vector               as U
-import Data.String (fromString)
-import Control.Monad.State.Strict (get, evalStateT, put, modify', StateT)
+import           Control.Monad                (join)
+import           Control.Monad.Except         (MonadError, catchError,
+                                               runExcept, throwError)
+import           Control.Monad.List           (ListT (..), runListT)
+import           Control.Monad.State.Strict   (StateT, evalStateT, get, gets,
+                                               put)
+import           Data.String                  (fromString)
+import qualified Data.Vector                  as U
+import           Language.Go.Parser           (goParse)
+import qualified Language.Go.Syntax.AST       as Go
+import qualified Language.SimpleGo.AST        as S
+import qualified Language.SimpleGo.Transforms as Transforms
 
 compileFile :: String -> IO (Either String S.Program)
 compileFile f = do
@@ -27,43 +30,48 @@ compileFile f = do
 compile :: MonadError String m => Go.GoSource -> m S.Program
 compile = fmap (S.Program . join) . U.mapM compileDecl . U.fromList . Go.getTopLevelDecl
 
+flattenCVSpec :: MonadError String m => Go.GoCVSpec -> ListT m (S.Id, S.Type, S.Expr)
+flattenCVSpec (Go.GoCVSpec ids (Just typ) exprs) = do
+      typ' <- asType typ
+      (id', mayExpr) <- ListT $ return $ zip ids (map Just exprs ++ repeat Nothing)
+      expr' <- mayToExpr mayExpr
+      return (asId id', typ', expr')
+flattenCVSpec c@(Go.GoCVSpec _ Nothing _) = throwError $ "explicit types are required in declaration: " ++ show c
+
+
+-- Desugar a parenthesized const declaration, which is a list of const specs.
+-- See the spec at https://golang.org/ref/spec#Constant_declarations
+-- For each spec, the keyword iota is replaced with an incrementing integer
+-- An expressionless const spec substitutes the previous const spec's expression.
 constDeclarations :: forall m. MonadError String m => [Go.GoCVSpec] -> m [S.Declaration]
 constDeclarations cs = evalStateT (runListT f) (Nothing, 0)
   where
     mkDecl c@(Go.GoCVSpec _ Nothing _) =
       throwError $ "explicit types are required " ++ show c
-    mkDecl c@(Go.GoCVSpec ids (Just t) exprs) = do
-      t' <- asType t
-      (i, e) <- ListT $ return $ zip ids (map Just exprs ++ repeat Nothing)
-      e' <- mayToExpr e
-      (_, iota) <- get
+    mkDecl c = do
+      iota <- gets snd
+      (id', typ, expr) <- flattenCVSpec c
       put (Just c, succ iota)
-      return $ S.Const (asId i) t' (Transforms.replaceIota iota e')
+      return $ S.Const id' typ (Transforms.replaceIota iota expr)
 
     f :: ListT (StateT (Maybe Go.GoCVSpec, Integer) m) S.Declaration
     f = do
       c <- ListT $ return cs
-      (prev, _) <- get
+      prev <- gets fst
       case (prev, c) of
-        -- Use the previous expressions declararion
+        --
         (Just (Go.GoCVSpec ids' typ' exprs'), Go.GoCVSpec ids Nothing []) ->
           if length ids == length ids'
           then mkDecl (Go.GoCVSpec ids typ' exprs')
-          else throwError "need the same number if ids if using blank expressions in a constant declaration"
+          else throwError "need the same number of ids if using blank expressions in a constant declaration"
         _ -> mkDecl c
 
 varDeclarations :: forall m. MonadError String m => [Go.GoCVSpec] -> m [S.Declaration]
-varDeclarations cs = runListT f
-  where
-    f = do
-      c@(Go.GoCVSpec ids typ exprs) <- ListT $ return cs
-      case typ of
-        Nothing -> throwError $ "explicit types are required " ++ show c
-        Just t -> do
-          t' <- asType t
-          (i, e) <- ListT $ return $ zip ids (map Just exprs ++ repeat Nothing)
-          e' <- mayToExpr e
-          return $ S.Var (asId i) t' e'
+varDeclarations cs = runListT $ do
+  c <- ListT $ return cs
+  (id', typ, expr) <- flattenCVSpec c
+  return $ S.Var id' typ expr
+
 
 mayToExpr :: MonadError String m => Maybe Go.GoExpr -> m S.Expr
 mayToExpr Nothing = return S.Zero
@@ -198,7 +206,7 @@ asSimple s = throwError $ "unsupported simple expr" ++ show s
 forClause :: MonadError String m => Go.GoForClause -> S.Block -> m S.Statement
 forClause (Go.GoForWhile mayExpr) b = S.ForWhile <$> traverse toExpr mayExpr <*> pure b
 forClause (Go.GoForThree simp mayExpr simp') b = S.ForThree <$> asSimple simp <*> traverse toExpr mayExpr <*> asSimple simp' <*> pure b
---forClause (Go.GoForRange [GoExpr] GoExpr Bool)
+forClause f _ = throwError $ "unsupported for clause" ++ show f
 
 parseUnOp :: MonadError String m => String -> m S.Unary
 parseUnOp "+" = return S.Plus
