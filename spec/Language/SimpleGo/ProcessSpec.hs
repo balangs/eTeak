@@ -45,3 +45,8 @@ spec = do
     describe "type decls" $ do
       it "should compile a type alias" $
         "type a byte" `shouldParseDecl` [S.Type (S.Id "a") (S.TypeName (S.Id "byte"))]
+
+      it "should compile a struct" $
+        "type a struct { \n b bool \n }" `shouldParseDecl` [
+        S.Type (S.Id "a") (S.Struct [(S.Id "b", S.TypeName (S.Id "bool"))])
+        ]

@@ -103,6 +103,12 @@ asType :: MonadError String m => Go.GoType -> m S.Type
 asType (Go.GoTypeName _ i) = return $ S.TypeName $ asId i
 asType (Go.GoChannelType kind typ) = S.Channel (asKind kind) <$> asType typ
 asType (Go.GoSliceType typ) = S.SliceType <$> asType typ
+asType (Go.GoStructType fields) = S.Struct . concat <$> traverse fromField fields
+  where
+    fromField (Go.GoFieldType _ ids typ) = do
+      typ' <- asType typ
+      return $ map (\i -> (asId i, typ')) ids
+    fromField f = throwError $ "anonymous fields are not supported: " ++ show f
 asType s = throwError $ "unsupported type: \"" ++ show s ++ "\""
 
 asKind :: Go.GoChanKind -> S.ChanKind

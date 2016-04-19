@@ -60,6 +60,7 @@ data Type = TypeName Id
           | MapType Type Type
           | PointerType Type
           | SliceType Type
+          | Struct [(Id, Type)]
           | EllipsisType Type -- only in Literals
           | VariadicType Type -- only in Funcs
           deriving (Eq, Read, Show)
