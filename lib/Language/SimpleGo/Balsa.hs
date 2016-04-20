@@ -93,23 +93,6 @@ typeDecl (Struct fields) = D.Type <$> record
     fieldDecl (id', typ) = PT.RecordElem D.pos (unId id') <$> balsaType typ
 typeDecl t = unsupported "type declaration" t
 
-typedExpr :: Type -> Expr -> TranslateM PT.Expr
-typedExpr t e = do
-  t' <- balsaType t
-  typedExpr' t' e
-
--- deprecated
-toExpr :: Expr -> TranslateM PT.Expr
-toExpr = typedExpr' PT.NoType
-
-typedExpr' :: PT.Type -> Expr -> TranslateM PT.Expr
-typedExpr' _ (Prim prim) = fromPrim prim
-typedExpr' t (UnOp Plus e) = PT.BinExpr pos t PT.BinAdd (PT.ValueExpr pos t (PT.IntValue 0)) <$> typedExpr' t e
-typedExpr' t (UnOp Minus e) = PT.BinExpr pos t PT.BinSub (PT.ValueExpr pos t (PT.IntValue 0)) <$> toExpr e
-typedExpr' t (UnOp Not e) = PT.UnExpr pos t PT.UnNot <$> typedExpr' t e
-typedExpr' t (BinOp op e e') = PT.BinExpr pos t <$> binOp op <*> typedExpr' t e <*> typedExpr' t e'
-typedExpr' _ e = M.unsupported "expr" e
-
 declareTopLevel :: Declaration -> TranslateM ()
 declareTopLevel (Const (Id id') typ e) = do
   e' <- typedExpr typ e
@@ -362,12 +345,30 @@ exprCmd :: Expr -> TranslateM PT.Cmd
 exprCmd c@(Prim (Call _ _ (Just _))) = unsupported "variadic call" c
 exprCmd (Prim (Call (LitFunc sig block) es _)) = do
       M.newContext
-      declareTopLevel $ Func (Id "$") sig block
+      id' <- M.fresh
+      declareTopLevel $ Func (Id id') sig block
       c <- D.declContext <$> M.popContext
-      PT.BlockCmd pos c <$> call
+      PT.BlockCmd pos c <$> call id'
   where
-    call = PT.CallCmd pos (PT.NameCallable pos "$") C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
+    call id' = PT.CallCmd pos (PT.NameCallable pos (unpack id')) C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
 exprCmd (Prim (Call (Qual Nothing (Id "print")) es _)) = PT.PrintCmd pos <$> mapM toExpr es
 exprCmd (Prim (Call (Qual Nothing (Id "println")) es _)) = PT.PrintCmd pos <$> mapM toExpr es
 exprCmd (Prim (Call (Qual Nothing id') es _)) = PT.CallCmd pos (PT.NameCallable pos (unId id')) C.EmptyContext . map PT.ExprProcActual <$> mapM toExpr es
 exprCmd e = unsupported "expression" e
+
+typedExpr :: Type -> Expr -> TranslateM PT.Expr
+typedExpr t e = do
+  t' <- balsaType t
+  typedExpr' t' e
+
+-- deprecated
+toExpr :: Expr -> TranslateM PT.Expr
+toExpr = typedExpr' PT.NoType
+
+typedExpr' :: PT.Type -> Expr -> TranslateM PT.Expr
+typedExpr' _ (Prim prim) = fromPrim prim
+typedExpr' t (UnOp Plus e) = PT.BinExpr pos t PT.BinAdd (PT.ValueExpr pos t (PT.IntValue 0)) <$> typedExpr' t e
+typedExpr' t (UnOp Minus e) = PT.BinExpr pos t PT.BinSub (PT.ValueExpr pos t (PT.IntValue 0)) <$> toExpr e
+typedExpr' t (UnOp Not e) = PT.UnExpr pos t PT.UnNot <$> typedExpr' t e
+typedExpr' t (BinOp op e e') = PT.BinExpr pos t <$> binOp op <*> typedExpr' t e <*> typedExpr' t e'
+typedExpr' _ e = M.unsupported "expr" e

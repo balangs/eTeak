@@ -1,12 +1,14 @@
+{-# LANGUAGE OverloadedStrings #-}
 -- |
 
 module Language.SimpleGo.Monad (
   TranslateT, Msg(..),
-  runTranslateT, unsupported, declare, popContext, newContext, notDefined, lookup, typeError
+  runTranslateT, unsupported, declare, popContext, newContext, notDefined, lookup, typeError, fresh
   ) where
 
 import           Control.Monad.Except  (ExceptT (..), runExceptT, throwError)
 import           Control.Monad.State   (StateT, evalStateT, gets, modify')
+import           Data.Monoid           ((<>))
 import qualified Data.Text             as T
 import qualified Language.SimpleGo.Env as Env
 import           Prelude               hiding (lookup)
@@ -19,7 +21,8 @@ data Msg = Unsupported String
 
 
 data TranslationState decl = TranslationState {
-  env :: Env.Env decl
+  env    :: Env.Env decl,
+  idents :: Integer
 } deriving (Show, Eq)
 
 modifyEnv :: (Env.Env a -> Env.Env a) -> TranslationState a -> TranslationState a
@@ -27,7 +30,8 @@ modifyEnv f t = TranslationState{env=f $ env t}
 
 def :: TranslationState decl
 def = TranslationState {
-  env = Env.new
+  env = Env.new,
+  idents = 0
   }
 
 type TranslateT m decl = ExceptT Msg (StateT (TranslationState decl) m)
@@ -67,3 +71,9 @@ popContext = do
     Right (context, e)  -> do
       modify' $ modifyEnv (const e)
       return context
+
+fresh :: (Monad m) => TranslateT m decl T.Text
+fresh = do
+  i <- gets idents
+  modify' $ \t -> t{idents = succ i}
+  return $ "$:" <> T.pack (show i)
