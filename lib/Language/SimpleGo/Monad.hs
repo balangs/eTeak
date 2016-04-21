@@ -26,7 +26,7 @@ data TranslationState decl = TranslationState {
 } deriving (Show, Eq)
 
 modifyEnv :: (Env.Env a -> Env.Env a) -> TranslationState a -> TranslationState a
-modifyEnv f t = TranslationState{env=f $ env t}
+modifyEnv f t = t{env=f $ env t}
 
 def :: TranslationState decl
 def = TranslationState {
