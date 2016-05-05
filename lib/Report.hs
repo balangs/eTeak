@@ -280,6 +280,7 @@ module Report (
         (headToken, rest) <- maybeLex str
         case headToken of
             "NoPos" -> return (NoPos, rest)
+            "PosTopLevel" -> return (PosTopLevel, rest)
             "PosFile" -> readFields fields (PosFile "" (ImportFile "")) rest
                 where fields = [
                         ReadField "posFile" readsC (\(PosFile _ ip) f -> PosFile f ip),

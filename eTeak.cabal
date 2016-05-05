@@ -75,17 +75,125 @@ extra-doc-files:     doc/*.txt
                      doc/font
                      doc/language-ideas
 
+
+library
+  -- Modules exported by the library.
+  exposed-modules: Balsa
+                   BalsaLexer
+                   BalsaParser
+                   Bind
+                   Bits
+                   Call
+                   Chan
+                   Config
+                   Context
+                   Dot
+                   Eval
+                   Expr
+                   Finish
+                   Gates
+                   Gen
+                   Graph
+                   Gui
+                   GuiSupport
+                   Language.Helpers
+                   Language.SimpleGo.AST
+                   Language.SimpleGo.AST.Operators
+                   Language.SimpleGo.Balsa
+                   Language.SimpleGo.Balsa.Builtins
+                   Language.SimpleGo.Balsa.Declarations
+                   Language.SimpleGo.Env
+                   Language.SimpleGo.Eval
+                   Language.SimpleGo.Monad
+                   Language.SimpleGo.Process
+                   Language.SimpleGo.Transforms
+                   Latch
+                   Layout
+                   Lexer
+                   Misc
+                   Monitor
+                   NetParts
+                   Network
+                   Optim
+                   Options
+                   ParseTree
+                   Parser
+                   Paths_eTeak
+                   Plot
+                   Print
+                   Report
+                   Rule
+                   Show
+                   Sim
+                   SimBuiltin
+                   SimPN
+                   SimTypes
+                   State
+                   Teak
+                   TeakScript
+                   ToolOptions
+                   Traverse
+                   Type
+  -- other-modules:
+
+  -- LANGUAGE extensions used by modules in this package.
+  other-extensions:    FlexibleInstances, FlexibleContexts, MultiParamTypeClasses, TypeSynonymInstances, RankNTypes, ExistentialQuantification
+
+  -- Other library packages from which modules are imported.
+  build-depends:    base >=4.8 && < 5
+                  , array >=0.5 && <0.6
+                  , cairo >=0.13 && <0.14
+                  , containers >=0.5 && <0.6
+                  , directory >=1.2 && <1.3
+                  , filepath >=1.4 && <1.5
+                  , glib
+                  , gtk >=0.13 && <0.15
+                  , language-go >= 0.9 && < 0.10
+                  , mtl >=2.2 && <2.3
+                  , old-time >= 1.1
+                  , process >=1.2 && <1.3
+                  , text
+                  , transformers
+                  , unix >=2.7 && <2.8
+                  , vector
+
+  -- Directories containing source files.
+  hs-source-dirs: lib
+
+  -- Base language which the package is written in.
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+
 executable eTeak
   main-is:             Main.hs
-  other-modules:       Balsa, BalsaLexer, BalsaParser, Bind, Bits, Call, Chan, Config, Context, Dot, Eval
-                       Expr, Finish, Gates, Gen, Graph, Gui, GuiSupport, Latch, Layout, Lexer, Misc, Monitor
-                       NetParts, Network, Optim, Options, ParseTree, Parser, Paths_eTeak, Plot, Print, Report
-                       Rule, Show, Sim, SimBuiltin, SimPN, SimTypes, State, Teak, TeakScript, ToolOptions
-                       Traverse, Type
+  other-modules:
   other-extensions:    FlexibleInstances, FlexibleContexts, MultiParamTypeClasses, TypeSynonymInstances, RankNTypes, ExistentialQuantification
-  build-depends:       base >=4.7 && <5, cairo >=0.13 && <0.14, directory >=1.2 && <1.3, mtl >=2.2 && <2.3, filepath >=1.4 && <1.5, array >=0.5 && <0.6, gtk >=0.14 && <0.15, glib, containers >=0.5 && <0.6, unix >=2.7 && <2.8, process >=1.2 && <1.3, old-time >= 1.1, text
+  build-depends:       base >=4.7 && <5
+                     , array >=0.5 && <0.6
+                     , cairo >=0.13 && <0.14
+                     , containers >=0.5 && <0.6
+                     , directory >=1.2 && <1.3
+                     , eTeak
+                     , filepath >=1.4 && <1.5
+                     , glib
+                     , gtk >=0.13 && <0.15
+                     , language-go >= 0.9 && < 0.10
+                     , mtl >=2.2 && <2.3
+                     , old-time >= 1.1
+                     , process >=1.2 && <1.3
+                     , text
+                     , unix >=2.7 && <2.8
+                     , vector
   hs-source-dirs:      src
   default-language:    Haskell2010
+
+executable go-teak
+  build-depends:       base
+                     , eTeak
+  hs-source-dirs:      go-teak
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  ghc-options:         -Wall -rtsopts
 
 executable eTeak-runtime
   main-is:             eTeak-runtime.hs
@@ -100,3 +208,23 @@ executable aschem
   build-depends:       base, cairo >=0.13 && <0.14, directory >=1.2 && <1.3, mtl, filepath, array >=0.5 && <0.6
   hs-source-dirs:      aschem
   default-language:    Haskell2010
+
+Test-Suite spec
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: spec
+  main-is:        Main.hs
+
+  other-modules:  Language.SimpleGo.BalsaSpec
+                  Language.SimpleGo.Helpers
+                  Language.SimpleGo.ProcessSpec
+
+  build-depends:  base >= 4.8 && < 5
+                , eTeak
+                , language-go
+                , QuickCheck
+                , hspec
+                , vector
+                , mtl
+
+  default-language:    Haskell2010
+  ghc-options:         -Wall -fno-warn-orphans

@@ -169,7 +169,7 @@ module Show (
     maybeRead str = do
         (ret, rest) <- listToMaybe $ reads str
         case rest of
-            [] -> return ret 
+            [] -> return ret
             _ -> fail ""
 
     maybeCurl :: String -> Maybe (Bool, String)
@@ -290,9 +290,9 @@ module Show (
         return ((low,high), rest5)
 
     parenC :: ReadS a -> ReadS a
-    parenC reads str = fromMaybe (reads str) $ do
+    parenC reads' str = fromMaybe (reads' str) $ do
         rest <- liftM skipComments $ maybeKeyword "(" str
-        (ret, rest2) <- listToMaybe $ parenC reads rest
+        (ret, rest2) <- listToMaybe $ parenC reads' rest
         rest3 <- liftM skipComments $ maybeKeyword ")" rest2
         return [(ret, rest3)]
 

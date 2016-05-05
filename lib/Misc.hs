@@ -84,8 +84,9 @@ module Misc (
     import System.Process
     import System.Directory
     import System.Exit
-    import Data.Char
+    import Data.Char hiding (chr)
     import Control.Monad
+    import Data.Function (on)
 
     log2 :: Integral a => a -> Int
     log2 0 = error "log2 0 is not computable"
@@ -262,12 +263,9 @@ module Misc (
     compareFst l r = fst l `compare` fst r
 
     sortAndGroupByElem :: (Ord a, Eq a) => (b -> a) -> [b] -> [(a, [b])]
-    sortAndGroupByElem elem l = map rearrange $ groupBy eqElem $ sortBy compareElem l
+    sortAndGroupByElem f l = map rearrange $ groupBy ((==) `on` f) $ sortBy (compare `on` f) l
         where
-            eqElem l r = elem l == elem r
-            compareElem l r = elem l `compare` elem r
-
-            rearrange (e:es) = (elem e, e:es)
+            rearrange (e:es) = (f e, e:es)
             rearrange [] = error "rearrange: can't happen"
 
     -- columnFormat : format the given columns of strings into a list of row strings

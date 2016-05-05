@@ -200,11 +200,22 @@ module ParseTree (
         | DontCareValue
         deriving (Show, Read, Eq, Ord)
 
-    data BinOp = BinMul | BinDiv | BinMod | BinPow
-        | BinAdd | BinSub
-        | BinAnd | BinOr | BinXor
-        | BinLT | BinGT | BinLE | BinGE | BinNE | BinEQ
-        deriving (Show, Read, Eq, Ord)
+    data BinOp = BinMul
+               | BinDiv
+               | BinMod
+               | BinPow
+               | BinAdd
+               | BinSub
+               | BinAnd
+               | BinOr
+               | BinXor
+               | BinLT
+               | BinGT
+               | BinLE
+               | BinGE
+               | BinNE
+               | BinEQ
+         deriving (Show, Read, Eq, Ord)
 
     data UnOp = UnNot | UnNeg | UnLog | UnSmash
         deriving (Show, Read, Eq, Ord)
