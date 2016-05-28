@@ -1,4 +1,4 @@
-NOTE: eTeak's GALS/synchronous backend is not available to public yet. Please feel free to try out its asynchronous (dual-rail 4-phase RTZ) beackend. eTeak's multiple-clock syntehsis feature is a work in progress by the APT group of the University of Manchetser, UK.  
+NOTE: eTeak's GALS/synchronous backend is not available to public yet. Please feel free to try out the asynchronous (dual-rail 4-phase RTZ) beackend. eTeak's multiple-clock syntehsis feature is a work in progress by the APT group of the University of Manchetser, UK.  
 
 #eTeak
 
@@ -9,6 +9,7 @@ Install [stack](https://github.com/commercialhaskell/stack)
 
 If you're building from git, first you need to
 
+	apt-get install automake autoconf libgtk2.0-dev
 	./bootstrap
 
 If you've done that or you're building from tarball, proceed to:
