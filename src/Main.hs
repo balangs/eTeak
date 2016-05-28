@@ -249,9 +249,9 @@ module Main (
     header :: IO ()
     header = do
         putStrLn ""
-        putStrLn " _|_  _  _  |    Teak synthesiser for the Balsa language"
-        putStrLn $ "  |  |_| _| |/ . version: " ++ teakVersion
-        putStrLn "  |_ |_ |_| |\\ . (C) 2007-2010 The University of Manchester"
+        putStrLn "   _ _|_  _  _  |    eTeak synthesiser for the Balsa language"
+        putStrLn $ "|_| |  |_| _| |/ . version: " ++ teakVersion
+        putStrLn "  |_  |_ |_ |_| |\\ . (C) 2007-2016 The University of Manchester"
         putStrLn ""
         putStrLn "  This program comes with ABSOLUTELY NO WARRANTY;"
         putStrLn "  This is free software, and you are welcome to redistribute it"
