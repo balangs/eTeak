@@ -1,4 +1,4 @@
-NOTE: eTeak's GALS/synchronous backend is not available to public yet. Please feel free to try out the asynchronous (dual-rail 4-phase RTZ) beackend. eTeak's multiple-clock syntehsis feature is a work in progress by the APT group of the University of Manchetser, UK.  
+NOTE: eTeak's GALS/synchronous backend is available for teaching and academic research. Please don't hesitate to contact us for more information. The current version is the asynchronous (dual-rail 4-phase RTZ) beackend and is available to public. Moreover eTeak's multiple-clock syntehsis feature is a WIP by the APT group of the University of Manchetser, UK.  
 
 #eTeak
 
