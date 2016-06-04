@@ -9,15 +9,15 @@ Install [stack](https://github.com/commercialhaskell/stack)
 
 If you're building from git, first you need to
 
-	apt-get install automake autoconf libgtk2.0-dev
-	./bootstrap
+	install automake autoconf libgtk2.0-dev
 
 If you've done that or you're building from tarball, proceed to:
 
 	stack setup --upgrade-cabal
+	
 	stack build 
 
-	stack exec eTeak -- --gui
+	stack exec -- eTeak --gui
 
 # Top level layout
 - NEWS  
