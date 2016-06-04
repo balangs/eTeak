@@ -1,1 +1,1 @@
-SUBDIRS = doc
+
