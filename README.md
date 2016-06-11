@@ -60,3 +60,13 @@ If you've done that or you're building from tarball, proceed to:
 - src/  
   Source of eTeak
 
+#References [Publications](https://github.com/balangs/Documentation/tree/master/Peer-reviewed_Publications)
+
+- Mahdi Jelodari Mamaghani, Milos Krtic, Jim Garside, "Automatic Clock (AutoCLK): A Promising Approach Towards GALSification," In Proc. of 22nd IEEE International Symposium on Asynchronous Circuits and Systems (ASYNC), May 2016.
+- Mahdi Jelodari Mamaghani, Danil Sokolov, Jim Garside, "Asynchronous Dataflow De-Elastisation for Efficient Heterogeneous Synthesis," In Proc. of the 16th International Conference on Application of Concurrency to System Design (ACSD), Poland, June 2016.
+- Mahdi Jelodari Mamaghani, Jim Garside, Doug Edwards, "De-Elastisation: From Asynchronous Dataflows to Synchronous Circuits," (to appear) IEEE/ACM conference on Design Automation and Test in Europe (DATE), March 2015, Gernoble, France. [DATE Best IP Award Winner].
+- Mahdi Jelodari Mamaghani, Jim Garside, Will Toms, Doug Edwards, "Optimised Synthesis of Asynchronous Elastic Dataflows by Leveraging Clocked EDA," The Euromicro Conference on Digital System Design (DSD), August 2014, Verona, Italy.
+- Mahdi Jelodari Mamaghani, Will Toms, Andrew Bardsley, Jim Garside, "Exploiting Synchrony for Area and Performance Improvement in the Asynchronous Domain," Intl. Symposium on Asynchronous Circuits and Systems (ASYNC), May 2014, Potsdam, Germany.
+- Mahdi Jelodari Mamaghani, Jim Garside, "High-level Synthesis of GALS Systems," Workshop on Designing with Uncertainty - Opportunities and Challenges (PAnDA), March 2014, York ,UK.
+- Mahdi Jelodari Mamaghani, Will Toms, Jim Garside, "eTeak: A Data-Driven Synchronous Elastic Synthesiser," Intl. Conference on Application of Concurrency to System Design (ACSD), July 2013, Barcelona, Spain.
+
