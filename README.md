@@ -1,6 +1,6 @@
 NOTE: eTeak's GALS/synchronous backend is available for teaching and academic research. Please don't hesitate to contact us for more information. The current version is the asynchronous (dual-rail 4-phase RTZ) beackend and is available to public. Moreover eTeak's multiple-clock syntehsis feature is a WIP by the APT group of the University of Manchetser, UK.  
 
-#The eTeak Synthesis Frameowrk
+#The eTeak Synthesis Framework
 
 This is eTeak. A synchronous/asycnhronous synthesis backend for the CSP-based language of Balsa. eTeak inherits the following from its predecessor system, [Teak](http://apt.cs.manchester.ac.uk/projects/teak/):   
 
@@ -37,6 +37,10 @@ If you've done that or you're building from tarball, proceed to:
 	stack build 
 
 	stack exec -- eTeak --gui
+
+## Download eTeak on a [Virtual Machine](https://github.com/balangs/eTeak-vmware)
+
+Please download our provided VirtualBox machine image to easily run eTeak on a Linux, Windows or Apple machine. The virtual machine is running Ubuntu 15.04 with the required packages for installing eTeak. Therefore you could either use the installed version by running `stack exec -- eTeak --gui` in the $HOME/Desktop/eTeak-master directory or cloning the git repository using `git clone git@github.com:balangs/eTeak.git`. You'd need to go through the steps above to build the stack.  
 
 # Top level layout
 - NEWS  
