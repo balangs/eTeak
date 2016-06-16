@@ -64,7 +64,12 @@ Please download our provided VirtualBox machine image to easily run eTeak on a L
 - src/  
   Source of eTeak
 
-#References [Publications](https://github.com/balangs/Documentation/tree/master/Peer-reviewed_Publications)
+## Acknowledgement
+
+eTeak's synchronous (Elastic) and GALS extensions have been sponsored by EPSRC Full Research Scholarship under research grant EP/I038306/1 from 2012 to 2015 and EPSRC Doctoral Prize Fellowship 2015/15.
+
+
+## References [Publications](https://github.com/balangs/Documentation/tree/master/Peer-reviewed_Publications)
 
 - Mahdi Jelodari Mamaghani, Milos Krtic, Jim Garside, "Automatic Clock (AutoCLK): A Promising Approach Towards GALSification," In Proc. of 22nd IEEE International Symposium on Asynchronous Circuits and Systems (ASYNC), May 2016.
 - Mahdi Jelodari Mamaghani, Danil Sokolov, Jim Garside, "Asynchronous Dataflow De-Elastisation for Efficient Heterogeneous Synthesis," In Proc. of the 16th International Conference on Application of Concurrency to System Design (ACSD), Poland, June 2016.
