@@ -609,26 +609,6 @@ module Gen (
         gate "or" [outT, minTerm 0, minTerm 3] ]
         where minTerm i = conn N prefix 0 (i +: 1)
 
-    {-
-    fullAdder prefix outF outT coF coT lF lT rF rT ciF ciT = concat [
-        nets cintNameF 1 2,
-        nets cintNameT 1 2,
-        nets sintNameF 1 1,
-        nets sintNameT 1 1,
-        halfAdder0 (prefix ++ "ha0") sintF sintT (cintF 0) (cintT 0) lF lT rF rT,
-        halfAdder0 (prefix ++ "ha1") outF outT (cintF 1) (cintT 1) sintF sintT ciF ciT,
-        drOr (prefix ++ "cor") coF coT (cintF 0) (cintT 0) (cintF 1) (cintT 1) ]
-        where
-            cintNameF = prefix ++ "cintf"
-            cintNameT = prefix ++ "cintt"
-            cintF i = conn N cintNameF 0 i 1
-            cintT i = conn N cintNameT 0 i 1
-            sintNameF = prefix ++ "sintf"
-            sintNameT = prefix ++ "sintt"
-            sintF = conn N sintNameF 0 0 1
-            sintT = conn N sintNameT 0 0 1
-            -}
-
     fullAdder :: String -> [GateConn] -> [GateConn] -> [GateConn] -> [GateConn] -> [GateConn] ->
         [GateConn] -> [GateConn] -> [GateConn] -> [GateConn] -> [GateConn] -> [GateElem]
     fullAdder prefix outF outT coF coT lF lT rF rT ciF ciT = concat [
@@ -682,10 +662,6 @@ module Gen (
             gate "gnd" [outT]
             ]
         body name = error $ "Don't recognise builtin " ++ name
-
-        -- ack done = concat [
-        --    gateSome "connect" [One go, Many (smashSplit outT)],
-        --    gate "gnd" [outF] ]
 
     makeOTerms :: [(Int, TeakOTerm)] -> [GateConn] -> Maybe [GateConn] -> [[GateConn]] -> [[GateConn]] -> [GateElem]
     makeOTerms terms go done termF termT = concatMap makeOTerm terms
@@ -1638,36 +1614,3 @@ module Gen (
             DM.toList netlistCosts
 
         hClose file
-
-{-
-
-    nwGetPortSignals :: (NetworkIF network) => NetworkComp ->
-        NetworkMonad network [(NetworkLinkRef, [(String, Int, Gen.RelDir)])]
-    nwGetPortSignals comp = do
-        let
-            compType = nwTeakType comp
-            conns = nwCompLinks comp
-
-            mapSomeM m (One i) = do
-                r <- m i
-                return $ One r
-            mapSomeM m (Many iss) = do
-                rs <- mapM m iss
-                return $ Many rs
-
-        compPortWidths <- mapM (mapSomeM nwGetLinkWidth) conns
-
-        let
-            compPortInfo = teakCompPortInfo $ nwTeakCompInfo compType
-            compPortNames = map networkPortName compPortInfo
-
-            namesXportWidths = zip compPortNames compPortWidths
-
-            makePorts (name, widths) = case widths of
-                Many ws -> zipWith (fullBundles name) ws [0..]
-                One w -> [fullBundles name w 0]
-
-            ports = concatMap makePorts namesXportWidths
-
-        return $ zip (concatMap flattenSome conns) ports
--}
