@@ -37,13 +37,11 @@ If you've done that or you're building from tarball, proceed to:
 	stack build 
 
 	stack exec -- eTeak --gui
-<<<<<<< HEAD
 =======
 
 ### Download eTeak on a [Virtual Machine](https://github.com/balangs/eTeak-vmware)
 
 Please download our provided VirtualBox machine image to easily run eTeak on a Linux, Windows or Apple machine. The virtual machine is running Ubuntu 15.04 with the required packages for installing eTeak. Therefore you could either use the installed version by running `stack exec -- eTeak --gui` in the $HOME/Desktop/eTeak-master directory or cloning the git repository using `git clone git@github.com:balangs/eTeak.git`. You'd need to go through the steps above to build the stack.  
->>>>>>> d81ebbd58b125bbc5d741b199eff99b074a4f734
 
 # Top level layout
 - NEWS  
